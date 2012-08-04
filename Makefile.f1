@@ -1,0 +1,45 @@
+#
+# PX4 bootloader build rules for STM32F1 targets.
+#
+
+BINARY		 = px4$(TARGET)_bl.elf
+
+OPENOCD		?= ../../sat/bin/openocd
+
+JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
+#JTAGCONFIG ?= interface/jtagkey-tiny.cfg
+
+# 3 seconds / 3000 ms default delay
+PX4_BOOTLOADER_DELAY	?= 3000
+
+CC		 = arm-none-eabi-gcc
+
+SRCS		 = $(COMMON_SRCS) main_f1.c
+ifeq ($(INTERFACE),USART)
+SRCS		+= usart.c
+endif
+ifeq ($(INTERFACE),I2C)
+SRCS		+= i2c.c
+endif
+
+FLAGS		+= -mthumb -mcpu=cortex-m3\
+		   -DSTM32F1 \
+		   -DAPP_LOAD_ADDRESS=0x08001000 \
+		   -DAPP_SIZE_MAX=0xf000 \
+		   -DBOOTLOADER_DELAY=$(PX4_BOOTLOADER_DELAY) \
+		   -DBOARD_$(BOARD) \
+		   -DINTERFACE_$(INTERFACE) \
+		   -Tstm32f1.ld \
+		   -L$(LIBOPENCM3)/lib/stm32/f1/ \
+		   -lopencm3_stm32f1 \
+
+all:		$(BINARY)
+
+$(BINARY):	$(SRCS) $(MAKEFILE_LIST)
+	$(CC) -o $@ $(SRCS) $(FLAGS)
+
+#upload: all flash flash-bootloader
+upload: all flash-bootloader
+
+flash-bootloader:
+	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f1x.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY)" -c "reset run" -c shutdown
