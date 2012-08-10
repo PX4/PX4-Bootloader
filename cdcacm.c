@@ -27,21 +27,28 @@
 
 #include "bl.h"
 
+static const char *usb_strings[] = {
+	"",
+	"3D Robotics",
+	USBDEVICESTRING,
+	"0",
+};
+
 static const struct usb_device_descriptor dev = {
 	.bLength = USB_DT_DEVICE_SIZE,
-	.bDescriptorType = USB_DT_DEVICE,
-	.bcdUSB = 0x0200,
-	.bDeviceClass = USB_CLASS_CDC,
+	.bDescriptorType = USB_DT_DEVICE,	/**< Specifies he descriptor type */
+	.bcdUSB = 0x0200,					/**< The USB interface version, binary coded (2.0) */
+	.bDeviceClass = USB_CLASS_CDC,		/**< USB device class, CDC in this case */
 	.bDeviceSubClass = 0,
 	.bDeviceProtocol = 0,
 	.bMaxPacketSize0 = 64,
-	.idVendor = 0x26AC,
-	.idProduct = 0x0010,
-	.bcdDevice = 0x0200,
-	.iManufacturer = 1,
-	.iProduct = 2,
-	.iSerialNumber = 3,
-	.bNumConfigurations = 1,
+	.idVendor = 0x26AC,					/**< Vendor ID (VID) */
+	.idProduct = 0x0010,				/**< Product ID (PID) */
+	.bcdDevice = 0x0101,				/**< Product version. Set to 1.01 (0x0101) to agree with NuttX */
+	.iManufacturer = 1,					/**< Use string with index 1 for the manufacturer string ("3D Robotics") */
+	.iProduct = 2,						/**< Use string with index 2 for the product string (USBDEVICESTRING define) */
+	.iSerialNumber = 3,					/**< Use string with index 3 for the serial number string (empty) */
+	.bNumConfigurations = 1,			/**< Number of configurations (one) */
 };
 
 /*
@@ -159,13 +166,6 @@ static const struct usb_config_descriptor config = {
 	.bMaxPower = 0xFA, /* Request 500 mA power (0xFA=250, get doubled in protocol) */
 
 	.interface = ifaces,
-};
-
-static const char *usb_strings[] = {
-	"x",
-	"3D Robotics",
-	"PX4 Bootloader",
-	"PX4",
 };
 
 static int cdcacm_control_request(struct usb_setup_data *req, u8 **buf,

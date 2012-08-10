@@ -51,13 +51,13 @@ clean:
 #
 
 px4fmu_bl: $(MAKEFILE_LIST)
-	make -f Makefile.f4 TARGET=fmu INTERFACE=USB BOARD=FMU
+	make -f Makefile.f4 TARGET=fmu INTERFACE=USB BOARD=FMU USBDEVICESTRING="\\\"PX4 FMU v1.6\\\""
 
 stm32f4discovery_bl: $(MAKEFILE_LIST)
-	make -f Makefile.f4 TARGET=discovery INTERFACE=USB BOARD=DISCOVERY
+	make -f Makefile.f4 TARGET=discovery INTERFACE=USB BOARD=DISCOVERY USBDEVICESTRING="\\\"DISCOVERY\\\""
 
 px4flow_bl: $(MAKEFILE_LIST)
-	make -f Makefile.f4 TARGET=flow INTERFACE=USB BOARD=FLOW
+	make -f Makefile.f4 TARGET=flow INTERFACE=USB BOARD=FLOW USBDEVICESTRING="\\\"PX4 FLOW v1.2\\\""
 
 # Default bootloader delay is *very* short, just long enough to catch
 # the board for recovery but not so long as to make restarting after a 
