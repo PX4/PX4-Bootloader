@@ -9,8 +9,8 @@ OPENOCD		?= openocd
 JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 #JTAGCONFIG ?= interface/jtagkey-tiny.cfg
 
-# 3 seconds / 3000 ms default delay
-PX4_BOOTLOADER_DELAY	?= 3000
+# 5 seconds / 5000 ms default delay
+PX4_BOOTLOADER_DELAY	?= 5000
 
 CC		 = arm-none-eabi-gcc
 
