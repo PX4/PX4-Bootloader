@@ -2,7 +2,7 @@
 # PX4 bootloader build rules for STM32F4 targets.
 #
 
-BINARY		 = px4$(TARGET)_bl.elf
+PRODUCT		 = px4$(TARGET)_bl
 
 OPENOCD		?= openocd
 
@@ -11,8 +11,6 @@ JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 
 # 5 seconds / 5000 ms default delay
 PX4_BOOTLOADER_DELAY	?= 5000
-
-CC		 = arm-none-eabi-gcc
 
 SRCS		 = $(COMMON_SRCS) main_f4.c
 ifeq ($(INTERFACE),USB)
@@ -34,10 +32,16 @@ FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
 		   -L$(LIBOPENCM3)/lib/stm32/f4/ \
 		   -lopencm3_stm32f4 \
 
-all:		$(BINARY)
+ELF		 = $(PRODUCT).elf
+BINARY		 = $(PRODUCT).bin
 
-$(BINARY):	$(SRCS) $(MAKEFILE_LIST)
+all:		$(ELF) $(BINARY)
+
+$(ELF):		$(SRCS) $(MAKEFILE_LIST)
 	$(CC) -o $@ $(SRCS) $(FLAGS)
+
+$(BINARY):	$(ELF)
+	$(OBJCOPY) -O binary $(ELF) $(BINARY)
 
 #upload: all flash flash-bootloader
 upload: all flash-bootloader

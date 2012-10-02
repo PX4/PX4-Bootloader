@@ -14,11 +14,13 @@ endif
 # Tools
 #
 export CC	 	 = arm-none-eabi-gcc
+export OBJCOPY		 = arm-none-eabi-objcopy
 
 #
 # Common configuration
 #
-export FLAGS		 = -Os \
+export FLAGS		 = -std=gnu99 \
+			   -Os \
 			   -g \
 			   -Wall \
 			   -fno-builtin \
@@ -40,7 +42,7 @@ TARGETS			 = px4fmu_bl px4flow_bl stm32f4discovery_bl px4io_bl
 all:	$(TARGETS)
 
 clean:
-	rm -f *.elf
+	rm -f *.elf *.bin
 
 #
 # Specific bootloader targets.
