@@ -5,3 +5,6 @@ px4discovery_bl.bin
 px4io_bl.bin
 px4flow_bl.bin
 px4fmu_bl.bin
+Bootloader.sublime-workspace
+.gdbinit
+px4fmuv2_bl.bin

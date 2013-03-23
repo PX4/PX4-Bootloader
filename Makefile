@@ -35,7 +35,7 @@ export COMMON_SRCS	 = bl.c
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4flow_bl stm32f4discovery_bl px4io_bl
+TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl
 
 # px4io_bl px4flow_bl
 
@@ -54,6 +54,9 @@ clean:
 
 px4fmu_bl: $(MAKEFILE_LIST)
 	make -f Makefile.f4 TARGET=fmu INTERFACE=USB BOARD=FMU USBDEVICESTRING="\\\"PX4 FMU v1.6\\\"" USBPRODUCTID="0x0010"
+
+px4fmuv2_bl: $(MAKEFILE_LIST)
+	make -f Makefile.f4 TARGET=fmuv2 INTERFACE=USB BOARD=FMUV2 USBDEVICESTRING="\\\"PX4 FMU v2,0\\\"" USBPRODUCTID="0x0016"
 
 stm32f4discovery_bl: $(MAKEFILE_LIST)
 	make -f Makefile.f4 TARGET=discovery INTERFACE=USB BOARD=DISCOVERY USBDEVICESTRING="\\\"DISCOVERY\\\"" USBPRODUCTID="0x0000"

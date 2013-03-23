@@ -12,28 +12,46 @@
 
 #include "bl.h"
 
+/* libopencm3 doesn't necessarily know these */
+#define FLASH_SECTOR(_x)	((_x) << 3)
+
 /* flash parameters that we should not really know */
 static struct {
 	uint32_t	erase_code;
 	unsigned	size;
 } flash_sectors[] = {
 	/* flash sector zero reserved for bootloader */
-	{ FLASH_SECTOR_1, 16 * 1024},
-	{ FLASH_SECTOR_2, 16 * 1024},
-	{ FLASH_SECTOR_3, 16 * 1024},
-	{ FLASH_SECTOR_4, 64 * 1024},
-	{ FLASH_SECTOR_5, 128 * 1024},
-	{ FLASH_SECTOR_6, 128 * 1024},
-	{ FLASH_SECTOR_7, 128 * 1024},
-	{ FLASH_SECTOR_8, 128 * 1024},
-	{ FLASH_SECTOR_9, 128 * 1024},
-	{ FLASH_SECTOR_10, 128 * 1024},
-	{ FLASH_SECTOR_11, 128 * 1024}
+	{ FLASH_SECTOR(1), 16 * 1024},
+	{ FLASH_SECTOR(2), 16 * 1024},
+	{ FLASH_SECTOR(3), 16 * 1024},
+	{ FLASH_SECTOR(4), 64 * 1024},
+	{ FLASH_SECTOR(5), 128 * 1024},
+	{ FLASH_SECTOR(6), 128 * 1024},
+	{ FLASH_SECTOR(7), 128 * 1024},
+	{ FLASH_SECTOR(8), 128 * 1024},
+	{ FLASH_SECTOR(9), 128 * 1024},
+	{ FLASH_SECTOR(10), 128 * 1024},
+	{ FLASH_SECTOR(11), 128 * 1024},
+	/* flash sectors only in 2MiB devices */
+	{ FLASH_SECTOR(12), 16 * 1024},
+	{ FLASH_SECTOR(13), 16 * 1024},
+	{ FLASH_SECTOR(14), 16 * 1024},
+	{ FLASH_SECTOR(15), 16 * 1024},
+	{ FLASH_SECTOR(16), 64 * 1024},
+	{ FLASH_SECTOR(17), 128 * 1024},
+	{ FLASH_SECTOR(18), 128 * 1024},
+	{ FLASH_SECTOR(19), 128 * 1024},
+	{ FLASH_SECTOR(20), 128 * 1024},
+	{ FLASH_SECTOR(21), 128 * 1024},
+	{ FLASH_SECTOR(22), 128 * 1024},
+	{ FLASH_SECTOR(23), 128 * 1024},
 };
-#define BOARD_FLASH_SECTORS (sizeof(flash_sectors) / sizeof(flash_sectors[0]))
+#define BOOTLOADER_RESERVATION_SIZE	(16 * 1024)
 
 #ifdef BOARD_FMU
 # define BOARD_TYPE			5
+# define BOARD_FLASH_SECTORS		11
+# define BOARD_FLASH_SIZE		(1024 * 1024)
 
 # define OSC_FREQ			24
 
@@ -56,6 +74,8 @@ static struct {
 
 #ifdef BOARD_FLOW
 # define BOARD_TYPE			6
+# define BOARD_FLASH_SECTORS		11
+# define BOARD_FLASH_SIZE		(1024 * 1024)
 
 # define OSC_FREQ			24
 
@@ -78,6 +98,8 @@ static struct {
 
 #ifdef BOARD_DISCOVERY
 # define BOARD_TYPE			99
+# define BOARD_FLASH_SECTORS		11
+# define BOARD_FLASH_SIZE		(1024 * 1024)
 
 # define OSC_FREQ			8
 
@@ -99,11 +121,40 @@ static struct {
 # define BOARD_FUNC_USART		GPIO_AF7
 #endif
 
+#ifdef BOARD_FMUV2
+# define BOARD_TYPE			9
+# define BOARD_FLASH_SECTORS		23
+# define BOARD_FLASH_SIZE		(2048 * 1024)
+
+# define OSC_FREQ			24
+
+# define BOARD_PIN_LED_ACTIVITY		0		// no activity LED
+# define BOARD_PIN_LED_BOOTLOADER	GPIO12
+# define BOARD_PORT_LEDS		GPIOE
+# define BOARD_CLOCK_LEDS		RCC_AHB1ENR_IOPEEN
+# define BOARD_LED_ON			gpio_clear
+# define BOARD_LED_OFF			gpio_set
+
+// XXX double-check USART config
+# define BOARD_USART			USART3
+# define BOARD_PORT_USART		PORTD
+# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART3EN
+# define BOARD_PIN_TX			GPIO8
+# define BOARD_PIN_RX			GPIO9
+# define BOARD_CLOCK_USART_PINS		RCC_AHB1ENR_IOPDEN
+# define BOARD_FUNC_USART		GPIO_AF7
+#endif
+
+
 #ifdef INTERFACE_USART
 # define BOARD_INTERFACE_CONFIG		(void *)BOARD_USART
 #else
 # define BOARD_INTERFACE_CONFIG		NULL
 #endif
+
+# define APP_SIZE_MAX			(BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
+
 
 /* board definition */
 struct boardinfo board_info = {
@@ -160,6 +211,12 @@ board_init(void)
 
 	/* configure USART clock */
 	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
+
+#ifdef INTERFACE_USB
+	/* enable GPIO9 with a pulldown to sniff VBUS */
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
 #endif
 
 }
@@ -243,12 +300,6 @@ main(void)
 
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10*2) | (3UL << 11*2)); /* set CP10 Full Access and set CP11 Full Access */
-
-#ifdef INTERFACE_USB
-	/* enable GPIO9 with a pulldown to sniff VBUS */
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
-#endif
 
 	/* do board-specific initialisation */
 	board_init();
