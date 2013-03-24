@@ -12,39 +12,36 @@
 
 #include "bl.h"
 
-/* libopencm3 doesn't necessarily know these */
-#define FLASH_SECTOR(_x)	((_x) << 3)
-
 /* flash parameters that we should not really know */
 static struct {
 	uint32_t	erase_code;
 	unsigned	size;
 } flash_sectors[] = {
 	/* flash sector zero reserved for bootloader */
-	{ FLASH_SECTOR(1), 16 * 1024},
-	{ FLASH_SECTOR(2), 16 * 1024},
-	{ FLASH_SECTOR(3), 16 * 1024},
-	{ FLASH_SECTOR(4), 64 * 1024},
-	{ FLASH_SECTOR(5), 128 * 1024},
-	{ FLASH_SECTOR(6), 128 * 1024},
-	{ FLASH_SECTOR(7), 128 * 1024},
-	{ FLASH_SECTOR(8), 128 * 1024},
-	{ FLASH_SECTOR(9), 128 * 1024},
-	{ FLASH_SECTOR(10), 128 * 1024},
-	{ FLASH_SECTOR(11), 128 * 1024},
+	{ (0x01 << 3), 16 * 1024},
+	{ (0x02 << 3), 16 * 1024},
+	{ (0x03 << 3), 16 * 1024},
+	{ (0x04 << 3), 64 * 1024},
+	{ (0x05 << 3), 128 * 1024},
+	{ (0x06 << 3), 128 * 1024},
+	{ (0x07 << 3), 128 * 1024},
+	{ (0x08 << 3), 128 * 1024},
+	{ (0x09 << 3), 128 * 1024},
+	{ (0x0a << 3), 128 * 1024},
+	{ (0x0b << 3), 128 * 1024},
 	/* flash sectors only in 2MiB devices */
-	{ FLASH_SECTOR(12), 16 * 1024},
-	{ FLASH_SECTOR(13), 16 * 1024},
-	{ FLASH_SECTOR(14), 16 * 1024},
-	{ FLASH_SECTOR(15), 16 * 1024},
-	{ FLASH_SECTOR(16), 64 * 1024},
-	{ FLASH_SECTOR(17), 128 * 1024},
-	{ FLASH_SECTOR(18), 128 * 1024},
-	{ FLASH_SECTOR(19), 128 * 1024},
-	{ FLASH_SECTOR(20), 128 * 1024},
-	{ FLASH_SECTOR(21), 128 * 1024},
-	{ FLASH_SECTOR(22), 128 * 1024},
-	{ FLASH_SECTOR(23), 128 * 1024},
+	{ (0x10 << 3), 16 * 1024},
+	{ (0x11 << 3), 16 * 1024},
+	{ (0x12 << 3), 16 * 1024},
+	{ (0x13 << 3), 16 * 1024},
+	{ (0x14 << 3), 64 * 1024},
+	{ (0x15 << 3), 128 * 1024},
+	{ (0x16 << 3), 128 * 1024},
+	{ (0x17 << 3), 128 * 1024},
+	{ (0x18 << 3), 128 * 1024},
+	{ (0x19 << 3), 128 * 1024},
+	{ (0x1a << 3), 128 * 1024},
+	{ (0x1b << 3), 128 * 1024},
 };
 #define BOOTLOADER_RESERVATION_SIZE	(16 * 1024)
 
@@ -123,8 +120,9 @@ static struct {
 
 #ifdef BOARD_FMUV2
 # define BOARD_TYPE			9
-# define BOARD_FLASH_SECTORS		23
-# define BOARD_FLASH_SIZE		(2048 * 1024)
+# define _FLASH_KBYTES			(*(uint16_t *)0x1fff7a22)
+# define BOARD_FLASH_SECTORS		((_FLASH_KBYTES == 0x400) ? 11 : 23)
+# define BOARD_FLASH_SIZE		(_FLASH_KBYTES * 1024)
 
 # define OSC_FREQ			24
 
@@ -160,7 +158,7 @@ static struct {
 struct boardinfo board_info = {
 	.board_type	= BOARD_TYPE,
 	.board_rev	= 0,
-	.fw_size	= APP_SIZE_MAX,
+	.fw_size	= 0,
 
 	.systick_mhz	= 168,
 };
@@ -186,6 +184,8 @@ static const clock_scale_t clock_setup =
 static void
 board_init(void)
 {
+	/* fix up the max firmware size, we have to read memory to get this */
+	board_info.fw_size = APP_SIZE_MAX,
 
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_LEDS);
@@ -307,9 +307,7 @@ main(void)
 #ifdef INTERFACE_USB
 	/* check for USB connection - if present, we will wait in the bootloader for a while */
 	if (gpio_get(GPIOA, GPIO9) != 0)
-	{
 		timeout = BOOTLOADER_DELAY;
-	}
 #endif
 #ifdef INTERFACE_USART
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader */
