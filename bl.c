@@ -83,6 +83,8 @@ static const uint32_t	bl_proto_rev = 3;	// value returned by PROTO_DEVICE_BL_REV
 static unsigned head, tail;
 static uint8_t rx_buf[256];
 
+static enum led_state {LED_BLINK, LED_ON, LED_OFF} _led_state;
+
 void sys_tick_handler(void);
 
 void
@@ -171,7 +173,7 @@ sys_tick_handler(void)
 		if (timer[i] > 0)
 			timer[i]--;
 
-	if (timer[TIMER_LED] == 0) {
+	if ((_led_state == LED_BLINK) && (timer[TIMER_LED] == 0)) {
 		led_toggle(LED_BOOTLOADER);
 		timer[TIMER_LED] = 50;
 	}
@@ -184,6 +186,26 @@ delay(unsigned msec)
 
 	while(timer[TIMER_DELAY] > 0)
 		;
+}
+
+static void
+led_set(enum led_state state)
+{
+	_led_state = state;
+	switch(state) {
+	case LED_OFF:
+		led_off(LED_BOOTLOADER);
+		break;
+
+	case LED_ON:
+		led_on(LED_BOOTLOADER);
+		break;
+
+	case LED_BLINK:
+		/* restart the blink state machine ASAP */
+		timer[TIMER_LED] = 0;
+		break;
+	}
 }
 
 static void
@@ -303,6 +325,9 @@ bootloader(unsigned timeout)
 	if (timeout)
 		timer[TIMER_BL_WAIT] = timeout;
 
+	/* make the LED blink while we are idle */
+	led_set(LED_BLINK);
+
 	while (true) {
 		volatile int c;
 		int arg;
@@ -399,18 +424,24 @@ bootloader(unsigned timeout)
 
 			// clear the bootloader LED while erasing - it stops blinking at random
 			// and that's confusing
-			led_off(LED_BOOTLOADER);
+			led_set(LED_ON);
 
 			// erase all sectors
 			flash_unlock();
 			for (int i = 0; flash_func_sector_size(i) != 0; i++)
 				flash_func_erase_sector(i);
 
+			// enable the LED while verifying the erase
+			led_set(LED_OFF);
+
 			// verify the erase
 			for (address = 0; address < board_info.fw_size; address += 4)
 				if (flash_func_read_word(address) != 0xffffffff)
 					goto cmd_fail;
 			address = 0;
+
+			// resume blinking
+			led_set(LED_BLINK);
 			break;
 
 			// program bytes at current address
