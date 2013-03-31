@@ -233,7 +233,26 @@ flash_func_sector_size(unsigned sector)
 void
 flash_func_erase_sector(unsigned sector)
 {
-	if (sector < BOARD_FLASH_SECTORS)
+	if (sector >= BOARD_FLASH_SECTORS)
+		return;
+
+	/* get the base address of the sector */
+	unsigned address = 0;
+	for (unsigned i = 0; i < sector; i++)
+		address += flash_func_sector_size(i);
+
+	/* blank-check the sector */
+	unsigned size = flash_func_sector_size(sector);
+	bool blank = true;
+	for (unsigned i = 0; i < size; i += sizeof(uint32_t)) {
+		if (flash_func_read_word(address + i) != 0xffffffff) {
+			blank = false;
+			break;
+		}
+	}
+
+	/* erase the sector if it failed the blank check */
+	if (!blank)
 		flash_erase_sector(flash_sectors[sector].erase_code, FLASH_PROGRAM_X32);
 }
 
