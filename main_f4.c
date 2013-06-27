@@ -187,6 +187,12 @@ board_init(void)
 	/* fix up the max firmware size, we have to read memory to get this */
 	board_info.fw_size = APP_SIZE_MAX,
 
+#ifdef INTERFACE_USB
+	/* enable GPIO9 with a pulldown to sniff VBUS */
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
+#endif
+
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_LEDS);
 	gpio_mode_setup(
@@ -211,12 +217,6 @@ board_init(void)
 
 	/* configure USART clock */
 	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
-#endif
-
-#ifdef INTERFACE_USB
-	/* enable GPIO9 with a pulldown to sniff VBUS */
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
 #endif
 
 }
