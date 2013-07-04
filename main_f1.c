@@ -5,9 +5,11 @@
 
 #include <stdlib.h>
 #include <libopencm3/stm32/f1/rcc.h>
+#include <libopencm3/stm32/f1/bkp.h>
 #include <libopencm3/stm32/f1/gpio.h>
 #include <libopencm3/stm32/f1/flash.h>
 #include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/pwr.h>
 #include <libopencm3/stm32/systick.h>
 
 #include "bl.h"
@@ -88,6 +90,9 @@ board_init(void)
 		GPIO_CNF_INPUT_FLOAT,	/* depend on external pull */
 		BOARD_FORCE_BL_PIN);
 #endif
+
+	/* enable the backup registers */
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
 
 #ifdef INTERFACE_USART
 	/* configure usart pins */
@@ -172,6 +177,21 @@ led_toggle(unsigned led)
 	}
 }
 
+static bool
+should_wait(void)
+{
+	bool result = false;
+
+	PWR_CR |= PWR_CR_DBP;
+	if (BKP_DR1 == BL_WAIT_MAGIC) {
+		result = true;
+		BKP_DR1 = 0;
+	}
+	PWR_CR &= ~PWR_CR_DBP;
+
+	return result;
+}
+
 int
 main(void)
 {
@@ -189,13 +209,18 @@ main(void)
 # error I2C bootloader detection logic not implemented
 #endif
 
+	/* if the app left a cookie saying we should wait, then wait */
+	if (should_wait())
+		timeout = BOOTLOADER_DELAY;
+
 #ifdef BOARD_FORCE_BL_PIN
 	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
 	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN))
 		timeout = 0xffffffff;
 #endif
 
-	/* XXX we could look at the backup SRAM to check for stay-in-bootloader instructions */
+	/* look for the magic wait-in-bootloader value in backup register zero */
+
 
 	/* if we aren't expected to wait in the bootloader, try to boot immediately */
 	if (timeout == 0) {

@@ -22,6 +22,8 @@ extern struct boardinfo board_info;
 extern void jump_to_app(void);
 extern void bootloader(unsigned timeout);
 
+#define BL_WAIT_MAGIC	0x19710317		/* magic number in PWR regs to wait in bootloader */
+
 /* generic timers */
 #define NTIMERS		4
 #define TIMER_BL_WAIT	0
