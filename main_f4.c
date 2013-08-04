@@ -9,6 +9,7 @@
 #include <libopencm3/stm32/f4/flash.h>
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/systick.h>
+#include <libopencm3/stm32/pwr.h>
 
 #include "bl.h"
 
@@ -58,15 +59,6 @@ static struct {
 # define BOARD_CLOCK_LEDS		RCC_AHB1ENR_IOPBEN
 # define BOARD_LED_ON			gpio_clear
 # define BOARD_LED_OFF			gpio_set
-
-# define BOARD_USART			USART1
-# define BOARD_PORT_USART		PORTB
-# define BOARD_USART_CLOCK_REGISTER	RCC_APB2ENR
-# define BOARD_USART_CLOCK_BIT		RCC_APB2ENR_USART1EN
-# define BOARD_PIN_TX			GPIO6
-# define BOARD_PIN_RX			GPIO7
-# define BOARD_CLOCK_USART_PINS		RCC_AHB1ENR_IOPBEN
-# define BOARD_FUNC_USART		GPIO_AF7
 #endif
 
 #ifdef BOARD_FLOW
@@ -82,15 +74,6 @@ static struct {
 # define BOARD_CLOCK_LEDS		RCC_AHB1ENR_IOPEEN
 # define BOARD_LED_ON			gpio_clear
 # define BOARD_LED_OFF			gpio_set
-
-# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART2EN
-# define BOARD_USART			USART2
-# define BOARD_PORT_USART		PORTD
-# define BOARD_PIN_TX			GPIO5
-# define BOARD_PIN_RX			GPIO6
-# define BOARD_CLOCK_USART_PINS		RCC_AHB1ENR_IOPDEN
-# define BOARD_FUNC_USART		GPIO_AF7
 #endif
 
 #ifdef BOARD_DISCOVERY
@@ -106,16 +89,6 @@ static struct {
 # define BOARD_CLOCK_LEDS		RCC_AHB1ENR_IOPDEN
 # define BOARD_LED_ON			gpio_set
 # define BOARD_LED_OFF			gpio_clear
-
-# define BOARD_USART			USART2
-# define BOARD_PORT_USART		GPIOA
-# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART2EN
-# define BOARD_PIN_TX			GPIO2
-# define BOARD_PIN_RX			GPIO3
-# define BOARD_USART_PIN_CLOCK_REGISTER	RCC_APB2ENR
-# define BOARD_USART_PIN_CLOCK_BIT	RCC_AHB1ENR_IOPAEN
-# define BOARD_FUNC_USART		GPIO_AF7
 #endif
 
 #ifdef BOARD_FMUV2
@@ -133,26 +106,21 @@ static struct {
 # define BOARD_LED_ON			gpio_clear
 # define BOARD_LED_OFF			gpio_set
 
-// XXX double-check USART config
-# define BOARD_USART			USART3
-# define BOARD_PORT_USART		PORTD
-# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART3EN
-# define BOARD_PIN_TX			GPIO8
-# define BOARD_PIN_RX			GPIO9
-# define BOARD_CLOCK_USART_PINS		RCC_AHB1ENR_IOPDEN
-# define BOARD_FUNC_USART		GPIO_AF7
+# define BOARD_FORCE_BL_PIN_OUT		GPIO14
+# define BOARD_FORCE_BL_PIN_IN		GPIO11
+# define BOARD_FORCE_BL_PORT		GPIOE
+# define BOARD_FORCE_BL_CLOCK_REGISTER	RCC_AHB1ENR
+# define BOARD_FORCE_BL_CLOCK_BIT	RCC_AHB1ENR_IOPEEN
+# define BOARD_FORCE_BL_PULL		GPIO_PUPD_PULLUP
+
+//# define BOARD_BOOT_FAIL_DETECT		/* V2 boards should support boot failure detection */
 #endif
 
 
-#ifdef INTERFACE_USART
-# define BOARD_INTERFACE_CONFIG		(void *)BOARD_USART
-#else
-# define BOARD_INTERFACE_CONFIG		NULL
-#endif
+#define APP_SIZE_MAX			(BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
 
-# define APP_SIZE_MAX			(BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
-
+/* context passed to cinit */
+#define BOARD_INTERFACE_CONFIG		NULL
 
 /* board definition */
 struct boardinfo board_info = {
@@ -164,6 +132,9 @@ struct boardinfo board_info = {
 };
 
 static void board_init(void);
+
+#define BOOT_RTC_SIGNATURE	0xb007b007
+#define BOOT_RTC_REG		MMIO32(RTC_BASE + 0x50)
 
 /* standard clocking for all F4 boards */
 static const clock_scale_t clock_setup =
@@ -180,6 +151,74 @@ static const clock_scale_t clock_setup =
 	.apb1_frequency = 42000000,
 	.apb2_frequency = 84000000,
 };
+
+static uint32_t
+board_get_rtc_signature()
+{
+	/* enable the backup registers */
+	PWR_CR |= PWR_CR_DBP;
+	RCC_BDCR |= RCC_BDCR_RTCEN;
+
+	uint32_t result = BOOT_RTC_REG;
+
+	/* disable the backup registers */
+	RCC_BDCR &= RCC_BDCR_RTCEN;
+	PWR_CR &= ~PWR_CR_DBP;
+
+	return result;
+}
+
+static void
+board_set_rtc_signature(uint32_t sig)
+{
+	/* enable the backup registers */
+	PWR_CR |= PWR_CR_DBP;
+	RCC_BDCR |= RCC_BDCR_RTCEN;
+
+	BOOT_RTC_REG = sig;
+
+	/* disable the backup registers */
+	RCC_BDCR &= RCC_BDCR_RTCEN;
+	PWR_CR &= ~PWR_CR_DBP;
+}
+
+static bool
+board_test_force_pin()
+{
+#ifdef BOARD_FORCE_BL_PIN_IN
+	volatile unsigned samples = 0;
+	volatile unsigned vote = 0;
+
+	/* (re)configure the force BL pins */
+	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, BOARD_FORCE_BL_PULL, BOARD_FORCE_BL_PIN_IN);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN_OUT);
+	gpio_set_output_options(BOARD_FORCE_BL_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, BOARD_FORCE_BL_PIN_OUT);
+
+	for (volatile unsigned cycles = 0; cycles < 10; cycles++) {
+		gpio_set(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN_OUT);
+		for (unsigned count = 0; count < 20; count++) {
+			if (gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN_IN) != 0)
+				vote++;
+			samples++;
+		}
+		gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN_OUT);
+		for (unsigned count = 0; count < 20; count++) {
+			if (gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN_IN) == 0)
+				vote++;
+			samples++;
+		}
+	}
+	/* revert the driver pin */
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN_OUT);
+
+	/* the idea here is to reject wire-to-wire coupling, so require > 90% agreement */
+	if ((vote * 100) > (samples * 90))
+		return true;
+#endif
+
+	return false;
+}
 
 static void
 board_init(void)
@@ -209,17 +248,11 @@ board_init(void)
 		BOARD_PORT_LEDS,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 
-#ifdef INTERFACE_USART
-	/* configure usart pins */
-	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
-	gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_AF, GPIO_PUPD_NONE, BOARD_PIN_TX | BOARD_PIN_RX);
-	gpio_set_af(BOARD_PORT_USART, BOARD_FUNC_USART, BOARD_PIN_TX | BOARD_PIN_RX);
-
-	/* configure USART clock */
-	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
-#endif
+	/* enable the power controller clock */
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 
 }
+
 
 
 unsigned
@@ -315,7 +348,8 @@ led_toggle(unsigned led)
 int
 main(void)
 {
-	unsigned timeout = 0;
+	bool try_boot = true;			/* try booting before we drop to the bootloader */
+	unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
 
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10*2) | (3UL << 11*2)); /* set CP10 Full Access and set CP11 Full Access */
@@ -323,29 +357,65 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
+	/* 
+	 * Check the force-bootloader register; if we find the signature there, don't
+	 * try booting.
+	 */
+	if (board_get_rtc_signature() == BOOT_RTC_SIGNATURE) {
+
+		/*
+		 * Don't even try to boot before dropping to the bootloader.
+		 */
+		try_boot = false;
+
+		/*
+		 * Don't drop out of the bootloader until something has been uploaded.
+		 */
+		timeout = 0;
+
+		/* 
+		 * Clear the signature so that if someone resets us while we're
+		 * in the bootloader we'll try to boot next time.
+		 */
+		board_set_rtc_signature(0);
+	}
+
 #ifdef INTERFACE_USB
-	/* check for USB connection - if present, we will wait in the bootloader for a while */
-	if (gpio_get(GPIOA, GPIO9) != 0)
-		timeout = BOOTLOADER_DELAY;
-#endif
-#ifdef INTERFACE_USART
-	/* XXX sniff for a USART connection to decide whether to wait in the bootloader */
-	timeout = 0;
+	/*
+	 * Check for USB connection - if present, don't try to boot, but set a timeout after
+	 * which we will fall out of the bootloader.
+	 *
+	 * If the force-bootloader pins are tied, we will stay here until they are removed and
+	 * we then time out.
+	 */
+	if (gpio_get(GPIOA, GPIO9) != 0) {
+
+		/* don't try booting before we set up the bootloader */
+		try_boot = false;
+	}
 #endif
 
-	/* XXX we could look at the backup SRAM to check for stay-in-bootloader instructions */
+	/* Try to boot the app if we think we should just go straight there */
+	if (try_boot) {
 
-	/* if we aren't expected to wait in the bootloader, try to boot immediately */
-	if (timeout == 0) {
+		/* set the boot-to-bootloader flag so that if boot fails on reset we will stop here */
+#ifdef BOARD_BOOT_FAIL_DETECT
+		board_set_rtc_signature(BOOT_RTC_SIGNATURE);
+#endif
+
 		/* try to boot immediately */
 		jump_to_app();
 
-		/* if we returned, there is no app; go to the bootloader and stay there */
+		/* booting failed, stay in the bootloader forever */
 		timeout = 0;
 	}
 
 	/* configure the clock for bootloader activity */
 	rcc_clock_setup_hse_3v3(&clock_setup);
+
+	/* start the interface */
+	cinit(BOARD_INTERFACE_CONFIG);
+
 #if 0
 	// MCO1/02
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8);
@@ -354,18 +424,25 @@ main(void)
 	gpio_mode_setup(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
 	gpio_set_af(GPIOC, GPIO_AF0, GPIO9);
 #endif
-	/* start the interface */
-	cinit(BOARD_INTERFACE_CONFIG);
 
 	while (1)
 	{
-		/* run the bootloader, possibly coming back after the timeout */
+		/* run the bootloader, come back after an app is uploaded or we time out */
 		bootloader(timeout);
+
+		/* if the force-bootloader pins are strapped, just loop back */
+		if (board_test_force_pin())
+			continue;
+
+		/* set the boot-to-bootloader flag so that if boot fails on reset we will stop here */
+#ifdef BOARD_BOOT_FAIL_DETECT
+		board_set_rtc_signature(BOOT_RTC_SIGNATURE);
+#endif
 
 		/* look to see if we can boot the app */
 		jump_to_app();
 
-		/* boot failed; stay in the bootloader forever next time */
+		/* launching the app failed - stay in the bootloader forever */
 		timeout = 0;
 	}
 }
