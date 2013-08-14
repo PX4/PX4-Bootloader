@@ -59,6 +59,13 @@ static struct {
 # define BOARD_CLOCK_LEDS		RCC_AHB1ENR_IOPBEN
 # define BOARD_LED_ON			gpio_clear
 # define BOARD_LED_OFF			gpio_set
+
+# define BOARD_FORCE_BL_PIN		GPIO10
+# define BOARD_FORCE_BL_PORT		GPIOA
+# define BOARD_FORCE_BL_CLOCK_REGISTER	RCC_AHB1ENR
+# define BOARD_FORCE_BL_CLOCK_BIT	RCC_AHB1ENR_IOPAEN
+# define BOARD_FORCE_BL_PULL		GPIO_PUPD_PULLUP
+# define BOARD_FORCE_BL_STATE		0
 #endif
 
 #ifdef BOARD_FLOW
@@ -185,7 +192,8 @@ board_set_rtc_signature(uint32_t sig)
 static bool
 board_test_force_pin()
 {
-#ifdef BOARD_FORCE_BL_PIN_IN
+#if defined(BOARD_FORCE_BL_PIN_IN) && defined(BOARD_FORCE_BL_PIN_OUT)
+	/* two pins strapped together */
 	volatile unsigned samples = 0;
 	volatile unsigned vote = 0;
 
@@ -216,7 +224,24 @@ board_test_force_pin()
 	if ((vote * 100) > (samples * 90))
 		return true;
 #endif
+#if defined(BOARD_FORCE_BL_PIN)
+	/* single pin pulled up or down */
+	volatile unsigned samples = 0;
+	volatile unsigned vote = 0;
 
+	/* (re)configure the force BL pins */
+	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, BOARD_FORCE_BL_PULL, BOARD_FORCE_BL_PIN);
+
+	for (samples = 0; samples < 200; samples++) {
+		if ((gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN) ? 1 : 0) == BOARD_FORCE_BL_STATE)
+			vote++;
+	}
+
+	/* reject a little noise */
+	if ((vote * 100) > (samples * 90))
+		return true;
+#endif
 	return false;
 }
 
