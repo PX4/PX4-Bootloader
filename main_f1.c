@@ -111,7 +111,7 @@ board_init(void)
 
 }
 
-unsigned
+uint32_t
 flash_func_sector_size(unsigned sector)
 {
 	if (sector < BOARD_FLASH_SECTORS)
@@ -127,15 +127,21 @@ flash_func_erase_sector(unsigned sector)
 }
 
 void
-flash_func_write_word(unsigned address, uint32_t word)
+flash_func_write_word(uint32_t address, uint32_t word)
 {
 	flash_program_word(address + APP_LOAD_ADDRESS, word);
 }
 
 uint32_t 
-flash_func_read_word(unsigned address)
+flash_func_read_word(uint32_t address)
 {
 	return *(uint32_t *)(address + APP_LOAD_ADDRESS);
+}
+
+uint32_t
+flash_func_read_otp(uint32_t address)
+{
+	return 0;
 }
 
 void

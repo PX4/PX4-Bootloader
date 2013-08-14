@@ -16,7 +16,7 @@
 /* flash parameters that we should not really know */
 static struct {
 	uint32_t	erase_code;
-	unsigned	size;
+	uint32_t	size;
 } flash_sectors[] = {
 	/* flash sector zero reserved for bootloader */
 	{ (0x01 << 3), 16 * 1024},
@@ -45,6 +45,9 @@ static struct {
 	{ (0x1b << 3), 128 * 1024},
 };
 #define BOOTLOADER_RESERVATION_SIZE	(16 * 1024)
+
+#define OTP_BASE			0x1fff7800
+#define OTP_SIZE			512
 
 #ifdef BOARD_FMU
 # define BOARD_TYPE			5
@@ -280,7 +283,7 @@ board_init(void)
 
 
 
-unsigned
+uint32_t
 flash_func_sector_size(unsigned sector)
 {
 	if (sector < BOARD_FLASH_SECTORS)
@@ -295,7 +298,7 @@ flash_func_erase_sector(unsigned sector)
 		return;
 
 	/* get the base address of the sector */
-	unsigned address = 0;
+	uint32_t address = 0;
 	for (unsigned i = 0; i < sector; i++)
 		address += flash_func_sector_size(i);
 
@@ -315,15 +318,28 @@ flash_func_erase_sector(unsigned sector)
 }
 
 void
-flash_func_write_word(unsigned address, uint32_t word)
+flash_func_write_word(uint32_t address, uint32_t word)
 {
 	flash_program_word(address + APP_LOAD_ADDRESS, word, FLASH_PROGRAM_X32);
 }
 
 uint32_t 
-flash_func_read_word(unsigned address)
+flash_func_read_word(uint32_t address)
 {
+	if (address & 3)
+		return 0;
 	return *(uint32_t *)(address + APP_LOAD_ADDRESS);
+}
+
+uint32_t
+flash_func_read_otp(uint32_t address)
+{
+	if (address & 3)
+		return 0;
+	if (address > OTP_SIZE)
+		return 0;
+
+	return *(uint32_t *)(address + OTP_BASE);
 }
 
 void

@@ -50,10 +50,11 @@ extern void led_off(unsigned led);
 extern void led_toggle(unsigned led);
 
 /* flash helpers from main_*.c */
-extern unsigned flash_func_sector_size(unsigned sector);
+extern uint32_t flash_func_sector_size(unsigned sector);
 extern void flash_func_erase_sector(unsigned sector);
-extern void flash_func_write_word(unsigned address, uint32_t word);
-extern uint32_t flash_func_read_word(unsigned address);
+extern void flash_func_write_word(uint32_t address, uint32_t word);
+extern uint32_t flash_func_read_word(uint32_t address);
+extern uint32_t flash_func_read_otp(uint32_t address);
 
 /*****************************************************************************
  * Interface in/output.

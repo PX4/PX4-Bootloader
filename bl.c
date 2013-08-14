@@ -65,6 +65,7 @@
 #define PROTO_CHIP_ERASE	0x23    // erase program area and reset program address
 #define PROTO_PROG_MULTI	0x27    // write bytes at program address and increment
 #define PROTO_GET_CRC		0x29	// compute & return a CRC
+#define PROTO_GET_OTP		0x2a	// read a byte from OTP at the given address
 #define PROTO_BOOT		0x30    // boot the application
 #define PROTO_DEBUG		0x31    // emit debug information - format not defined
 
@@ -78,7 +79,7 @@
 #define PROTO_DEVICE_FW_SIZE	4	// size of flashable area
 #define PROTO_DEVICE_VEC_AREA	5	// contents of reserved vectors 7-10
 
-static const uint32_t	bl_proto_rev = 3;	// value returned by PROTO_DEVICE_BL_REV
+static const uint32_t	bl_proto_rev = 4;	// value returned by PROTO_DEVICE_BL_REV
 
 static unsigned head, tail;
 static uint8_t rx_buf[256];
@@ -269,6 +270,24 @@ cout_word(uint32_t val)
 	cout((uint8_t *)&val, 4);
 }
 
+static int
+cin_word(uint32_t *wp, unsigned timeout)
+{
+	union {
+		uint32_t w;
+		uint8_t b[4];
+	} u;
+
+	for (unsigned i = 0; i < 4; i++) {
+		int c = cin_wait(timeout);
+		if (c < 0)
+			return c;
+		u.b[i] = c & 0xff;
+	}
+
+	return u.w;
+}
+
 static uint32_t
 crc32(const uint8_t *src, unsigned len, unsigned state)
 {
@@ -299,7 +318,7 @@ crc32(const uint8_t *src, unsigned len, unsigned state)
 void
 bootloader(unsigned timeout)
 {
-	unsigned	address = board_info.fw_size;	/* force erase before upload will work */
+	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
 
 	/* (re)start the timer system */
@@ -481,7 +500,7 @@ bootloader(unsigned timeout)
 			// fetch CRC of the entire flash area
 			//
 			// command:			GET_CRC/EOC
-			// reply:			<crc:4>/INSYNC/EOC
+			// reply:			<crc:4>/INSYNC/OK
 			//
 		case PROTO_GET_CRC:
 			// expect EOC
@@ -501,6 +520,21 @@ bootloader(unsigned timeout)
 				sum = crc32((uint8_t *)&bytes, sizeof(bytes), sum);
 			}
 			cout_word(sum);
+			break;
+
+			// read a word from the OTP
+			//
+			// command:			GET_OTP/<addr:4>/EOC
+			// reply:			<value:4>/INSYNC/OK
+		case PROTO_GET_OTP:
+			// expect argument
+			{
+				uint32_t index = 0;
+
+				if (cin_word(&index, 100))
+					goto cmd_bad;
+				cout_word(flash_func_read_otp(index));
+			}
 			break;
 
 			// finalise programming and boot the system
