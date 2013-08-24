@@ -154,6 +154,7 @@ class uploader(object):
         PROG_MULTI      = chr(0x27)
         READ_MULTI      = chr(0x28)     # rev2 only
         GET_CRC         = chr(0x29)     # rev3+
+        GET_OTP         = chr(0x2a)     #rev4+
         REBOOT          = chr(0x30)
         
         INFO_BL_REV     = chr(1)        # bootloader protocol revision
@@ -175,14 +176,14 @@ class uploader(object):
                         self.port.close()
 
         def __send(self, c):
-#               print("send " + binascii.hexlify(c))
+#                print("send " + binascii.hexlify(c))
                 self.port.write(str(c))
 
         def __recv(self, count=1):
                 c = self.port.read(count)
                 if len(c) < 1:
                         raise RuntimeError("timeout waiting for data")
-#               print("recv " + binascii.hexlify(c))
+#                print("recv " + binascii.hexlify(c))
                 return c
 
         def __recv_int(self):
@@ -230,7 +231,16 @@ class uploader(object):
                 value = self.__recv_int()
                 self.__getSync()
                 return value
-
+                
+        # send the GET_OTP command and wait for an info parameter
+        def __getOTP(self, param):
+                t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array. 
+#                print "otp: sending %d" % param
+                self.__send(uploader.GET_OTP + t + uploader.EOC)
+                value = self.__recv(4)
+                self.__getSync()
+                return value
+                
         # send the CHIP_ERASE command and wait for the bootloader to become ready
         def __erase(self):
                 self.__send(uploader.CHIP_ERASE
@@ -327,6 +337,8 @@ class uploader(object):
                 self.board_rev = self.__getInfo(uploader.INFO_BOARD_REV)
                 self.fw_maxsize = self.__getInfo(uploader.INFO_FLASH_SIZE)
 
+                    
+
         # upload the firmware
         def upload(self, fw):
                 # Make sure we are doing the right thing
@@ -335,6 +347,11 @@ class uploader(object):
                 if self.fw_maxsize < fw.property('image_size'):
                         raise RuntimeError("Firmware image is too large for this board")
 
+                print("OTP(first 5 blocks)")
+                for byte in range(0,32*5,4):
+                    x = self.__getOTP(byte)
+                    print(" " + binascii.hexlify(x) + ",")
+ 
                 print("erase...")
                 self.__erase()
 
