@@ -285,7 +285,8 @@ cin_word(uint32_t *wp, unsigned timeout)
 		u.b[i] = c & 0xff;
 	}
 
-	return u.w;
+	*wp = u.w;
+	return 0;
 }
 
 static uint32_t
