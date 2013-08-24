@@ -170,6 +170,7 @@ class uploader(object):
         def __init__(self, portname, baudrate):
                 # open the port, keep the default timeout short so we can poll quickly
                 self.port = serial.Serial(portname, baudrate, timeout=0.5)
+                self.otp = ''
 
         def close(self):
                 if self.port is not None:
@@ -350,7 +351,30 @@ class uploader(object):
                 print("OTP(first 5 blocks)")
                 for byte in range(0,32*5,4):
                     x = self.__getOTP(byte)
-                    print(" " + binascii.hexlify(x) + ",")
+                    self.otp  = self.otp + x
+                    print(" " + binascii.hexlify(x)),
+                print
+                #according to src/modules/systemlib/otp.h in px4 code:  
+                # first block is: 
+                #char		id[4];		///4 bytes < 'P' 'X' '4' '\n'
+		        #uint8_t	id_type;    ///1 byte < 0 for USB VID, 1 for generic VID
+		        #uint32_t	vid;        ///4 bytes
+		        #uint32_t	pid;        ///4 bytes
+		        #char        unused[19];  ///19 bytes 
+		        # next 4 blocks are: "Certificate Of Authenticity" aka "signature".
+            	#char        signature[128];
+                self.otp_id = self.otp[0:4]
+                self.otp_idtype = self.otp[4:5]
+                self.otp_vid = self.otp[8:4:-1]
+                self.otp_pid = self.otp[12:8:-1]
+                self.otp_coa = self.otp[32:160]
+                
+                print("type:" + self.otp_id);
+                print("idtype:" +binascii.b2a_qp(self.otp_idtype));
+                print("vid:" + binascii.hexlify(self.otp_vid));
+                print("pid:"+ binascii.hexlify(self.otp_pid));
+                #print(self.otp_coa);
+                #print(binascii.b2a_base64(self.otp))
  
                 print("erase...")
                 self.__erase()
