@@ -50,7 +50,6 @@ static struct {
 #define OTP_SIZE			512
 #define UDID_START		0x1FFF7A10
 
-#pragma pack(pop)
 
 #ifdef BOARD_FMU
 # define BOARD_TYPE			5
