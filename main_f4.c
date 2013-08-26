@@ -48,6 +48,9 @@ static struct {
 
 #define OTP_BASE			0x1fff7800
 #define OTP_SIZE			512
+#define UDID_START		0x1FFF7A10
+
+#pragma pack(pop)
 
 #ifdef BOARD_FMU
 # define BOARD_TYPE			5
@@ -341,7 +344,13 @@ flash_func_read_otp(uint32_t address)
 
 	return *(uint32_t *)(address + OTP_BASE);
 }
-
+uint32_t
+flash_func_read_sn(uint32_t address)
+{
+	// read a byte out from unique chip ID area
+	// it's 12 bytes, or 3 words. 
+    return *(uint32_t *)(address + UDID_START);
+}
 void
 led_on(unsigned led)
 {

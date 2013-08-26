@@ -143,6 +143,11 @@ flash_func_read_otp(uint32_t address)
 {
 	return 0;
 }
+uint32_t
+flash_func_read_sn(uint32_t address)
+{
+    return 0;
+}
 
 void
 led_on(unsigned led)
