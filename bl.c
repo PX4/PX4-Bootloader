@@ -66,6 +66,7 @@
 #define PROTO_PROG_MULTI	0x27    // write bytes at program address and increment
 #define PROTO_GET_CRC		0x29	// compute & return a CRC
 #define PROTO_GET_OTP		0x2a	// read a byte from OTP at the given address
+#define PROTO_GET_SN        0x2b    // read a word from UDID area ( Serial)  at the given address
 #define PROTO_BOOT		0x30    // boot the application
 #define PROTO_DEBUG		0x31    // emit debug information - format not defined
 
@@ -537,7 +538,15 @@ bootloader(unsigned timeout)
 				cout_word(flash_func_read_otp(index));
 			}
 			break;
-
+		case PROTO_GET_SN:
+			// expect argument
+			{
+				uint32_t index = 0;
+				if (cin_word(&index, 100))
+					goto cmd_bad;
+				cout_word(flash_func_read_sn(index));
+			}
+			break;
 			// finalise programming and boot the system
 			//
 			// command:			BOOT/EOC
