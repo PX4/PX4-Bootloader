@@ -217,17 +217,6 @@ class uploader(object):
                             + uploader.EOC)
                 self.__getSync()
 
-#       def __trySync(self):
-#               c = self.__recv()
-#               if (c != self.INSYNC):
-#                       #print("unexpected 0x%x instead of INSYNC" % ord(c))
-#                       return False;
-#               c = self.__recv()
-#               if (c != self.OK):
-#                       #print("unexpected 0x%x instead of OK" % ord(c))
-#                       return False
-#               return True
-
         # send the GET_DEVICE command and wait for an info parameter
         def __getInfo(self, param):
                 self.__send(uploader.GET_DEVICE + param + uploader.EOC)
@@ -238,15 +227,14 @@ class uploader(object):
         # send the GET_OTP command and wait for an info parameter
         def __getOTP(self, param):
                 t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array. 
-#                print "otp: sending %d" % param
                 self.__send(uploader.GET_OTP + t + uploader.EOC)
                 value = self.__recv(4)
                 self.__getSync()
                 return value
-        # send the GET_OTP command and wait for an info parameter
+
+        # send the GET_SN command and wait for an info parameter
         def __getSN(self, param):
                 t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array. 
-#                print "otp: sending %d" % param
                 self.__send(uploader.GET_SN + t + uploader.EOC)
                 value = self.__recv(4)
                 self.__getSync()
