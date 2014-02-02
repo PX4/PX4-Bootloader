@@ -28,7 +28,7 @@ FLAGS		+= -mthumb -mcpu=cortex-m3\
 		   -DBOARD_$(BOARD) \
 		   -DINTERFACE_$(INTERFACE) \
 		   -Tstm32f1.ld \
-		   -L$(LIBOPENCM3)/lib/stm32/f1/ \
+		   -L$(LIBOPENCM3)/lib \
 		   -lopencm3_stm32f1 \
 
 ELF		 = $(PRODUCT).elf
