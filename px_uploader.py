@@ -50,6 +50,9 @@
 #       Currently only used for informational purposes.
 #
 
+# for python2.7 compatibility
+from __future__ import print_function
+
 import sys
 import argparse
 import binascii
@@ -177,8 +180,8 @@ class uploader(object):
         def __init__(self, portname, baudrate):
                 # open the port, keep the default timeout short so we can poll quickly
                 self.port = serial.Serial(portname, baudrate, timeout=0.5)
-                self.otp = ''
-                self.sn = ''
+                self.otp = b''
+                self.sn = b''
 
         def close(self):
                 if self.port is not None:
@@ -375,11 +378,11 @@ class uploader(object):
 
                 # OTP added in v4: 
                 if self.bl_rev > 3: 
-                    #print("OTP(first 5 blocks)")
+                    # print("OTP(first 5 blocks)")
                     for byte in range(0,32*6,4):
                         x = self.__getOTP(byte)
                         self.otp  = self.otp + x
-                        print(" " + binascii.hexlify(x)),
+                        print(binascii.hexlify(x).decode('utf-8') + ' ', end='')
                     #see src/modules/systemlib/otp.h in px4 code:  
                     self.otp_id = self.otp[0:4]
                     self.otp_idtype = self.otp[4:5]
@@ -387,20 +390,19 @@ class uploader(object):
                     self.otp_pid = self.otp[12:8:-1]
                     self.otp_coa = self.otp[32:160]
                     # show user:
-                    print("type:" + self.otp_id)
-                    print("idtype:" +binascii.b2a_qp(self.otp_idtype))
-                    print("vid:" + binascii.hexlify(self.otp_vid))
-                    print("pid:"+ binascii.hexlify(self.otp_pid))
-                    #print("coa as hex:"+ binascii.hexlify(self.otp_coa))
-                    print("coa:"+ binascii.b2a_base64(self.otp_coa)),
-                    print("sn:"),
+                    print("type: " + self.otp_id.decode('utf-8'))
+                    print("idtype: " + binascii.b2a_qp(self.otp_idtype).decode('utf-8'))
+                    print("vid: " + binascii.hexlify(self.otp_vid).decode('utf-8'))
+                    print("pid: "+ binascii.hexlify(self.otp_pid).decode('utf-8'))
+                    #print("coa as hex:"+ binascii.hexlify(self.otp_coa).decode('utf-8'))
+                    print("coa: "+ binascii.b2a_base64(self.otp_coa).decode('utf-8'))
+                    print("sn: ", end='')
                     for byte in range(0,12,4):
                         x = self.__getSN(byte)
                         x = x[::-1]  # reverse the bytes
                         self.sn  = self.sn + x
-                        print(binascii.hexlify(x)), # show user
-                    print
-
+                        print(binascii.hexlify(x).decode('utf-8'), end='') # show user
+                    print('')
                 print("erase...")
                 self.__erase()
 
