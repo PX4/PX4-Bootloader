@@ -246,7 +246,7 @@ class uploader(object):
 
         # send the GET_OTP command and wait for an info parameter
         def __getOTP(self, param):
-                t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array. 
+                t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array.
                 self.__send(uploader.GET_OTP + t + uploader.EOC)
                 value = self.__recv(4)
                 self.__getSync()
@@ -254,7 +254,7 @@ class uploader(object):
 
         # send the GET_OTP command and wait for an info parameter
         def __getSN(self, param):
-                t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array. 
+                t = struct.pack("I", param) # int param as 32bit ( 4 byte ) char array.
                 self.__send(uploader.GET_SN + t + uploader.EOC)
                 value = self.__recv(4)
                 self.__getSync()
@@ -376,14 +376,13 @@ class uploader(object):
                 if self.fw_maxsize < fw.property('image_size'):
                         raise RuntimeError("Firmware image is too large for this board")
 
-                # OTP added in v4: 
-                if self.bl_rev > 3: 
-                    # print("OTP(first 5 blocks)")
+                # OTP added in v4:
+                if self.bl_rev > 3:
                     for byte in range(0,32*6,4):
                         x = self.__getOTP(byte)
                         self.otp  = self.otp + x
                         print(binascii.hexlify(x).decode('utf-8') + ' ', end='')
-                    #see src/modules/systemlib/otp.h in px4 code:  
+                    # see src/modules/systemlib/otp.h in px4 code:
                     self.otp_id = self.otp[0:4]
                     self.otp_idtype = self.otp[4:5]
                     self.otp_vid = self.otp[8:4:-1]
@@ -394,7 +393,6 @@ class uploader(object):
                     print("idtype: " + binascii.b2a_qp(self.otp_idtype).decode('utf-8'))
                     print("vid: " + binascii.hexlify(self.otp_vid).decode('utf-8'))
                     print("pid: "+ binascii.hexlify(self.otp_pid).decode('utf-8'))
-                    #print("coa as hex:"+ binascii.hexlify(self.otp_coa).decode('utf-8'))
                     print("coa: "+ binascii.b2a_base64(self.otp_coa).decode('utf-8'))
                     print("sn: ", end='')
                     for byte in range(0,12,4):
