@@ -75,7 +75,7 @@
 # define BOARD_FORCE_BL_CLOCK_BIT	RCC_APB2ENR_IOPBEN
 # define BOARD_FORCE_BL_VALUE		BOARD_FORCE_BL_PIN
 
-# define BOARD_FLASH_SECTORS		60
+# define BOARD_FLASH_SECTORS		111
  #define BOARD_TYPE                 11
 # define FLASH_SECTOR_SIZE		0x400
 #else 
@@ -102,11 +102,6 @@ static void board_init(void);
 static void
 board_init(void)
 {
-#ifdef INTERFACE_USB
-	/* enable GPIO8 with a pulldown to sniff VBUS */
-	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
-	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO8);
-#endif
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&BOARD_CLOCK_LEDS_REGISTER, BOARD_CLOCK_LEDS);
 	gpio_set_mode(BOARD_PORT_LEDS,
@@ -268,20 +263,6 @@ main(void)
 	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
 	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN))
 		timeout = 0xffffffff;
-#endif
-#ifdef INTERFACE_USB
-	/*
-	 * Check for USB connection - if present, don't try to boot, but set a timeout after
-	 * which we will fall out of the bootloader.
-	 *
-	 * If the force-bootloader pins are tied, we will stay here until they are removed and
-	 * we then time out.
-	 */
-	if (gpio_get(GPIOA, GPIO8) != 0) {
-
-		/* don't try booting before we set up the bootloader */
-		timeout = 0xffffffff;
-	}
 #endif
 	/* look for the magic wait-in-bootloader value in backup register zero */
 
