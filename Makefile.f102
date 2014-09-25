@@ -1,0 +1,55 @@
+#
+# PX4 bootloader build rules for STM32F102 targets.
+#
+
+PRODUCT		 = px4$(TARGET)_bl
+
+#OPENOCD		?= ../../sat/bin/openocd
+OPENOCD      = openocd
+
+JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
+#JTAGCONFIG ?= interface/jtagkey-tiny.cfg
+
+# 3 seconds / 3000 ms default delay
+PX4_BOOTLOADER_DELAY	?= 3000
+
+SRCS		 = $(COMMON_SRCS) main_f102.c
+ifeq ($(INTERFACE),USB)
+SRCS		+= cdcacm.c
+endif
+ifeq ($(INTERFACE),USART)
+SRCS		+= usart.c
+endif
+ifeq ($(INTERFACE),I2C)
+SRCS		+= i2c.c
+endif
+
+FLAGS		+=-mthumb -mcpu=cortex-m3\
+		   -DSTM32F1 \
+		   -DAPP_LOAD_ADDRESS=0x08004000 \
+		   -DAPP_SIZE_MAX=0xf000 \
+		   -DBOOTLOADER_DELAY=$(PX4_BOOTLOADER_DELAY) \
+		   -DBOARD_$(BOARD) \
+		   -DINTERFACE_$(INTERFACE) \
+   		   -DUSBDEVICESTRING="$(USBDEVICESTRING)" \
+		   -DUSBPRODUCTID="$(USBPRODUCTID)" \
+		   -Tstm32f102.ld \
+		   -L$(LIBOPENCM3)/lib/stm32/f1/ \
+		   -lopencm3_stm32f1 \
+
+ELF		 = $(PRODUCT).elf
+BINARY		 = $(PRODUCT).bin
+
+all:		$(ELF) $(BINARY)
+
+$(ELF):		$(SRCS) $(MAKEFILE_LIST)
+	$(CC) -o $@ $(SRCS) $(FLAGS)
+
+$(BINARY):	$(ELF)
+	$(OBJCOPY) -O binary $(ELF) $(BINARY)
+
+#upload: all flash flash-bootloader
+upload: all flash-bootloader
+
+flash-bootloader:
+	$(OPENOCD) -f $(JTAGCONFIG) -f stm32f102.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY)" -c "reset run" -c shutdown

@@ -35,7 +35,7 @@ export COMMON_SRCS	 = bl.c
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl
+TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl mavstation_bl
 
 # px4io_bl px4flow_bl
 
@@ -73,3 +73,6 @@ aerocore_bl: $(MAKEFILE_LIST)
 #
 px4io_bl: $(MAKEFILE_LIST)
 	make -f Makefile.f1 TARGET=io INTERFACE=USART BOARD=IO PX4_BOOTLOADER_DELAY=200
+
+mavstation_bl: $(MAKEFILE_LIST)
+	make -f Makefile.f102 TARGET=mavstation INTERFACE=USB BOARD=MAVSTATION USBDEVICESTRING="\\\"MAVSTATION v0.1\\\"" USBPRODUCTID="0x0016"

@@ -1,0 +1,319 @@
+/*
+ * STM32F1 board support for the bootloader.
+ *
+ */
+
+#include <stdlib.h>
+#include <libopencm3/stm32/f1/rcc.h>
+#include <libopencm3/stm32/f1/bkp.h>
+#include <libopencm3/stm32/f1/gpio.h>
+#include <libopencm3/stm32/f1/flash.h>
+#include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/pwr.h>
+#include <libopencm3/stm32/systick.h>
+
+#include "bl.h"
+
+/*
+ * Yes, the nonsense required to configure GPIOs with this
+ * library is truly insane...
+ */
+
+#if defined(BOARD_IO)
+# define OSC_FREQ			24
+
+# define BOARD_PIN_LED_ACTIVITY		GPIO14
+# define BOARD_PIN_LED_BOOTLOADER	GPIO15
+# define BOARD_PORT_LEDS		GPIOB
+# define BOARD_CLOCK_LEDS_REGISTER	RCC_APB2ENR
+# define BOARD_CLOCK_LEDS		RCC_APB2ENR_IOPBEN
+# define BOARD_LED_ON			gpio_clear
+# define BOARD_LED_OFF			gpio_set
+
+# define BOARD_USART			USART2
+# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART		GPIOA
+# define BOARD_PIN_TX			GPIO_USART2_TX
+# define BOARD_PIN_RX			GPIO_USART2_RX
+# define BOARD_USART_PIN_CLOCK_REGISTER	RCC_APB2ENR
+# define BOARD_USART_PIN_CLOCK_BIT	RCC_APB2ENR_IOPAEN
+
+# define BOARD_FORCE_BL_PIN		GPIO5
+# define BOARD_FORCE_BL_PORT		GPIOB
+# define BOARD_FORCE_BL_CLOCK_REGISTER	RCC_APB2ENR
+# define BOARD_FORCE_BL_CLOCK_BIT	RCC_APB2ENR_IOPBEN
+# define BOARD_FORCE_BL_VALUE		BOARD_FORCE_BL_PIN
+
+# define BOARD_FLASH_SECTORS		60
+# define FLASH_SECTOR_SIZE		0x400
+#elif defined(BOARD_MAVSTATION)
+# define OSC_FREQ			24
+
+# define BOARD_PIN_LED_ACTIVITY		GPIO14
+# define BOARD_PIN_LED_BOOTLOADER	GPIO15
+# define BOARD_PORT_LEDS		GPIOB
+# define BOARD_CLOCK_LEDS_REGISTER	RCC_APB2ENR
+# define BOARD_CLOCK_LEDS		RCC_APB2ENR_IOPBEN
+# define BOARD_LED_ON			gpio_clear
+# define BOARD_LED_OFF			gpio_set
+
+# define BOARD_USART			USART2
+# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART		GPIOA
+# define BOARD_PIN_TX			GPIO_USART2_TX
+# define BOARD_PIN_RX			GPIO_USART2_RX
+# define BOARD_USART_PIN_CLOCK_REGISTER	RCC_APB2ENR
+# define BOARD_USART_PIN_CLOCK_BIT	RCC_APB2ENR_IOPAEN
+
+# define BOARD_FORCE_BL_PIN		GPIO5
+# define BOARD_FORCE_BL_PORT		GPIOB
+# define BOARD_FORCE_BL_CLOCK_REGISTER	RCC_APB2ENR
+# define BOARD_FORCE_BL_CLOCK_BIT	RCC_APB2ENR_IOPBEN
+# define BOARD_FORCE_BL_VALUE		BOARD_FORCE_BL_PIN
+
+# define BOARD_FLASH_SECTORS		60
+ #define BOARD_TYPE                 11
+# define FLASH_SECTOR_SIZE		0x400
+#else 
+# error Unrecognised BOARD definition
+#endif
+
+#ifdef INTERFACE_USART
+# define BOARD_INTERFACE_CONFIG		(void *)BOARD_USART
+#else
+# define BOARD_INTERFACE_CONFIG		NULL
+#endif
+
+/* board definition */
+struct boardinfo board_info = {
+	.board_type	= BOARD_TYPE,
+	.board_rev	= 0,
+	.fw_size	= APP_SIZE_MAX,
+
+	.systick_mhz	= OSC_FREQ,
+};
+
+static void board_init(void);
+
+static void
+board_init(void)
+{
+#ifdef INTERFACE_USB
+	/* enable GPIO8 with a pulldown to sniff VBUS */
+	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
+	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO8);
+#endif
+	/* initialise LEDs */
+	rcc_peripheral_enable_clock(&BOARD_CLOCK_LEDS_REGISTER, BOARD_CLOCK_LEDS);
+	gpio_set_mode(BOARD_PORT_LEDS,
+		GPIO_MODE_OUTPUT_50_MHZ,
+		GPIO_CNF_OUTPUT_PUSHPULL,
+		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+	BOARD_LED_ON (
+		BOARD_PORT_LEDS,
+		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+
+	/* if we have one, enable the force-bootloader pin */
+#ifdef BOARD_FORCE_BL_PIN
+	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
+	gpio_set_mode(BOARD_FORCE_BL_PORT,
+		GPIO_MODE_INPUT,
+		GPIO_CNF_INPUT_FLOAT,	/* depend on external pull */
+		BOARD_FORCE_BL_PIN);
+#endif
+
+	/* enable the backup registers */
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
+
+#ifdef INTERFACE_USART
+	/* configure usart pins */
+	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
+	gpio_set_mode(BOARD_PORT_USART, 
+		      GPIO_MODE_OUTPUT_50_MHZ,
+                      GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
+		      BOARD_PIN_TX);
+
+	/* configure USART clock */
+	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
+#ifdef INTERFACE_I2C
+# error I2C GPIO config not handled yet
+#endif
+
+}
+
+uint32_t
+flash_func_sector_size(unsigned sector)
+{
+	if (sector < BOARD_FLASH_SECTORS)
+		return FLASH_SECTOR_SIZE;
+	return 0;
+}
+
+void
+flash_func_erase_sector(unsigned sector)
+{
+	if (sector < BOARD_FLASH_SECTORS)
+		flash_erase_page(APP_LOAD_ADDRESS + (sector * FLASH_SECTOR_SIZE));
+}
+
+void
+flash_func_write_word(uint32_t address, uint32_t word)
+{
+	flash_program_word(address + APP_LOAD_ADDRESS, word);
+}
+
+uint32_t 
+flash_func_read_word(uint32_t address)
+{
+	return *(uint32_t *)(address + APP_LOAD_ADDRESS);
+}
+
+uint32_t
+flash_func_read_otp(uint32_t address)
+{
+	return 0;
+}
+uint32_t
+flash_func_read_sn(uint32_t address)
+{
+    return 0;
+}
+
+void
+led_on(unsigned led)
+{
+	switch (led) {
+	case LED_ACTIVITY:
+		BOARD_LED_ON (BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		break;
+	case LED_BOOTLOADER:
+		BOARD_LED_ON (BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+		break;
+	}
+}
+
+void
+led_off(unsigned led)
+{
+	switch (led) {
+	case LED_ACTIVITY:
+		BOARD_LED_OFF (BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		break;
+	case LED_BOOTLOADER:
+		BOARD_LED_OFF (BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+		break;
+	}
+}
+
+void
+led_toggle(unsigned led)
+{
+	switch (led) {
+	case LED_ACTIVITY:
+		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		break;
+	case LED_BOOTLOADER:
+		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+		break;
+	}
+}
+
+static bool
+should_wait(void)
+{
+	bool result = false;
+
+	PWR_CR |= PWR_CR_DBP;
+	if (BKP_DR1 == BL_WAIT_MAGIC) {
+		result = true;
+		BKP_DR1 = 0;
+	}
+	PWR_CR &= ~PWR_CR_DBP;
+
+	return result;
+}
+
+int
+main(void)
+{
+	unsigned timeout = 0;
+
+	/* do board-specific initialisation */
+	board_init();
+
+#ifdef INTERFACE_USART
+	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
+	timeout = BOOTLOADER_DELAY;
+#endif
+
+#ifdef INTERFACE_USB
+	/* XXX sniff for a USB connection to decide whether to wait in the bootloader? */
+	timeout = BOOTLOADER_DELAY;
+#endif
+
+#ifdef INTERFACE_I2C
+# error I2C bootloader detection logic not implemented
+#endif
+
+	/* if the app left a cookie saying we should wait, then wait */
+	if (should_wait())
+		timeout = BOOTLOADER_DELAY;
+
+#ifdef BOARD_FORCE_BL_PIN
+	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
+	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN))
+		timeout = 0xffffffff;
+#endif
+#ifdef INTERFACE_USB
+	/*
+	 * Check for USB connection - if present, don't try to boot, but set a timeout after
+	 * which we will fall out of the bootloader.
+	 *
+	 * If the force-bootloader pins are tied, we will stay here until they are removed and
+	 * we then time out.
+	 */
+	if (gpio_get(GPIOA, GPIO8) != 0) {
+
+		/* don't try booting before we set up the bootloader */
+		timeout = 0xffffffff;
+	}
+#endif
+	/* look for the magic wait-in-bootloader value in backup register zero */
+
+
+	/* if we aren't expected to wait in the bootloader, try to boot immediately */
+	if (timeout == 0) {
+		/* try to boot immediately */
+		jump_to_app();
+
+		/* if we returned, there is no app; go to the bootloader and stay there */
+		timeout = 0;
+	}
+
+	/* configure the clock for bootloader activity */
+#if defined(INTERFACE_USB)
+	rcc_clock_setup_in_hsi_out_48mhz();
+#else
+	rcc_clock_setup_in_hsi_out_24mhz();
+#endif
+
+	/* start the interface */
+	cinit(BOARD_INTERFACE_CONFIG);
+
+	while (1)
+	{
+		/* run the bootloader, possibly coming back after the timeout */
+		bootloader(timeout);
+
+		/* look to see if we can boot the app */
+		jump_to_app();
+
+		/* boot failed; stay in the bootloader forever next time */
+		timeout = 0;
+	}
+}
