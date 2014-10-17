@@ -64,16 +64,16 @@
 # define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART2EN
 
 # define BOARD_PORT_USART		GPIOA
-# define BOARD_PIN_TX			GPIO_USART2_TX
-# define BOARD_PIN_RX			GPIO_USART2_RX
+# define BOARD_PIN_TX			GPIO_USART1_TX
+# define BOARD_PIN_RX			GPIO_USART1_RX
 # define BOARD_USART_PIN_CLOCK_REGISTER	RCC_APB2ENR
 # define BOARD_USART_PIN_CLOCK_BIT	RCC_APB2ENR_IOPAEN
 
-# define BOARD_FORCE_BL_PIN		GPIO5
-# define BOARD_FORCE_BL_PORT		GPIOB
+# define BOARD_FORCE_BL_PIN		GPIO4
+# define BOARD_FORCE_BL_PORT		GPIOA
 # define BOARD_FORCE_BL_CLOCK_REGISTER	RCC_APB2ENR
 # define BOARD_FORCE_BL_CLOCK_BIT	RCC_APB2ENR_IOPBEN
-# define BOARD_FORCE_BL_VALUE		BOARD_FORCE_BL_PIN
+# define BOARD_FORCE_BL_VALUE		!BOARD_FORCE_BL_PIN
 
 # define BOARD_FLASH_SECTORS		111
  #define BOARD_TYPE                 11
@@ -115,10 +115,18 @@ board_init(void)
 	/* if we have one, enable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
 	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
+#ifdef BOARD_MAVSTATION	
+	gpio_set_mode(BOARD_FORCE_BL_PORT,
+		GPIO_MODE_INPUT,
+		GPIO_CNF_INPUT_PULL_UPDOWN,	/* depend on external pull */
+		BOARD_FORCE_BL_PIN);
+	gpio_set(BOARD_FORCE_BL_PORT,BOARD_FORCE_BL_PIN);
+#elif defined(BOARD_IO)
 	gpio_set_mode(BOARD_FORCE_BL_PORT,
 		GPIO_MODE_INPUT,
 		GPIO_CNF_INPUT_FLOAT,	/* depend on external pull */
 		BOARD_FORCE_BL_PIN);
+#endif
 #endif
 
 	/* enable the backup registers */

@@ -144,7 +144,7 @@ jump_to_app()
 		return;
 
 	/* just for paranoia's sake */
-	flash_lock();
+	//flash_lock();
 
 	/* kill the systick interrupt */
 	systick_interrupt_disable();
