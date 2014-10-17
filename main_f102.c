@@ -76,7 +76,7 @@
 # define BOARD_FORCE_BL_VALUE		0
 
 # define BOARD_FLASH_SECTORS		111
- #define BOARD_TYPE                 11
+ #define BOARD_TYPE                 20
 # define FLASH_SECTOR_SIZE		0x400
 #else 
 # error Unrecognised BOARD definition
