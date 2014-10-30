@@ -13,6 +13,9 @@ JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 PX4_BOOTLOADER_DELAY	?= 3000
 
 SRCS		 = $(COMMON_SRCS) main_f1.c
+ifeq ($(INTERFACE),USB)
+SRCS		+= cdcacm.c
+endif
 ifeq ($(INTERFACE),USART)
 SRCS		+= usart.c
 endif
@@ -22,14 +25,17 @@ endif
 
 FLAGS		+= -mthumb -mcpu=cortex-m3\
 		   -DSTM32F1 \
-		   -DAPP_LOAD_ADDRESS=0x08001000 \
-		   -DAPP_SIZE_MAX=0xf000 \
+		   -DAPP_LOAD_ADDRESS=$(F1_APP_LOAD_ADDRESS) \
+		   -DAPP_SIZE_MAX=$(F1_APP_SIZE_MAX) \
 		   -DBOOTLOADER_DELAY=$(PX4_BOOTLOADER_DELAY) \
 		   -DBOARD_$(BOARD) \
 		   -DINTERFACE_$(INTERFACE) \
-		   -Tstm32f1.ld \
+		   -DUSBDEVICESTRING="$(USBDEVICESTRING)" \
+		   -DUSBPRODUCTID="$(USBPRODUCTID)" \
+		   -T$(LINKER_FILE) \
 		   -L$(LIBOPENCM3)/lib/stm32/f1/ \
 		   -lopencm3_stm32f1 \
+
 
 ELF		 = $(PRODUCT).elf
 BINARY		 = $(PRODUCT).bin
@@ -37,7 +43,7 @@ BINARY		 = $(PRODUCT).bin
 all:		$(ELF) $(BINARY)
 
 $(ELF):		$(SRCS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(SRCS) $(FLAGS)
+	$(CC) -o $@ $(SRCS) $(FLAGS) 
 
 $(BINARY):	$(ELF)
 	$(OBJCOPY) -O binary $(ELF) $(BINARY)
@@ -46,4 +52,4 @@ $(BINARY):	$(ELF)
 upload: all flash-bootloader
 
 flash-bootloader:
-	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f1x.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY)" -c "reset run" -c shutdown
+	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f1.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY)" -c "reset run" -c shutdown

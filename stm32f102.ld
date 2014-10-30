@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Linker script for ST STM32F1 bootloader (use first 8K of flash, 16K RAM). */
+/* Linker script for ST STM32F1 bootloader (use first 16K of flash, 16K RAM). */
 
 /* Define memory regions. */
 MEMORY
