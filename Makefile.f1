@@ -36,14 +36,13 @@ FLAGS		+= -mthumb -mcpu=cortex-m3\
 		   -L$(LIBOPENCM3)/lib/stm32/f1/ \
 		   -lopencm3_stm32f1 \
 
-
 ELF		 = $(PRODUCT).elf
 BINARY		 = $(PRODUCT).bin
 
 all:		$(ELF) $(BINARY)
 
 $(ELF):		$(SRCS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(SRCS) $(FLAGS) 
+	$(CC) -o $@ $(SRCS) $(FLAGS)
 
 $(BINARY):	$(ELF)
 	$(OBJCOPY) -O binary $(ELF) $(BINARY)
