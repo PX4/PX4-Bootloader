@@ -79,3 +79,4 @@ SECTIONS
 }
 
 PROVIDE(_stack = 0x20002000);
+
