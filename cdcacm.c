@@ -234,13 +234,11 @@ void cdc_init(void)
 #if (BOARD == PX4FLOW)
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO11 | GPIO12);
-	usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings);
 #else
-	
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
-	usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings);
 #endif
+	usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings);
 #elif defined(STM32F1)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
 	gpio_set(GPIOA, GPIO8);
