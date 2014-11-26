@@ -229,19 +229,17 @@ void cdc_init(void)
 
 	
 #if defined(STM32F4)
-#if (BOARD == PX4FLOW)
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+#if (BOARD == PX4FLOW)
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO11 | GPIO12);
 	usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings);
-	usbd_register_set_config_callback(cdcacm_set_config);
 #else
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+	
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
 	usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings);
-	usbd_register_set_config_callback(cdcacm_set_config);
 #endif
 #elif defined(STM32F1)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
@@ -249,9 +247,9 @@ void cdc_init(void)
 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,
 		      GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
 	usbd_init(&stm32f103_usb_driver, &dev, &config, usb_strings);
-	usbd_register_set_config_callback(cdcacm_set_config);
+	
 #endif
-
+	usbd_register_set_config_callback(cdcacm_set_config);
 
 }
 
