@@ -15,34 +15,34 @@
 
 /* flash parameters that we should not really know */
 static struct {
-	uint32_t	erase_code;
+	uint32_t	sector_number;
 	uint32_t	size;
 } flash_sectors[] = {
 	/* flash sector zero reserved for bootloader */
-	{ (0x01 << 3), 16 * 1024},
-	{ (0x02 << 3), 16 * 1024},
-	{ (0x03 << 3), 16 * 1024},
-	{ (0x04 << 3), 64 * 1024},
-	{ (0x05 << 3), 128 * 1024},
-	{ (0x06 << 3), 128 * 1024},
-	{ (0x07 << 3), 128 * 1024},
-	{ (0x08 << 3), 128 * 1024},
-	{ (0x09 << 3), 128 * 1024},
-	{ (0x0a << 3), 128 * 1024},
-	{ (0x0b << 3), 128 * 1024},
-	/* flash sectors only in 2MiB devices */
-	{ (0x10 << 3), 16 * 1024},
-	{ (0x11 << 3), 16 * 1024},
-	{ (0x12 << 3), 16 * 1024},
-	{ (0x13 << 3), 16 * 1024},
-	{ (0x14 << 3), 64 * 1024},
-	{ (0x15 << 3), 128 * 1024},
-	{ (0x16 << 3), 128 * 1024},
-	{ (0x17 << 3), 128 * 1024},
-	{ (0x18 << 3), 128 * 1024},
-	{ (0x19 << 3), 128 * 1024},
-	{ (0x1a << 3), 128 * 1024},
-	{ (0x1b << 3), 128 * 1024},
+		{0x01, 16 * 1024},
+		{0x02, 16 * 1024},
+		{0x03, 16 * 1024},
+		{0x04, 64 * 1024},
+		{0x05, 128 * 1024},
+		{0x06, 128 * 1024},
+		{0x07, 128 * 1024},
+		{0x08, 128 * 1024},
+		{0x09, 128 * 1024},
+		{0x0a, 128 * 1024},
+		{0x0b, 128 * 1024},
+		/* flash sectors only in 2MiB devices */
+		{0x10, 16 * 1024},
+		{0x11, 16 * 1024},
+		{0x12, 16 * 1024},
+		{0x13, 16 * 1024},
+		{0x14, 64 * 1024},
+		{0x15, 128 * 1024},
+		{0x16, 128 * 1024},
+		{0x17, 128 * 1024},
+		{0x18, 128 * 1024},
+		{0x19, 128 * 1024},
+		{0x1a, 128 * 1024},
+		{0x1b, 128 * 1024},
 };
 #define BOOTLOADER_RESERVATION_SIZE	(16 * 1024)
 
@@ -337,7 +337,7 @@ flash_func_erase_sector(unsigned sector)
 
 	/* erase the sector if it failed the blank check */
 	if (!blank)
-		flash_erase_sector(flash_sectors[sector].erase_code, FLASH_CR_PROGRAM_X32);
+		flash_erase_sector(flash_sectors[sector].sector_number, FLASH_CR_PROGRAM_X32);
 }
 
 void
