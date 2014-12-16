@@ -10,7 +10,7 @@
 #include <libopencm3/stm32/f1/flash.h>
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/pwr.h>
-#include <libopencm3/stm32/systick.h>
+#include <libopencm3/cm3/systick.h>
 
 #include "bl.h"
 

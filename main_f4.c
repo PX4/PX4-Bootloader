@@ -8,7 +8,7 @@
 #include <libopencm3/stm32/f4/gpio.h>
 #include <libopencm3/stm32/f4/flash.h>
 #include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/systick.h>
+#include <libopencm3/cm3/systick.h>
 #include <libopencm3/stm32/pwr.h>
 
 #include "bl.h"
@@ -180,7 +180,7 @@ static const clock_scale_t clock_setup =
 	.ppre1 = RCC_CFGR_PPRE_DIV_4,
 	.ppre2 = RCC_CFGR_PPRE_DIV_2,
 	.power_save = 0,
-	.flash_config = FLASH_ICE | FLASH_DCE | FLASH_LATENCY_5WS,
+	.flash_config = FLASH_ACR_ICE | FLASH_ACR_DCE | FLASH_ACR_LATENCY_5WS,
 	.apb1_frequency = 42000000,
 	.apb2_frequency = 84000000,
 };
@@ -337,13 +337,13 @@ flash_func_erase_sector(unsigned sector)
 
 	/* erase the sector if it failed the blank check */
 	if (!blank)
-		flash_erase_sector(flash_sectors[sector].erase_code, FLASH_PROGRAM_X32);
+		flash_erase_sector(flash_sectors[sector].erase_code, FLASH_CR_PROGRAM_X32);
 }
 
 void
 flash_func_write_word(uint32_t address, uint32_t word)
 {
-	flash_program_word(address + APP_LOAD_ADDRESS, word, FLASH_PROGRAM_X32);
+	flash_program_word(address + APP_LOAD_ADDRESS, word);
 }
 
 uint32_t 
