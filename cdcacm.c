@@ -27,13 +27,17 @@
 
 #include "bl.h"
 
-static const char *usb_strings[] = {
-	"",
-	"3D Robotics",
+
+/* Provide the stings for the Index 1-n as a requested index of 0 is used for the supported langages
+ *  and is hard coded in the usb lib. The array below is indexed by requested index-1, therefore 
+ *  element[0] maps to requested index 1
+ */
+static const char *usb_strings[] = { 
+	"3D Robotics", /* Maps to Index 1 Index */
 	USBDEVICESTRING,
 	"0",
 };
-#define NUM_USB_STRINGS (sizeof(usb_strings)/sizeof(char *))
+#define NUM_USB_STRINGS (sizeof(usb_strings)/sizeof(usb_strings[0]))
 
 static usbd_device *usbd_dev;
 
