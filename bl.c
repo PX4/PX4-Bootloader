@@ -11,17 +11,16 @@
 # include <libopencm3/stm32/f4/rcc.h>
 # include <libopencm3/stm32/f4/gpio.h>
 # include <libopencm3/stm32/f4/flash.h>
-# include <libopencm3/stm32/f4/scb.h>
 #elif defined(STM32F1)
 # include <libopencm3/stm32/f1/rcc.h>
 # include <libopencm3/stm32/f1/gpio.h>
 # include <libopencm3/stm32/f1/flash.h>
-# include <libopencm3/stm32/f1/scb.h>
 #else
 # error Unsupported chip
 #endif
 
-#include <libopencm3/stm32/systick.h>
+#include <libopencm3/cm3/scb.h>
+#include <libopencm3/cm3/systick.h>
 
 #include "bl.h"
 
@@ -324,7 +323,7 @@ bootloader(unsigned timeout)
 	uint32_t	first_word = 0xffffffff;
 
 	/* (re)start the timer system */
-	systick_set_clocksource(STK_CTRL_CLKSOURCE_AHB);
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
 	systick_set_reload(board_info.systick_mhz * 1000);	/* 1ms tick, magic number */
 	systick_interrupt_enable();
 	systick_counter_enable();
