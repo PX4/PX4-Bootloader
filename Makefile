@@ -35,7 +35,7 @@ export COMMON_SRCS	 = bl.c
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl
+TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl mavstation_bl
 
 # px4io_bl px4flow_bl
 
@@ -56,7 +56,7 @@ px4fmu_bl: $(MAKEFILE_LIST)
 	make -f Makefile.f4 TARGET=fmu INTERFACE=USB BOARD=FMU USBDEVICESTRING="\\\"PX4 BL FMU v1.x\\\"" USBPRODUCTID="0x0010"
 
 px4fmuv2_bl: $(MAKEFILE_LIST)
-	make -f Makefile.f4 TARGET=fmuv2 INTERFACE=USB BOARD=FMUV2 USBDEVICESTRING="\\\"PX4 BL FMU v2.x\\\"" USBPRODUCTID="0x0011"
+	make -f Makefile.f4 TARGET=fmuv2 INTERFACE=USB BOARD=FMUV2 USBDEVICESTRING="\\\"PX4 BL FMU v2.x\\\"" USBPRODUCTID="0x0001"
 
 stm32f4discovery_bl: $(MAKEFILE_LIST)
 	make -f Makefile.f4 TARGET=discovery INTERFACE=USB BOARD=DISCOVERY USBDEVICESTRING="\\\"PX4 BL DISCOVERY\\\"" USBPRODUCTID="0x0001"
@@ -72,4 +72,7 @@ aerocore_bl: $(MAKEFILE_LIST)
 # brownout problematic.
 #
 px4io_bl: $(MAKEFILE_LIST)
-	make -f Makefile.f1 TARGET=io INTERFACE=USART BOARD=IO PX4_BOOTLOADER_DELAY=200
+	make -f Makefile.f1 LINKER_FILE=stm32f1.ld F1_APP_LOAD_ADDRESS=0x08001000 F1_APP_SIZE_MAX=0xf000 TARGET=io INTERFACE=USART BOARD=IO PX4_BOOTLOADER_DELAY=200
+
+mavstation_bl: $(MAKEFILE_LIST)
+	make -f Makefile.f1 LINKER_FILE=16K-stm32f1.ld F1_APP_LOAD_ADDRESS=0x08004000 F1_APP_SIZE_MAX=0x17000 TARGET=mavstation INTERFACE=USB BOARD=MAVSTATION USBDEVICESTRING="\\\"MAVSTATION v0.1\\\"" USBPRODUCTID="0x0014"

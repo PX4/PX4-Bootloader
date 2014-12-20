@@ -18,12 +18,13 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Linker script for ST STM32F1 bootloader (use first 4K of flash, 8K RAM). */
+/* Linker script for ST STM32F1 bootloader (use first 16K of flash, 8K RAM). */
 
 /* Define memory regions. */
+
 MEMORY
 {
-	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 4K
+	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 16K
 	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
 }
 
