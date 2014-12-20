@@ -47,6 +47,37 @@
 # define BOARD_FORCE_BL_VALUE		BOARD_FORCE_BL_PIN
 
 # define BOARD_FLASH_SECTORS		60
+#define BOARD_TYPE                 10
+# define FLASH_SECTOR_SIZE		0x400
+#elif defined(BOARD_MAVSTATION)
+# define OSC_FREQ			24
+
+# define BOARD_PIN_LED_ACTIVITY		GPIO14
+# define BOARD_PIN_LED_BOOTLOADER	GPIO15
+# define BOARD_PORT_LEDS		GPIOB
+# define BOARD_CLOCK_LEDS_REGISTER	RCC_APB2ENR
+# define BOARD_CLOCK_LEDS		RCC_APB2ENR_IOPBEN
+# define BOARD_LED_ON			gpio_clear
+# define BOARD_LED_OFF			gpio_set
+
+# define BOARD_USART			USART2
+# define BOARD_USART_CLOCK_REGISTER	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT		RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART		GPIOA
+# define BOARD_PIN_TX			GPIO_USART1_TX
+# define BOARD_PIN_RX			GPIO_USART1_RX
+# define BOARD_USART_PIN_CLOCK_REGISTER	RCC_APB2ENR
+# define BOARD_USART_PIN_CLOCK_BIT	RCC_APB2ENR_IOPAEN
+
+# define BOARD_FORCE_BL_PIN		GPIO4
+# define BOARD_FORCE_BL_PORT		GPIOA
+# define BOARD_FORCE_BL_CLOCK_REGISTER	RCC_APB2ENR
+# define BOARD_FORCE_BL_CLOCK_BIT	RCC_APB2ENR_IOPAEN
+# define BOARD_FORCE_BL_VALUE		0
+
+# define BOARD_FLASH_SECTORS		111
+#define BOARD_TYPE                 20
 # define FLASH_SECTOR_SIZE		0x400
 #else
 # error Unrecognised BOARD definition
@@ -60,7 +91,7 @@
 
 /* board definition */
 struct boardinfo board_info = {
-	.board_type	= 10,
+	.board_type	= BOARD_TYPE,
 	.board_rev	= 0,
 	.fw_size	= APP_SIZE_MAX,
 
@@ -85,10 +116,18 @@ board_init(void)
 	/* if we have one, enable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
 	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
+#if defined(BOARD_MAVSTATION)	
+	gpio_set(BOARD_FORCE_BL_PORT,BOARD_FORCE_BL_PIN);
+	gpio_set_mode(BOARD_FORCE_BL_PORT,
+		GPIO_MODE_INPUT,
+		GPIO_CNF_INPUT_PULL_UPDOWN,	/* depend on external pull */
+		BOARD_FORCE_BL_PIN);
+#else
 	gpio_set_mode(BOARD_FORCE_BL_PORT,
 		GPIO_MODE_INPUT,
 		GPIO_CNF_INPUT_FLOAT,	/* depend on external pull */
 		BOARD_FORCE_BL_PIN);
+#endif
 #endif
 
 	/* enable the backup registers */
@@ -211,7 +250,7 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#ifdef INTERFACE_USART
+#if defined(INTERFACE_USART) | defined (INTERFACE_USB)
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
 #endif
@@ -243,7 +282,11 @@ main(void)
 	}
 
 	/* configure the clock for bootloader activity */
+#if defined(INTERFACE_USB)
+	rcc_clock_setup_in_hsi_out_48mhz();
+#else
 	rcc_clock_setup_in_hsi_out_24mhz();
+#endif
 
 	/* start the interface */
 	cinit(BOARD_INTERFACE_CONFIG);

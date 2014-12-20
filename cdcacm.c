@@ -18,9 +18,16 @@
  */
 
 #include <stdlib.h>
+#if defined(STM32F4)
 #include <libopencm3/stm32/f4/rcc.h>
 #include <libopencm3/stm32/f4/gpio.h>
 #include <libopencm3/stm32/f4/flash.h>
+#endif
+#if defined(STM32F1)
+#include <libopencm3/stm32/f1/rcc.h>
+#include <libopencm3/stm32/f1/gpio.h>
+#include <libopencm3/stm32/f1/flash.h>
+#endif
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>
@@ -233,19 +240,31 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 void cdc_init(void)
 {
 
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
-
+#if defined(STM32F4)
 #if (BOARD == PX4FLOW)
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO11 | GPIO12);
 #else
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
 #endif
 
 	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
-				usbd_control_buffer, sizeof(usbd_control_buffer));
+					usbd_control_buffer, sizeof(usbd_control_buffer));
+
+#elif defined(STM32F1)
+	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
+	gpio_set(GPIOA, GPIO8);
+	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,
+		      GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
+
+	usbd_dev = usbd_init(&stm32f103_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
+					usbd_control_buffer, sizeof(usbd_control_buffer));
+#endif
+
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
 }
 
@@ -265,19 +284,26 @@ void
 cinit(void *config)
 {
 	cdc_init();
+#if defined(STM32F4)
 	nvic_enable_irq(NVIC_OTG_FS_IRQ);
+#endif
 }
 
 void
 cfini()
 {
 	cdc_disconnect();
+#if defined(STM32F4)
 	nvic_disable_irq(NVIC_OTG_FS_IRQ);
+#endif
 }
 
 int
 cin(void)
 {
+#if defined(STM32F1)
+	usbd_poll(usbd_dev);
+#endif
 	return buf_get();
 }
 
