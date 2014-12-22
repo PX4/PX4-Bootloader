@@ -16,18 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <stdlib.h>
-#if defined(STM32F4)
-#include <libopencm3/stm32/f4/rcc.h>
-#include <libopencm3/stm32/f4/gpio.h>
-#include <libopencm3/stm32/f4/flash.h>
-#endif
-#if defined(STM32F1)
-#include <libopencm3/stm32/f1/rcc.h>
-#include <libopencm3/stm32/f1/gpio.h>
-#include <libopencm3/stm32/f1/flash.h>
-#endif
+
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/flash.h>
+
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>

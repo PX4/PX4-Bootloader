@@ -2,10 +2,8 @@
  * USART interface for the bootloader.
  */
 
-#ifdef STM32F4
-# include <libopencm3/stm32/f4/rcc.h>
-# include <libopencm3/stm32/f4/gpio.h>
-#endif
+# include <libopencm3/stm32/rcc.h>
+# include <libopencm3/stm32/gpio.h>
 
 #include <libopencm3/stm32/usart.h>
 
