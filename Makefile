@@ -22,6 +22,7 @@ export OBJCOPY		 = arm-none-eabi-objcopy
 export FLAGS		 = -std=gnu99 \
 			   -Os \
 			   -g \
+			   -Wundef \
 			   -Wall \
 			   -fno-builtin \
 			   -I$(LIBOPENCM3)/include \
