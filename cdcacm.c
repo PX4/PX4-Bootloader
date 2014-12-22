@@ -235,16 +235,14 @@ void cdc_init(void)
 {
 
 #if defined(STM32F4)
-#if (BOARD == PX4FLOW)
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO11 | GPIO12);
-	gpio_set_af(GPIOA, GPIO_AF10, GPIO11 | GPIO12);
-#else
+
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
 	rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+
+	/* Configure to use the Alternate IO Functions USB DP,DM and VBUS */
+
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
-#endif
 
 	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
 					usbd_control_buffer, sizeof(usbd_control_buffer));
@@ -252,8 +250,7 @@ void cdc_init(void)
 #elif defined(STM32F1)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
 	gpio_set(GPIOA, GPIO8);
-	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,
-		      GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
+	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
 
 	usbd_dev = usbd_init(&stm32f103_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
 					usbd_control_buffer, sizeof(usbd_control_buffer));
