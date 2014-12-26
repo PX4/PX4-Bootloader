@@ -27,7 +27,8 @@ export FLAGS		 = -std=gnu99 \
 			   -ffunction-sections \
 			   -nostartfiles \
 			   -lnosys \
-	   		   -Wl,-gc-sections
+			   -Wl,-gc-sections \
+			   -Werror
 
 export COMMON_SRCS	 = bl.c
 
