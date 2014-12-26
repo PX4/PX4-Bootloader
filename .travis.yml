@@ -48,7 +48,7 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: cdHWLRBxA5UlYpOS0Sp891QK7PFmMgQ5ZWs1aPt+sw0rIrowyWMHCwXNBEdUqaExHYNYgXCUDI0EzNgfB7ZcR63Qv1MQeoyamV4jsxlyAqDqmxNtWO82S6RhHGeMLk26VgFKzynVcEk1IYlQP2nqzMQLdu+jTrngERuAIrCdRuc=
+    secure: XwjN2RtyFHyrDtaYromJ5iG/KaXys2thXjo6soKSWkvhmTPd0j3FbU97uro5S7p2vymCKngxwsxGGx8pOjO8oYaMWAu2r8VyLKhq5JPMuRNuNU1417YrEtvUySr/MPGmmGFT5fo/STXPN+Kak+yccDKgyjxm0ATY0bt4NR+n61o=
   file: "Bootloader.zip"
   skip_cleanup: true
   on:
@@ -61,9 +61,9 @@ addons:
     paths:
     - "Bootloader.zip"
     key:
-      secure: j4y9x9KXUiarGrnpFBLPIkEKIH8X6oSRUO61TwxTOamsE0eEKnIaCz1Xq83q7DoqzomHBD3qXAFPV9dhLr1zdKEPJDIyV45GVD4ClIQIzh/P3Uc7kDNxKzdmxY12SH6D0orMpC4tCf1sNK7ETepltWfcnjaDk1Rjs9+TVY7LuzM=
+      secure: U3F80mRhnoPgb0JJZwQqG955GpE5ld0NQfBMyuVs0bPQd5xPe0La69L+auPbPpRr8pW/ivTpLFhzYmhqRWz/Xd86WPqWwbgy10aYf9KDxcIzZSiFeCHx5Jm8D2Tfz3FkDcdo0GAgQIVQJp92bZsnvYxKGc2jkt7Ir8AH7hyPBH4=
     secret:
-      secure: CJC7VPGtEhJu8Pix85iPF8xUvMPZvTgnHyd9MrSlPKCFFMrlgz9eMT0WWW/TPQ+s4LPwJIfEQx2Q0BRT5tOXuvsTLuOG68mplVddhTWbHb0m0qTQErXFHEppvW4ayuSdeLJ4TjTWphBVainL0mcLLRwQfuAJJDDs/sGan3WrG+Y=
+      secure: ZPkZzURNVyZNPGU0HmG7+DYYJmnkcxnOm1zL1PvlIhMIpeCbDgKSYX9DInNEevoVnLGsQT2gRhC+dNky/HBGR7BpKRTDEb2+1g6KDdF3ojiZpzaHASQzfwl1W9MuOZvjui36D58wE6Mmwlg39VQ7uj7ETessL133Ck6Q4wb/2Xs=
     bucket: px4-travis
     region: us-east-1
     endpoint: s3-website-us-east-1.amazonaws.com
