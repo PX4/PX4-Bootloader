@@ -1,4 +1,4 @@
-The PX4 firmware is licensed generally under a permissive 3-clause BSD license. Contributions are required
+The PX4 bootloader is licensed generally under a permissive 3-clause BSD license. Contributions are required
 to be made under the same license. Any exception to this general rule is listed below.
 
 	/****************************************************************************
@@ -35,7 +35,10 @@ to be made under the same license. Any exception to this general rule is listed 
 	 ****************************************************************************/
 
 
-  - PX4 middleware: BSD 3-clause
-  - PX4 flight control stack: BSD 3-clause
-  - NuttX operating system: BSD 3-clause
-  - Exceptions: Currently only this [400 LOC file](https://github.com/PX4/Firmware/blob/master/src/lib/external_lgpl/tecs/tecs.cpp) remains LGPL, but will be replaced with a BSD implementation.
+  - libopencm3: GPL. The PX4 development team considers libopencm3 to be
+                still GPL, not LGPL licensed, as it is unclear if
+		each and every author agreed to the LGPS -> GPL change.
+  - cdcacm.c:   GPL
+  - usart.c:	GPL
+  - bl.c:	BSD 3-clause
+  - bl.h:	BSD 3-clause
