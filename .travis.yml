@@ -34,16 +34,15 @@ env:
 
 script:
   - arm-none-eabi-gcc --version
-  - echo -en 'travis_fold:end:script.1\\r'
   - echo 'Building libopencm3..' && echo -en 'travis_fold:start:script.2\\r'
   - make libopencm3
   - echo -en 'travis_fold:end:script.2\\r'
   - echo 'Building Bootloader..' && echo -en 'travis_fold:start:script.3\\r'
   - make
   - echo -en 'travis_fold:end:script.3\\r'
-  - echo 'Packaging Bootloader for deployment..' && echo -en 'travis_fold:start:script.3\\r'
+  - echo 'Packaging Bootloader for deployment..' && echo -en 'travis_fold:start:script.4\\r'
   - make deploy
-  - echo -en 'travis_fold:end:script.3\\r'
+  - echo -en 'travis_fold:end:script.4\\r'
 
 deploy:
   provider: releases
