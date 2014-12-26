@@ -41,6 +41,9 @@ script:
   - echo 'Building Bootloader..' && echo -en 'travis_fold:start:script.3\\r'
   - make
   - echo -en 'travis_fold:end:script.3\\r'
+  - echo 'Packaging Bootloader for deployment..' && echo -en 'travis_fold:start:script.3\\r'
+  - make deploy
+  - echo -en 'travis_fold:end:script.3\\r'
 
 deploy:
   provider: releases
