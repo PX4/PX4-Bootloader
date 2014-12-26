@@ -92,7 +92,7 @@ $(LIBOPENCM3): checksubmodules
 	make -C $(LIBOPENCM3) lib
 
 .PHONY: checksubmodules
-checksubmodules:
+checksubmodules: updatesubmodules
 	$(Q) ($(BL_BASE)/Tools/check_submodules.sh)
 
 .PHONY: updatesubmodules
