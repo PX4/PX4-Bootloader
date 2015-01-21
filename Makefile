@@ -100,3 +100,11 @@ checksubmodules: updatesubmodules
 updatesubmodules:
 	$(Q) (git submodule init)
 	$(Q) (git submodule update)
+
+.PHONY: format
+format:
+	$(Q) (find \( -path 'libopencm3' -prune -o -name '*.c' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -type f -print0 | xargs -0 $(BL_BASE)/Tools/fix_code_style.sh -Q)
+
+.PHONY: check_format
+check_format:
+	$(Q) ($(BL_BASE)/Tools/check_code_style.sh)
