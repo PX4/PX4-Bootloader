@@ -225,11 +225,11 @@ delay(unsigned msec)
 }
 
 static void
-led_set(enum led_state state) {
+led_set(enum led_state state)
+{
 	_led_state = state;
 
-	switch (state)
-	{
+	switch (state) {
 	case LED_OFF:
 		led_off(LED_BOOTLOADER);
 		break;
@@ -407,11 +407,11 @@ bootloader(unsigned timeout)
 		// handle the command byte
 		switch (c) {
 
-		// sync
-		//
-		// command:		GET_SYNC/EOC
-		// reply:		INSYNC/OK
-		//
+			// sync
+			//
+			// command:		GET_SYNC/EOC
+			// reply:		INSYNC/OK
+			//
 		case PROTO_GET_SYNC:
 
 			/* expect EOC */
@@ -421,16 +421,16 @@ bootloader(unsigned timeout)
 
 			break;
 
-		// get device info
-		//
-		// command:		GET_DEVICE/<arg:1>/EOC
-		// BL_REV reply:	<revision:4>/INSYNC/EOC
-		// BOARD_ID reply:	<board type:4>/INSYNC/EOC
-		// BOARD_REV reply:	<board rev:4>/INSYNC/EOC
-		// FW_SIZE reply:	<firmware size:4>/INSYNC/EOC
-		// VEC_AREA reply	<vectors 7-10:16>/INSYNC/EOC
-		// bad arg reply:	INSYNC/INVALID
-		//
+			// get device info
+			//
+			// command:		GET_DEVICE/<arg:1>/EOC
+			// BL_REV reply:	<revision:4>/INSYNC/EOC
+			// BOARD_ID reply:	<board type:4>/INSYNC/EOC
+			// BOARD_REV reply:	<board rev:4>/INSYNC/EOC
+			// FW_SIZE reply:	<firmware size:4>/INSYNC/EOC
+			// VEC_AREA reply	<vectors 7-10:16>/INSYNC/EOC
+			// bad arg reply:	INSYNC/INVALID
+			//
 		case PROTO_GET_DEVICE:
 			/* expect arg then EOC */
 			arg = cin_wait(1000);
@@ -475,12 +475,12 @@ bootloader(unsigned timeout)
 
 			break;
 
-		// erase and prepare for programming
-		//
-		// command:		ERASE/EOC
-		// success reply:	INSYNC/OK
-		// erase failure:	INSYNC/FAILURE
-		//
+			// erase and prepare for programming
+			//
+			// command:		ERASE/EOC
+			// success reply:	INSYNC/OK
+			// erase failure:	INSYNC/FAILURE
+			//
 		case PROTO_CHIP_ERASE:
 
 			/* expect EOC */
@@ -514,13 +514,13 @@ bootloader(unsigned timeout)
 			led_set(LED_BLINK);
 			break;
 
-		// program bytes at current address
-		//
-		// command:		PROG_MULTI/<len:1>/<data:len>/EOC
-		// success reply:	INSYNC/OK
-		// invalid reply:	INSYNC/INVALID
-		// readback failure:	INSYNC/FAILURE
-		//
+			// program bytes at current address
+			//
+			// command:		PROG_MULTI/<len:1>/<data:len>/EOC
+			// success reply:	INSYNC/OK
+			// invalid reply:	INSYNC/INVALID
+			// readback failure:	INSYNC/FAILURE
+			//
 		case PROTO_PROG_MULTI:		// program bytes
 			// expect count
 			arg = cin_wait(1000);
@@ -580,11 +580,11 @@ bootloader(unsigned timeout)
 
 			break;
 
-		// fetch CRC of the entire flash area
-		//
-		// command:			GET_CRC/EOC
-		// reply:			<crc:4>/INSYNC/OK
-		//
+			// fetch CRC of the entire flash area
+			//
+			// command:			GET_CRC/EOC
+			// reply:			<crc:4>/INSYNC/OK
+			//
 		case PROTO_GET_CRC:
 
 			// expect EOC
@@ -611,10 +611,10 @@ bootloader(unsigned timeout)
 			cout_word(sum);
 			break;
 
-		// read a word from the OTP
-		//
-		// command:			GET_OTP/<addr:4>/EOC
-		// reply:			<value:4>/INSYNC/OK
+			// read a word from the OTP
+			//
+			// command:			GET_OTP/<addr:4>/EOC
+			// reply:			<value:4>/INSYNC/OK
 		case PROTO_GET_OTP:
 			// expect argument
 			{
@@ -641,11 +641,11 @@ bootloader(unsigned timeout)
 			}
 			break;
 
-		// finalise programming and boot the system
-		//
-		// command:			BOOT/EOC
-		// reply:			INSYNC/OK
-		//
+			// finalise programming and boot the system
+			//
+			// command:			BOOT/EOC
+			// reply:			INSYNC/OK
+			//
 		case PROTO_BOOT:
 
 			// expect EOC
