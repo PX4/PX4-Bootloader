@@ -22,13 +22,16 @@ export FLAGS		 = -std=gnu99 \
 			   -g \
 			   -Wundef \
 			   -Wall \
+			   -Wextra \
 			   -fno-builtin \
 			   -I$(LIBOPENCM3)/include \
 			   -ffunction-sections \
 			   -nostartfiles \
 			   -lnosys \
 			   -Wl,-gc-sections \
-			   -Werror
+			   -Werror \
+			   -Wno-unused-parameter \
+			   -Wno-sign-compare
 
 export COMMON_SRCS	 = bl.c
 
