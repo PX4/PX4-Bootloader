@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 failed=0
-for fn in $(find . -path 'libopencm3' -prune -o -name '*.c' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -type f); do
+for fn in $(find . -path './libopencm3' -prune -o -name '*.c' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -type f); do
   if [ -f "$fn" ];
   then
     ./Tools/fix_code_style.sh --quiet < $fn > $fn.pretty
