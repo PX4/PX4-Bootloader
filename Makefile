@@ -35,7 +35,7 @@ export COMMON_SRCS	 = bl.c
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl mavstation_bl
+TARGETS			 = px4fmu_bl px4fmuv2_bl px4fmuv3_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl mavstation_bl
 
 # px4io_bl px4flow_bl
 
@@ -58,6 +58,9 @@ px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 px4fmuv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET=fmuv2 INTERFACE=USB BOARD=FMUV2 USBDEVICESTRING="\\\"PX4 BL FMU v2.x\\\"" USBPRODUCTID="0x0011"
+
+px4fmuv3_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f4 TARGET=fmuv3 INTERFACE=USB BOARD=FMUV3 USBDEVICESTRING="\\\"PX4 BL FMU v3.x\\\"" USBPRODUCTID="0x0012"
 
 stm32f4discovery_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET=discovery INTERFACE=USB BOARD=DISCOVERY USBDEVICESTRING="\\\"PX4 BL DISCOVERY\\\"" USBPRODUCTID="0x0001"
