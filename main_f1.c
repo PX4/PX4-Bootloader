@@ -76,7 +76,7 @@
 # define BOARD_FORCE_BL_CLOCK_BIT	RCC_APB2ENR_IOPAEN
 # define BOARD_FORCE_BL_VALUE		0
 
-# define BOARD_FLASH_SECTORS		120
+# define BOARD_FLASH_SECTORS		116
 # define BOARD_TYPE                 0x14
 # define FLASH_SECTOR_SIZE		0x400
 #else
