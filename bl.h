@@ -39,7 +39,7 @@
 
 #pragma once
 
-/***************************************************************************** 
+/*****************************************************************************
  * Generic bootloader functions.
  */
 
@@ -72,7 +72,7 @@ extern volatile unsigned timer[NTIMERS];	/* each timer decrements every millisec
 extern void buf_put(uint8_t b);
 extern int buf_get(void);
 
-/***************************************************************************** 
+/*****************************************************************************
  * Chip/board functions.
  */
 
