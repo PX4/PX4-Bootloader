@@ -80,6 +80,12 @@ extern int buf_get(void);
 #define LED_ACTIVITY	1
 #define LED_BOOTLOADER	2
 
+#ifdef BOOT_DELAY_ADDRESS
+# define BOOT_DELAY_SIGNATURE1	0x92c2ecff
+# define BOOT_DELAY_SIGNATURE2	0xc5057d5d
+# define BOOT_DELAY_MAX		30
+#endif
+
 extern void led_on(unsigned led);
 extern void led_off(unsigned led);
 extern void led_toggle(unsigned led);
