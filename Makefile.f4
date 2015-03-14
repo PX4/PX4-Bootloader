@@ -31,6 +31,7 @@ FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
 		   -Tstm32f4.ld \
 		   -L$(LIBOPENCM3)/lib \
 		   -lopencm3_stm32f4 \
+                   $(EXTRAFLAGS)
 
 ELF		 = $(PRODUCT).elf
 BINARY		 = $(PRODUCT).bin
