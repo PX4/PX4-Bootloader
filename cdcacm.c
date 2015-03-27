@@ -274,8 +274,10 @@ void cdc_init(void)
 
 static void cdc_disconnect(void)
 {
-	usbd_disconnect(usbd_dev, true);
-	usbd_dev = NULL;
+        if (usbd_dev) {
+            usbd_disconnect(usbd_dev, true);
+            usbd_dev = NULL;
+        }
 }
 
 void
