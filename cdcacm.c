@@ -298,10 +298,10 @@ cinit(void *config)
 void
 cfini()
 {
-	cdc_disconnect();
 #if defined(STM32F4)
 	nvic_disable_irq(NVIC_OTG_FS_IRQ);
 #endif
+	cdc_disconnect();
 }
 
 int
