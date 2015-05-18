@@ -28,6 +28,8 @@
  * USART interface for the bootloader.
  */
 
+#include "hw_config.h"
+
 # include <libopencm3/stm32/rcc.h>
 # include <libopencm3/stm32/gpio.h>
 
@@ -38,7 +40,7 @@
 uint32_t usart;
 
 void
-cinit(void *config)
+uart_cinit(void *config)
 {
 	usart = (uint32_t)config;
 
@@ -72,13 +74,13 @@ cinit(void *config)
 }
 
 void
-cfini(void)
+uart_cfini(void)
 {
 	usart_disable(usart);
 }
 
 int
-cin(void)
+uart_cin(void)
 {
 	int c = -1;
 
@@ -88,8 +90,9 @@ cin(void)
 }
 
 void
-cout(uint8_t *buf, unsigned len)
+uart_cout(uint8_t *buf, unsigned len)
 {
 	while (len--)
 		usart_send_blocking(usart, *buf++);
 }
+

@@ -28,6 +28,7 @@
  * @file cdcacm.c
  * @author Gareth McMullin <gareth@blacksphere.co.nz>
  */
+#include "hw_config.h"
 
 #include <stdlib.h>
 
@@ -287,7 +288,7 @@ otg_fs_isr(void)
 }
 
 void
-cinit(void *config)
+usb_cinit(void)
 {
 	cdc_init();
 #if defined(STM32F4)
@@ -296,7 +297,7 @@ cinit(void *config)
 }
 
 void
-cfini()
+usb_cfini(void)
 {
 	cdc_disconnect();
 #if defined(STM32F4)
@@ -305,7 +306,7 @@ cfini()
 }
 
 int
-cin(void)
+usb_cin(void)
 {
 #if defined(STM32F1)
 	usbd_poll(usbd_dev);
@@ -314,7 +315,7 @@ cin(void)
 }
 
 void
-cout(uint8_t *buf, unsigned count)
+usb_cout(uint8_t *buf, unsigned count)
 {
 	while (count) {
 		unsigned len = (count > 64) ? 64 : count;
