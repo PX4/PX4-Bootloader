@@ -87,7 +87,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_FLOW
 # define INTERFACE_USB                  1
-# define USBDEVICESTRING                "PX4 FLOW v1.3"
+# define USBDEVICESTRING                "PX4 BL FLOW v1.3"
 # define USBPRODUCTID                   0x0015
 
 # define BOARD_TYPE                     6
@@ -217,7 +217,7 @@
 # define BOOTLOADER_DELAY               3000
 # define BOARD_MAVSTATION
 # define INTERFACE_USB                  1
-# define USBDEVICESTRING                "MAVSTATION v0.1"
+# define USBDEVICESTRING                "MAVSTATION BL v0.1"
 # define USBPRODUCTID                   0x0014
 
 
