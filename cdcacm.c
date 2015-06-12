@@ -28,6 +28,7 @@
  * @file cdcacm.c
  * @author Gareth McMullin <gareth@blacksphere.co.nz>
  */
+#include "hw_config.h"
 
 #include <stdlib.h>
 
@@ -244,69 +245,64 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 				cdcacm_control_request);
 }
 
-void cdc_init(void)
-{
-
-#if defined(STM32F4)
-
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
-
-	/* Configure to use the Alternate IO Functions USB DP,DM and VBUS */
-
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
-	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
-
-	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
-					usbd_control_buffer, sizeof(usbd_control_buffer));
-
-#elif defined(STM32F1)
-	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
-	gpio_set(GPIOA, GPIO8);
-	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
-
-	usbd_dev = usbd_init(&stm32f103_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
-					usbd_control_buffer, sizeof(usbd_control_buffer));
-#endif
-
-	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
-}
-
-static void cdc_disconnect(void)
-{
-        if (usbd_dev) {
-            usbd_disconnect(usbd_dev, true);
-            usbd_dev = NULL;
-        }
-}
 
 void
 otg_fs_isr(void)
 {
-	usbd_poll(usbd_dev);
+  if (usbd_dev) {
+      usbd_poll(usbd_dev);
+  }
 }
 
 void
-cinit(void *config)
+usb_cinit(void)
 {
-	cdc_init();
+#if defined(STM32F4)
+
+        rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+        rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+
+        /* Configure to use the Alternate IO Functions USB DP,DM and VBUS */
+
+        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
+        gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
+
+        usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
+                                        usbd_control_buffer, sizeof(usbd_control_buffer));
+
+#elif defined(STM32F1)
+        rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
+        gpio_set(GPIOA, GPIO8);
+        gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
+
+        usbd_dev = usbd_init(&stm32f103_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
+                                        usbd_control_buffer, sizeof(usbd_control_buffer));
+#endif
+
+        usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
+
 #if defined(STM32F4)
 	nvic_enable_irq(NVIC_OTG_FS_IRQ);
 #endif
 }
 
 void
-cfini()
+usb_cfini(void)
 {
-	cdc_disconnect();
 #if defined(STM32F4)
-	nvic_disable_irq(NVIC_OTG_FS_IRQ);
+        nvic_disable_irq(NVIC_OTG_FS_IRQ);
 #endif
+        if (usbd_dev) {
+            usbd_disconnect(usbd_dev, true);
+            usbd_dev = NULL;
+        }
 }
 
 int
-cin(void)
+usb_cin(void)
 {
+  if (usbd_dev == NULL) return -1;
+
 #if defined(STM32F1)
 	usbd_poll(usbd_dev);
 #endif
@@ -314,8 +310,9 @@ cin(void)
 }
 
 void
-cout(uint8_t *buf, unsigned count)
+usb_cout(uint8_t *buf, unsigned count)
 {
+    if (usbd_dev) {
 	while (count) {
 		unsigned len = (count > 64) ? 64 : count;
 		unsigned sent;
@@ -325,4 +322,5 @@ cout(uint8_t *buf, unsigned count)
 		count -= sent;
 		buf += sent;
 	}
+    }
 }

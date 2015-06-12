@@ -30,12 +30,12 @@ export FLAGS		 = -std=gnu99 \
 			   -Wl,-gc-sections \
 			   -Werror
 
-export COMMON_SRCS	 = bl.c
+export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl stm32f4discovery_bl px4io_bl aerocore_bl mavstation_bl
+TARGETS			 = px4fmu_bl px4fmuv2_bl px4flow_bl px4discovery_bl px4aerocore_bl px4io_bl px4mavstation_bl
 
 # px4io_bl px4flow_bl
 
@@ -48,35 +48,31 @@ clean:
 #
 # Specific bootloader targets.
 #
-# Pick a Makefile from Makefile.f1, Makefile.f4
-# Pick an interface supported by the Makefile (USB, UART, I2C)
-# Specify the board type.
-#
 
 px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f4 TARGET=fmu INTERFACE=USB BOARD=FMU USBDEVICESTRING="\\\"PX4 BL FMU v1.x\\\"" USBPRODUCTID="0x0010"
+	make -f Makefile.f4 TARGET_HW=PX4_FMU_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 px4fmuv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f4 TARGET=fmuv2 INTERFACE=USB BOARD=FMUV2 USBDEVICESTRING="\\\"PX4 BL FMU v2.x\\\"" USBPRODUCTID="0x0011" EXTRAFLAGS="-DBOOT_DELAY_ADDRESS=0x000001a0"
+	make -f Makefile.f4 TARGET_HW=PX4_FMU_V2  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
-stm32f4discovery_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f4 TARGET=discovery INTERFACE=USB BOARD=DISCOVERY USBDEVICESTRING="\\\"PX4 BL DISCOVERY\\\"" USBPRODUCTID="0x0001"
+px4discovery_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f4 TARGET_HW=PX4_DISCOVERY_V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 px4flow_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f4 TARGET=flow INTERFACE=USB BOARD=FLOW USBDEVICESTRING="\\\"PX4 FLOW v1.3\\\"" USBPRODUCTID="0x0015"
+	make -f Makefile.f4 TARGET_HW=PX4_FLOW_V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
-aerocore_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f4 TARGET=aerocore INTERFACE=USB BOARD=AEROCORE USBDEVICESTRING="\\\"Gumstix BL AEROCORE\\\"" USBPRODUCTID="0x1001"
+px4aerocore_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f4 TARGET_HW=PX4_AEROCORE_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 # Default bootloader delay is *very* short, just long enough to catch
 # the board for recovery but not so long as to make restarting after a 
 # brownout problematic.
 #
 px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f1 LINKER_FILE=stm32f1.ld F1_APP_LOAD_ADDRESS=0x08001000 F1_APP_SIZE_MAX=0xf000 TARGET=io INTERFACE=USART BOARD=IO PX4_BOOTLOADER_DELAY=200
+	make -f Makefile.f1 TARGET_HW=PX4_PIO_V1 LINKER_FILE=stm32f1.ld TARGET_FILE_NAME=$@
 
-mavstation_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	make -f Makefile.f1 LINKER_FILE=12K-stm32f1.ld F1_APP_LOAD_ADDRESS=0x08003000 F1_APP_SIZE_MAX=0x1C000 TARGET=mavstation INTERFACE=USB BOARD=MAVSTATION USBDEVICESTRING="\\\"MAVSTATION v0.1\\\"" USBPRODUCTID="0x0014"
+px4mavstation_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f1 TARGET_HW=PX4_MAVSTATION_V1 LINKER_FILE=12K-stm32f1.ld TARGET_FILE_NAME=$@
 
 #
 # Binary management

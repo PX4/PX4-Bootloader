@@ -38,6 +38,7 @@
  *
  * Aside from the header includes below, this file should have no board-specific logic.
  */
+#include "hw_config.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -50,6 +51,8 @@
 #include <libopencm3/cm3/systick.h>
 
 #include "bl.h"
+#include "cdcacm.h"
+#include "uart.h"
 
 // bootloader flash update protocol.
 //
@@ -110,6 +113,46 @@
 
 // address of MCU IDCODE
 #define DBGMCU_IDCODE		0xE0042000
+
+inline void cinit(void *config)
+{
+#if defined(INTERFACE_USB)
+  return usb_cinit();
+#endif
+#if defined(INTERFACE_USART)
+  return uart_cinit(config);
+#endif
+}
+inline void cfini(void)
+{
+#if defined(INTERFACE_USB)
+  usb_cfini();
+#endif
+#if defined(INTERFACE_USART)
+  uart_cfini();
+#endif
+}
+inline int cin(void)
+{
+#if defined(INTERFACE_USB)
+   return usb_cin();
+#endif
+#if defined(INTERFACE_USART)
+   return uart_cin();
+#endif
+}
+inline void cout(uint8_t *buf, unsigned len)
+{
+#if defined(INTERFACE_USB)
+  usb_cout(buf, len);
+#endif
+#if defined(INTERFACE_USART)
+  uart_cout(buf, len);
+#endif
+}
+
+
+
 
 static const uint32_t	bl_proto_rev = 4;	// value returned by PROTO_DEVICE_BL_REV
 

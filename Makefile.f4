@@ -2,8 +2,6 @@
 # PX4 bootloader build rules for STM32F4 targets.
 #
 
-PRODUCT		 = px4$(TARGET)_bl
-
 OPENOCD		?= openocd
 
 JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
@@ -13,28 +11,17 @@ JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 PX4_BOOTLOADER_DELAY	?= 5000
 
 SRCS		 = $(COMMON_SRCS) main_f4.c
-ifeq ($(INTERFACE),USB)
-SRCS		+= cdcacm.c
-endif
-ifeq ($(INTERFACE),USART)
-SRCS		+= usart.c
-endif
 
 FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
-		   -DSTM32F4 \
-		   -DAPP_LOAD_ADDRESS=0x08004000 \
-		   -DBOOTLOADER_DELAY=$(PX4_BOOTLOADER_DELAY) \
-		   -DBOARD_$(BOARD) \
-		   -DINTERFACE_$(INTERFACE) \
-		   -DUSBDEVICESTRING="$(USBDEVICESTRING)" \
-		   -DUSBPRODUCTID="$(USBPRODUCTID)" \
-		   -Tstm32f4.ld \
+       -DTARGET_HW_$(TARGET_HW) \
+       -DSTM32F4 \
+       -T$(LINKER_FILE) \
 		   -L$(LIBOPENCM3)/lib \
 		   -lopencm3_stm32f4 \
-                   $(EXTRAFLAGS)
+        $(EXTRAFLAGS)
 
-ELF		 = $(PRODUCT).elf
-BINARY		 = $(PRODUCT).bin
+ELF		 = $(TARGET_FILE_NAME).elf
+BINARY		 = $(TARGET_FILE_NAME).bin
 
 all:		$(ELF) $(BINARY)
 

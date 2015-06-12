@@ -101,6 +101,7 @@ extern uint32_t flash_func_read_sn(uint32_t address);
 /*****************************************************************************
  * Interface in/output.
  */
+
 extern void cinit(void *config);
 extern void cfini(void);
 extern int cin(void);
