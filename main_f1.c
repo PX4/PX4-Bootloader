@@ -227,12 +227,12 @@ main(void)
 #endif
 
 	/* start the interface */
-	cinit(BOARD_INTERFACE_CONFIG);
+	cinit(BOARD_INTERFACE_CONFIG, USART);
 
 	while (1)
 	{
 		/* run the bootloader, possibly coming back after the timeout */
-		bootloader(timeout);
+		bootloader(timeout, USART);
 
 		/* look to see if we can boot the app */
 		jump_to_app();

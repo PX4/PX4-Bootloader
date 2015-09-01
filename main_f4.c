@@ -57,7 +57,14 @@ static struct {
 #define APP_SIZE_MAX			(BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
 
 /* context passed to cinit */
-#define BOARD_INTERFACE_CONFIG		NULL
+#if INTERFACE_USART
+bool try_usart_bootloader = false;
+# define BOARD_INTERFACE_CONFIG_USART	(void *)BOARD_USART
+#endif
+#if INTERFACE_USB
+bool try_usb_bootloader = false;
+# define BOARD_INTERFACE_CONFIG_USB  	NULL
+#endif
 
 /* board definition */
 struct boardinfo board_info = {
@@ -181,7 +188,7 @@ board_init(void)
 	/* fix up the max firmware size, we have to read memory to get this */
 	board_info.fw_size = APP_SIZE_MAX,
 
-#ifdef INTERFACE_USB
+#if INTERFACE_USB
 	/* enable GPIO9 with a pulldown to sniff VBUS */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
@@ -205,6 +212,20 @@ board_init(void)
 
 	/* enable the power controller clock */
 	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
+
+#if INTERFACE_USART
+  /* configure USART pins */
+  rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
+
+  /* Setup GPIO pins for USART transmit. */
+  gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_AF, GPIO_PUPD_NONE, BOARD_PIN_TX | BOARD_PIN_RX);
+  /* Setup USART TX & RX pins as alternate function. */
+  gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_TX);
+  gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_RX);
+
+  /* configure USART clock */
+  rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
 
 }
 
@@ -323,7 +344,12 @@ int
 main(void)
 {
 	bool try_boot = true;			/* try booting before we drop to the bootloader */
-	unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
+#if INTERFACE_USB
+	unsigned timeout_usb = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
+#endif
+#if INTERFACE_USART
+	unsigned timeout_usart = BOOTLOADER_DELAY;  /* if nonzero, drop out of the bootloader after this time */
+#endif
 
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10*2) | (3UL << 11*2)); /* set CP10 Full Access and set CP11 Full Access */
@@ -342,10 +368,22 @@ main(void)
 		 */
 		try_boot = false;
 
+#if INTERFACE_USART // Only try and boot the USART, the USB bootloader will run if the USB cable is plugged in, see below.
+		try_usart_bootloader = true;
+
 		/*
 		 * Don't drop out of the bootloader until something has been uploaded.
 		 */
-		timeout = 0;
+		timeout_usart = 0;
+
+#elif INTERFACE_USB
+		try_usb_bootloader = true;
+
+	 /*
+		* Don't drop out of the bootloader until something has been uploaded.
+		*/
+		timeout_usb = 0;
+#endif
 
 		/* 
 		 * Clear the signature so that if someone resets us while we're
@@ -370,14 +408,20 @@ main(void)
                 unsigned boot_delay = sig1 & 0xFF;
                 if (boot_delay <= BOOT_DELAY_MAX) {
                     try_boot = false;
-                    if (timeout < boot_delay*1000)
-                        timeout = boot_delay*1000;
+#if INTERFACE_USB
+                    if (timeout_usb < boot_delay*1000)
+                        timeout_usb = boot_delay*1000;
+#endif
+#if INTERFACE_USART
+					if (timeout_usart < boot_delay*1000)
+						timeout_usart = boot_delay*1000;
+#endif
                 }
             }
         }
 #endif
 
-#ifdef INTERFACE_USB
+#if INTERFACE_USB
 	/*
 	 * Check for USB connection - if present, don't try to boot, but set a timeout after
 	 * which we will fall out of the bootloader.
@@ -389,8 +433,11 @@ main(void)
 
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
+		try_usb_bootloader = true;
 	}
 #endif
+
+
 
 	/* Try to boot the app if we think we should just go straight there */
 	if (try_boot) {
@@ -403,15 +450,29 @@ main(void)
 		/* try to boot immediately */
 		jump_to_app();
 
+		// If it failed to boot, reset the boot signature and stay in bootloader
+		board_set_rtc_signature(BOOT_RTC_SIGNATURE);
+
 		/* booting failed, stay in the bootloader forever */
-		timeout = 0;
+#if INTERFACE_USART
+		timeout_usart = 0;
+		try_usart_bootloader = true;
+#elif INTERFACE_USB
+		timeout_usb = 0;
+		try_usb_bootloader = true;
+#endif
 	}
 
 	/* configure the clock for bootloader activity */
 	rcc_clock_setup_hse_3v3(&clock_setup);
 
 	/* start the interface */
-	cinit(BOARD_INTERFACE_CONFIG);
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
 
 #if 0
 	// MCO1/02
@@ -422,10 +483,37 @@ main(void)
 	gpio_set_af(GPIOC, GPIO_AF0, GPIO9);
 #endif
 
+	int bootloader_ret = 0; // value returned from the bootloader
+
 	while (1)
 	{
-		/* run the bootloader, come back after an app is uploaded or we time out */
-		bootloader(timeout);
+	/* run the bootloader, come back after an app is uploaded or we time out */
+#if INTERFACE_USB
+    if(try_usb_bootloader)
+    {
+      bootloader_ret = bootloader(timeout_usb, USB); // Try the USB bootloader
+
+      // Try to boot if the bootloader returned successfully after application was uploaded
+      if(bootloader_ret == 0 && !board_test_force_pin())
+      {
+        jump_to_app();
+      }
+    }
+#endif
+
+	  /* run the bootloader, come back after an app is uploaded or we time out */
+#if INTERFACE_USART
+	  if(try_usart_bootloader)
+	  {
+	    bootloader_ret = bootloader(timeout_usart, USART); // Try the USART bootloader
+
+	    // Try to boot if the bootloader returned successfully after application was uploaded
+	    if(bootloader_ret == 0 && !board_test_force_pin())
+	    {
+	      jump_to_app();
+	    }
+	  }
+#endif
 
 		/* if the force-bootloader pins are strapped, just loop back */
 		if (board_test_force_pin())
@@ -440,6 +528,10 @@ main(void)
 		jump_to_app();
 
 		/* launching the app failed - stay in the bootloader forever */
-		timeout = 0;
+#if INTERFACE_USART
+		timeout_usart = 0;
+#elif INTERFACE_USB
+		timeout_usb = BOOTLOADER_DELAY;
+#endif
 	}
 }
