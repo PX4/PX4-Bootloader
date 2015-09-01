@@ -43,6 +43,12 @@
  * Generic bootloader functions.
  */
 
+/* enum for whether bootloading via USB or USART */
+enum{
+  USART,
+  USB
+};
+
 /* board info forwarded from board-specific code to booloader */
 struct boardinfo {
 	uint32_t	board_type;
@@ -55,7 +61,7 @@ struct boardinfo {
 extern struct boardinfo board_info;
 
 extern void jump_to_app(void);
-extern void bootloader(unsigned timeout);
+extern int bootloader(unsigned timeout, uint8_t _bl_type);
 extern void delay(unsigned msec);
 
 #define BL_WAIT_MAGIC	0x19710317		/* magic number in PWR regs to wait in bootloader */
@@ -102,7 +108,7 @@ extern uint32_t flash_func_read_sn(uint32_t address);
  * Interface in/output.
  */
 
-extern void cinit(void *config);
+extern void cinit(void *config, uint8_t interface);
 extern void cfini(void);
 extern int cin(void);
 extern void cout(uint8_t *buf, unsigned len);

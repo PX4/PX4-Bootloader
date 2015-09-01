@@ -114,43 +114,64 @@
 // address of MCU IDCODE
 #define DBGMCU_IDCODE		0xE0042000
 
-inline void cinit(void *config)
+static uint8_t bl_type;
+
+inline void cinit(void *config, uint8_t interface)
 {
-#if defined(INTERFACE_USB)
-  return usb_cinit();
+#if INTERFACE_USB
+	if(interface == USB)
+	{
+	  return usb_cinit();
+	}
 #endif
-#if defined(INTERFACE_USART)
-  return uart_cinit(config);
+#if INTERFACE_USART
+	if(interface == USART)
+	{
+  		return uart_cinit(config);
+	}
 #endif
 }
 inline void cfini(void)
 {
-#if defined(INTERFACE_USB)
+#if INTERFACE_USB
   usb_cfini();
 #endif
-#if defined(INTERFACE_USART)
+#if INTERFACE_USART
   uart_cfini();
 #endif
 }
 inline int cin(void)
 {
-#if defined(INTERFACE_USB)
-   return usb_cin();
+#if INTERFACE_USB
+	if(bl_type == USB)
+	{
+   		return usb_cin();
+	}
 #endif
-#if defined(INTERFACE_USART)
-   return uart_cin();
+#if INTERFACE_USART
+	if(bl_type == USART)
+	{
+   		return uart_cin();
+	}
 #endif
+
+	return 0;
 }
 inline void cout(uint8_t *buf, unsigned len)
 {
-#if defined(INTERFACE_USB)
-  usb_cout(buf, len);
+#if INTERFACE_USB
+  if(bl_type == USB)
+  {
+    usb_cout(buf, len);
+  }
 #endif
-#if defined(INTERFACE_USART)
-  uart_cout(buf, len);
+#if INTERFACE_USART
+  if(bl_type == USART)
+  {
+    uart_cout(buf, len);
+  }
 #endif
 }
-
 
 
 
@@ -391,9 +412,14 @@ crc32(const uint8_t *src, unsigned len, unsigned state)
 	return state;
 }
 
-void
-bootloader(unsigned timeout)
+/*
+ * Bootloader returns -1 for timeout and 0 if it received the reboot command from the uploader (successful).
+ */
+int
+bootloader(unsigned timeout, uint8_t _bl_type)
 {
+	bl_type = _bl_type;
+
 	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
 
@@ -423,7 +449,7 @@ bootloader(unsigned timeout)
 		do {
 			/* if we have a timeout and the timer has expired, return now */
 			if (timeout && !timer[TIMER_BL_WAIT])
-				return;
+				return -1;
 
 			/* try to get a byte from the host */
 			c = cin_wait(0);
@@ -693,7 +719,7 @@ bootloader(unsigned timeout)
 			delay(100);
 
 			// quiesce and jump to the app
-			return;
+			return 0;
 
 		case PROTO_DEBUG:
 			// XXX reserved for ad-hoc debugging as required

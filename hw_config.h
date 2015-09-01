@@ -18,6 +18,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_FMU
 # define INTERFACE_USB                  1
+# define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL FMU v1.x"
 # define USBPRODUCTID                   0x0010
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -34,6 +35,17 @@
 # define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPBEN
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USART  					USART1
+# define BOARD_USART_CLOCK_REGISTER 	RCC_APB2ENR
+# define BOARD_USART_CLOCK_BIT      	RCC_APB2ENR_USART1EN
+
+# define BOARD_PORT_USART   			GPIOB
+# define BOARD_PORT_USART_AF 			GPIO_AF7
+# define BOARD_PIN_TX     				GPIO6
+# define BOARD_PIN_RX		     		GPIO7
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
 
 # define BOARD_FORCE_BL_PIN             GPIO10
 # define BOARD_FORCE_BL_PORT            GPIOA
@@ -52,6 +64,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
+# define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL FMU v2.x"
 # define USBPRODUCTID                   0x0011
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -70,6 +83,17 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
+# define BOARD_USART  					USART2
+# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART   			GPIOD
+# define BOARD_PORT_USART_AF 			GPIO_AF7
+# define BOARD_PIN_TX     				GPIO5
+# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+
 # define BOARD_FORCE_BL_PIN_OUT         GPIO14
 # define BOARD_FORCE_BL_PIN_IN          GPIO11
 # define BOARD_FORCE_BL_PORT            GPIOE
@@ -87,6 +111,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_FLOW
 # define INTERFACE_USB                  1
+# define INTERFACE_USART                0
 # define USBDEVICESTRING                "PX4 BL FLOW v1.3"
 # define USBPRODUCTID                   0x0015
 
@@ -113,6 +138,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_DISCOVERY
 # define INTERFACE_USB                  1
+# define INTERFACE_USART                0
 # define USBDEVICESTRING                "PX4 BL DISCOVERY"
 # define USBPRODUCTID                   0x0001
 
@@ -139,6 +165,7 @@
 # define APP_SIZE_MAX                   0xf000
 # define BOOTLOADER_DELAY               200
 # define BOARD_PIO
+# define INTERFACE_USB                	0
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
@@ -183,6 +210,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_AEROCORE
 # define INTERFACE_USB                  1
+# define INTERFACE_USART                0
 # define USBDEVICESTRING                "Gumstix BL AEROCORE"
 # define USBPRODUCTID                   0x1001
 
@@ -217,6 +245,7 @@
 # define BOOTLOADER_DELAY               3000
 # define BOARD_MAVSTATION
 # define INTERFACE_USB                  1
+# define INTERFACE_USART                0
 # define USBDEVICESTRING                "MAVSTATION BL v0.1"
 # define USBPRODUCTID                   0x0014
 
