@@ -609,6 +609,9 @@ bootloader(unsigned timeout)
 
 				if (cin_word(&index, 100))
 					goto cmd_bad;
+				// expect EOC
+				if (cin_wait(1000) != PROTO_EOC)
+					goto cmd_bad;
 				cout_word(flash_func_read_otp(index));
 			}
 			break;
@@ -618,20 +621,20 @@ bootloader(unsigned timeout)
 				uint32_t index = 0;
 				if (cin_word(&index, 100))
 					goto cmd_bad;
+				// expect EOC
+				if (cin_wait(1000) != PROTO_EOC)
+					goto cmd_bad;
 				cout_word(flash_func_read_sn(index));
 			}
 			break;
 		case PROTO_GET_CHIP:
 			{
-                            cout_word(*(uint32_t *)DBGMCU_IDCODE);
+				// expect EOC
+				if (cin_wait(1000) != PROTO_EOC)
+					goto cmd_bad;
+				cout_word(*(uint32_t *)DBGMCU_IDCODE);
 			}
 			break;
-			// finalise programming and boot the system
-			//
-			// command:			BOOT/EOC
-			// reply:			INSYNC/OK
-			//
-
 #ifdef BOOT_DELAY_ADDRESS
                 case PROTO_SET_DELAY:
 			{
@@ -647,14 +650,17 @@ bootloader(unsigned timeout)
 				uint8_t boot_delay = v & 0xFF;
 				if (boot_delay > BOOT_DELAY_MAX)
 					goto cmd_bad;
-				
+				// expect EOC
+				if (cin_wait(1000) != PROTO_EOC)
+					goto cmd_bad;
+
 				uint32_t sig1 = flash_func_read_word(BOOT_DELAY_ADDRESS);
 				uint32_t sig2 = flash_func_read_word(BOOT_DELAY_ADDRESS+4);
-				
+
 				if (sig1 != BOOT_DELAY_SIGNATURE1 ||
                                     sig2 != BOOT_DELAY_SIGNATURE2)
 					goto cmd_bad;
-				
+
 				uint32_t value = (BOOT_DELAY_SIGNATURE1 & 0xFFFFFF00) | boot_delay;
 				flash_func_write_word(BOOT_DELAY_ADDRESS, value);
 				if (flash_func_read_word(BOOT_DELAY_ADDRESS) != value)
@@ -662,7 +668,11 @@ bootloader(unsigned timeout)
 			}
 			break;
 #endif
-
+			// finalise programming and boot the system
+			//
+			// command:			BOOT/EOC
+			// reply:			INSYNC/OK
+			//
 		case PROTO_BOOT:
 			// expect EOC
 			if (cin_wait(1000) != PROTO_EOC)
