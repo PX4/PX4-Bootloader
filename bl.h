@@ -45,6 +45,7 @@
 
 /* enum for whether bootloading via USB or USART */
 enum{
+  NONE,
   USART,
   USB
 };
@@ -61,7 +62,7 @@ struct boardinfo {
 extern struct boardinfo board_info;
 
 extern void jump_to_app(void);
-extern int bootloader(unsigned timeout, uint8_t _bl_type);
+extern void bootloader(unsigned timeout);
 extern void delay(unsigned msec);
 
 #define BL_WAIT_MAGIC	0x19710317		/* magic number in PWR regs to wait in bootloader */

@@ -232,7 +232,7 @@ main(void)
 	while (1)
 	{
 		/* run the bootloader, possibly coming back after the timeout */
-		bootloader(timeout, USART);
+		bootloader(timeout);
 
 		/* look to see if we can boot the app */
 		jump_to_app();
