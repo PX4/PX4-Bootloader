@@ -16,6 +16,7 @@
 
 #include "bl.h"
 #include "uart.h"
+#include "cdcacm.h"
 
 /* flash parameters that we should not really know */
 static struct {
@@ -678,6 +679,59 @@ led_toggle(unsigned led)
 	}
 }
 
+union udid {
+	uint32_t serial[3];
+	uint8_t  data[12];
+};
+
+#ifdef 	INTERFACE_USB
+void ascii_char_for_hex_number(uint8_t num, char * ch)
+{
+	// If the number is 0-9 return the ASCII character 0-9
+	if(num<10)
+	{
+		*ch = num+48;
+	}
+	else // else if the number is A-F (10-16), return the ASCII character A-F
+	{
+		*ch = num+55;
+	}
+}
+
+void get_serial_number_string(char *serial_number)
+{
+	// serial_number must be at least 25 bytes; 24 bytes for the serial numnber and 1 byte for the terminating null character
+
+	union udid id;
+	id.serial[0] = *(uint32_t *)(UDID_START);
+	id.serial[1] = *(uint32_t *)(UDID_START+4);
+	id.serial[2] = *(uint32_t *)(UDID_START+8);
+
+	uint8_t len = 12;
+	uint8_t serialid[len];
+
+	// Swap the endianess of the bytes according to the Px4 convention for reading out the UDID
+	serialid[0] = id.data[3];   serialid[1] = id.data[2];  serialid[2] = id.data[1];  serialid[3] = id.data[0];
+	serialid[4] = id.data[7];   serialid[5] = id.data[6];  serialid[6] = id.data[5];  serialid[7] = id.data[4];
+	serialid[8] = id.data[11];   serialid[9] = id.data[10];  serialid[10] = id.data[9];  serialid[11] = id.data[8];
+	uint8_t hex_num = 0;
+	uint8_t * id_ptr = &serialid[0];
+	while(len--)
+	{
+		hex_num = (*(uint8_t *)id_ptr >> 4) & 0x0F;
+		ascii_char_for_hex_number(hex_num, serial_number);
+		++serial_number;
+
+		hex_num = (*(uint8_t *)id_ptr) & 0x0F;
+		ascii_char_for_hex_number(hex_num, serial_number);
+		++serial_number;
+
+		id_ptr += 1;
+	}
+	*serial_number = '\0'; // terminating null character for the string
+}
+#endif
+
 /* we should know this, but we don't */
 #ifndef SCB_CPACR
 # define SCB_CPACR (*((volatile uint32_t *) (((0xE000E000UL) + 0x0D00UL) + 0x088)))
@@ -829,6 +883,11 @@ main(void)
 	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
 #endif
 #if INTERFACE_USB
+	// Set the USB serial number
+	char sn[25];
+	get_serial_number_string((char *)&sn);
+	usb_set_sn(sn);
+
 	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
 #endif
 

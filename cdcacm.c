@@ -61,7 +61,7 @@
  *  and is hard coded in the usb lib. The array below is indexed by requested index-1, therefore
  *  element[0] maps to requested index 1
  */
-static const char *usb_strings[] = {
+static char *usb_strings[] = {
 	USBMFGSTRING, /* Maps to Index 1 Index */
 	USBDEVICESTRING,
 	"0",
@@ -289,6 +289,12 @@ otg_fs_isr(void)
 }
 
 void
+usb_set_sn(char * sn)
+{
+  usb_strings[2] = sn;
+}
+
+void
 usb_cinit(void)
 {
 #if defined(STM32F4)
@@ -318,8 +324,8 @@ usb_cinit(void)
 	OTG_FS_GCCFG |= OTG_GCCFG_NOVBUSSENS;
 #endif
 
-	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
-			     usbd_control_buffer, sizeof(usbd_control_buffer));
+        usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, (const char **)usb_strings, NUM_USB_STRINGS,
+                                        usbd_control_buffer, sizeof(usbd_control_buffer));
 
 #elif defined(STM32F1)
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
