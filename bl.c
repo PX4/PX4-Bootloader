@@ -115,6 +115,7 @@
 #define DBGMCU_IDCODE		0xE0042000
 
 static uint8_t bl_type;
+static uint8_t last_input;
 
 inline void cinit(void *config, uint8_t interface)
 {
@@ -143,34 +144,47 @@ inline void cfini(void)
 inline int cin(void)
 {
 #if INTERFACE_USB
-	if(bl_type == USB)
-	{
-   		return usb_cin();
-	}
-#endif
-#if INTERFACE_USART
-	if(bl_type == USART)
-	{
-   		return uart_cin();
-	}
+	if(bl_type == NONE || bl_type == USB)
+    {
+		int usb_in = usb_cin();
+		if(usb_in >= 0)
+    	{
+			last_input = USB;
+			return usb_in;
+    	}
+    }
 #endif
 
-	return 0;
+#if INTERFACE_USART
+	if(bl_type == NONE || bl_type == USART)
+    {
+		int	uart_in = uart_cin();
+    	if(uart_in >= 0)
+    	{
+			last_input = USART;
+			return uart_in;
+		}
+    }
+#endif
+    
+    return -1;
 }
+
 inline void cout(uint8_t *buf, unsigned len)
 {
 #if INTERFACE_USB
-  if(bl_type == USB)
-  {
-    usb_cout(buf, len);
-  }
+    if(bl_type == NONE || bl_type == USB)
+    {
+        usb_cout(buf, len);	
+    }
 #endif
 #if INTERFACE_USART
-  if(bl_type == USART)
-  {
-    uart_cout(buf, len);
-  }
+    if(bl_type == NONE || bl_type == USART)
+    {
+	uart_cout(buf, len);
+    }
 #endif
+
 }
 
 
@@ -415,10 +429,10 @@ crc32(const uint8_t *src, unsigned len, unsigned state)
 /*
  * Bootloader returns -1 for timeout and 0 if it received the reboot command from the uploader (successful).
  */
-int
-bootloader(unsigned timeout, uint8_t _bl_type)
+void
+bootloader(unsigned timeout)
 {
-	bl_type = _bl_type;
+	bl_type = NONE; // The type of the bootloader, whether loading from USB or USART, will be determined by on what port the bootloader recevies its first valid command.
 
 	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
@@ -449,7 +463,7 @@ bootloader(unsigned timeout, uint8_t _bl_type)
 		do {
 			/* if we have a timeout and the timer has expired, return now */
 			if (timeout && !timer[TIMER_BL_WAIT])
-				return -1;
+				return;
 
 			/* try to get a byte from the host */
 			c = cin_wait(0);
@@ -641,6 +655,11 @@ bootloader(unsigned timeout, uint8_t _bl_type)
 				cout_word(flash_func_read_otp(index));
 			}
 			break;
+
+			// read the SN from the UDID
+			//
+			// command:			GET_SN/<addr:4>/EOC
+			// reply:			<value:4>/INSYNC/OK
 		case PROTO_GET_SN:
 			// expect argument
 			{
@@ -653,14 +672,20 @@ bootloader(unsigned timeout, uint8_t _bl_type)
 				cout_word(flash_func_read_sn(index));
 			}
 			break;
+
+			// read the chip ID code
+			//
+			// command:			GET_CHIP/EOC
+			// reply:			<value:4>/INSYNC/OK
 		case PROTO_GET_CHIP:
-			{
+			{ 
 				// expect EOC
 				if (cin_wait(1000) != PROTO_EOC)
 					goto cmd_bad;
-				cout_word(*(uint32_t *)DBGMCU_IDCODE);
+		      	cout_word(*(uint32_t *)DBGMCU_IDCODE);
 			}
 			break;
+
 #ifdef BOOT_DELAY_ADDRESS
                 case PROTO_SET_DELAY:
 			{
@@ -694,11 +719,12 @@ bootloader(unsigned timeout, uint8_t _bl_type)
 			}
 			break;
 #endif
-			// finalise programming and boot the system
-			//
-			// command:			BOOT/EOC
-			// reply:			INSYNC/OK
-			//
+
+		// finalise programming and boot the system
+		//
+		// command:			BOOT/EOC
+		// reply:			INSYNC/OK
+		//
 		case PROTO_BOOT:
 			// expect EOC
 			if (cin_wait(1000) != PROTO_EOC)
@@ -719,7 +745,7 @@ bootloader(unsigned timeout, uint8_t _bl_type)
 			delay(100);
 
 			// quiesce and jump to the app
-			return 0;
+			return;
 
 		case PROTO_DEBUG:
 			// XXX reserved for ad-hoc debugging as required
@@ -731,6 +757,12 @@ bootloader(unsigned timeout, uint8_t _bl_type)
 		// we got a command worth syncing, so kill the timeout because
 		// we are probably talking to the uploader
 		timeout = 0;
+
+		// Set the bootloader port based on the port from which we received the first valid command
+		if(bl_type == NONE)
+		{
+			bl_type = last_input;
+		}
 
 		// send the sync response for this command
 		sync_response();

@@ -12,8 +12,10 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/stm32/pwr.h>
+# include <libopencm3/stm32/timer.h>
 
 #include "bl.h"
+#include "uart.h"
 
 /* flash parameters that we should not really know */
 static struct {
@@ -58,11 +60,9 @@ static struct {
 
 /* context passed to cinit */
 #if INTERFACE_USART
-bool try_usart_bootloader = false;
 # define BOARD_INTERFACE_CONFIG_USART	(void *)BOARD_USART
 #endif
 #if INTERFACE_USB
-bool try_usb_bootloader = false;
 # define BOARD_INTERFACE_CONFIG_USB  	NULL
 #endif
 
@@ -182,6 +182,71 @@ board_test_force_pin()
 	return false;
 }
 
+#if INTERFACE_USART
+static bool
+board_test_usart_receiving_break()
+{
+	// Start the timer - enable TIM2 clock
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
+
+	//Time base configuration
+	timer_set_prescaler(TIM2, 0); // Timer ticks at base clock speed (2 x APBPB1 = 84MHz)
+		
+	/* Set the timer period to be half the bit rate
+	 *
+	 * Baud rate = 115200, therefore bit period = 8.68us
+	 * Half the bit rate = 4.34us
+	 * Set period to 4.34 microseconds (timer_period = timer_tick / timer_reset_frequency -1 = 84MHz / (1/4.34us) -1 = 363.56 ~= 364)
+	 */
+	timer_set_period(TIM2, 364); // XXX ToDo perhaps set this as a configurable number in the hw_config.h file based on the USART baud rate
+
+	// Enable TIM2 counter
+	timer_enable_counter(TIM2);
+
+	uint8_t low = 0;
+	uint8_t high = 0;
+
+	/* Loop for 3 transmission byte cycles and count the low and high bits. Sampled at a rate to be able to count each bit twice.
+	 * 
+	 * One transmission byte is 10 bits (8 bytes of data + 1 start bit + 1 stop bit)
+	 * We sample at every half bit time, therefore 20 samples per transmission byte,
+	 * therefore 60 samples for 3 transmission bytes
+	 */
+	while (low+high <= 60)
+	{
+		// Only read pin when timer is true
+		if (timer_get_flag(TIM2, TIM_SR_UIF) == true)
+    		{
+	      		timer_clear_flag(TIM2, TIM_SR_UIF);
+			if(gpio_get(BOARD_PORT_USART, BOARD_PIN_RX) == 0)
+			{
+				low++;
+			}
+			else
+			{
+				high++;
+			}
+		}
+	}
+
+	// Disable TIM2 counter
+	timer_disable_counter(TIM2);
+
+	/*
+	 * If a break is detected, return true, else false
+	 *
+	 * Break is detected if USART line detected a break, or if all of the bits were low (RX line held low),
+	 * or if the line was constantly receiving break signals (1 high bit followed by 9 low bits) (even if the USART didn't recognise them).
+	 */ 
+	if(uart_break_detected() || (low > high && (high == 0 || (float)low/(float)high >= 9.0f)))
+	{
+		return true;
+	}
+
+	return false;
+}
+#endif
+
 static void
 board_init(void)
 {
@@ -226,7 +291,6 @@ board_init(void)
   /* configure USART clock */
   rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
 #endif
-
 }
 
 
@@ -344,18 +408,26 @@ int
 main(void)
 {
 	bool try_boot = true;			/* try booting before we drop to the bootloader */
-#if INTERFACE_USB
-	unsigned timeout_usb = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
-#endif
-#if INTERFACE_USART
-	unsigned timeout_usart = BOOTLOADER_DELAY;  /* if nonzero, drop out of the bootloader after this time */
-#endif
+	unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
 
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10*2) | (3UL << 11*2)); /* set CP10 Full Access and set CP11 Full Access */
 
 	/* do board-specific initialisation */
 	board_init();
+
+	/* configure the clock for bootloader activity */
+	rcc_clock_setup_hse_3v3(&clock_setup);
+
+	/* start the interface */
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
+
+
 
 	/* 
 	 * Check the force-bootloader register; if we find the signature there, don't
@@ -368,22 +440,10 @@ main(void)
 		 */
 		try_boot = false;
 
-#if INTERFACE_USART // Only try and boot the USART, the USB bootloader will run if the USB cable is plugged in, see below.
-		try_usart_bootloader = true;
-
 		/*
 		 * Don't drop out of the bootloader until something has been uploaded.
 		 */
-		timeout_usart = 0;
-
-#elif INTERFACE_USB
-		try_usb_bootloader = true;
-
-	 /*
-		* Don't drop out of the bootloader until something has been uploaded.
-		*/
-		timeout_usb = 0;
-#endif
+		timeout = 0;
 
 		/* 
 		 * Clear the signature so that if someone resets us while we're
@@ -408,18 +468,20 @@ main(void)
                 unsigned boot_delay = sig1 & 0xFF;
                 if (boot_delay <= BOOT_DELAY_MAX) {
                     try_boot = false;
-#if INTERFACE_USB
-                    if (timeout_usb < boot_delay*1000)
-                        timeout_usb = boot_delay*1000;
-#endif
-#if INTERFACE_USART
-					if (timeout_usart < boot_delay*1000)
-						timeout_usart = boot_delay*1000;
-#endif
+                    if (timeout < boot_delay*1000)
+                        timeout = boot_delay*1000;
                 }
             }
         }
 #endif
+
+	/* 
+	 * Check if the force-bootloader pins are strapped; if strapped,
+	 * don't try booting.
+	 */
+	if (board_test_force_pin()) {
+		try_boot = false;		
+	}
 
 #if INTERFACE_USB
 	/*
@@ -433,11 +495,22 @@ main(void)
 
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
-		try_usb_bootloader = true;
 	}
 #endif
 
-
+#if INTERFACE_USART
+	/*
+	 * Check for if the USART port RX line is receiving a break command, or is being held low. If yes, 
+	 * don't try to boot, but set a timeout after
+	 * which we will fall out of the bootloader.
+	 *
+	 * If the force-bootloader pins are tied, we will stay here until they are removed and
+	 * we then time out.
+	 */
+	if(board_test_usart_receiving_break()) {
+		try_boot = false;
+	}
+#endif	
 
 	/* Try to boot the app if we think we should just go straight there */
 	if (try_boot) {
@@ -454,25 +527,9 @@ main(void)
 		board_set_rtc_signature(BOOT_RTC_SIGNATURE);
 
 		/* booting failed, stay in the bootloader forever */
-#if INTERFACE_USART
-		timeout_usart = 0;
-		try_usart_bootloader = true;
-#elif INTERFACE_USB
-		timeout_usb = 0;
-		try_usb_bootloader = true;
-#endif
+		timeout = 0;
 	}
 
-	/* configure the clock for bootloader activity */
-	rcc_clock_setup_hse_3v3(&clock_setup);
-
-	/* start the interface */
-#if INTERFACE_USART
-	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
-#endif
-#if INTERFACE_USB
-	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
-#endif
 
 #if 0
 	// MCO1/02
@@ -483,41 +540,21 @@ main(void)
 	gpio_set_af(GPIOC, GPIO_AF0, GPIO9);
 #endif
 
-	int bootloader_ret = 0; // value returned from the bootloader
 
 	while (1)
 	{
-	/* run the bootloader, come back after an app is uploaded or we time out */
-#if INTERFACE_USB
-    if(try_usb_bootloader)
-    {
-      bootloader_ret = bootloader(timeout_usb, USB); // Try the USB bootloader
-
-      // Try to boot if the bootloader returned successfully after application was uploaded
-      if(bootloader_ret == 0 && !board_test_force_pin())
-      {
-        jump_to_app();
-      }
-    }
-#endif
-
-	  /* run the bootloader, come back after an app is uploaded or we time out */
-#if INTERFACE_USART
-	  if(try_usart_bootloader)
-	  {
-	    bootloader_ret = bootloader(timeout_usart, USART); // Try the USART bootloader
-
-	    // Try to boot if the bootloader returned successfully after application was uploaded
-	    if(bootloader_ret == 0 && !board_test_force_pin())
-	    {
-	      jump_to_app();
-	    }
-	  }
-#endif
+		/* run the bootloader, come back after an app is uploaded or we time out */
+		bootloader(timeout);
 
 		/* if the force-bootloader pins are strapped, just loop back */
 		if (board_test_force_pin())
 			continue;
+
+#if INTERFACE_USART
+		/* if the USART port RX line is still receiving a break, just loop back */
+		if (board_test_usart_receiving_break())
+			continue;
+#endif
 
 		/* set the boot-to-bootloader flag so that if boot fails on reset we will stop here */
 #ifdef BOARD_BOOT_FAIL_DETECT
@@ -528,10 +565,6 @@ main(void)
 		jump_to_app();
 
 		/* launching the app failed - stay in the bootloader forever */
-#if INTERFACE_USART
-		timeout_usart = 0;
-#elif INTERFACE_USB
-		timeout_usb = BOOTLOADER_DELAY;
-#endif
+		timeout = 0;
 	}
 }
