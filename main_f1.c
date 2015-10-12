@@ -54,18 +54,12 @@ board_init(void)
 	/* if we have one, enable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
 	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
-#if defined(BOARD_MAVSTATION)	
+
 	gpio_set(BOARD_FORCE_BL_PORT,BOARD_FORCE_BL_PIN);
 	gpio_set_mode(BOARD_FORCE_BL_PORT,
 		GPIO_MODE_INPUT,
-		GPIO_CNF_INPUT_PULL_UPDOWN,	/* depend on external pull */
+		BOARD_FORCE_BL_PULL,
 		BOARD_FORCE_BL_PIN);
-#else
-	gpio_set_mode(BOARD_FORCE_BL_PORT,
-		GPIO_MODE_INPUT,
-		GPIO_CNF_INPUT_FLOAT,	/* depend on external pull */
-		BOARD_FORCE_BL_PIN);
-#endif
 #endif
 
 	/* enable the backup registers */

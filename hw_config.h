@@ -194,6 +194,7 @@
 # define BOARD_FORCE_BL_PORT            GPIOB
 # define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_APB2ENR
 # define BOARD_FORCE_BL_CLOCK_BIT       RCC_APB2ENR_IOPBEN
+# define BOARD_FORCE_BL_PULL            GPIO_CNF_INPUT_FLOAT // depend on external pull
 # define BOARD_FORCE_BL_VALUE           BOARD_FORCE_BL_PIN
 
 # define BOARD_FLASH_SECTORS            60
@@ -274,6 +275,7 @@
 # define BOARD_FORCE_BL_PORT            GPIOA
 # define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_APB2ENR
 # define BOARD_FORCE_BL_CLOCK_BIT       RCC_APB2ENR_IOPAEN
+# define BOARD_FORCE_BL_PULL            GPIO_CNF_INPUT_PULL_UPDOWN // depend on external pull
 # define BOARD_FORCE_BL_VALUE           0
 
 # define BOARD_FLASH_SECTORS            116
