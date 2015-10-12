@@ -43,3 +43,6 @@ extern void uart_cinit(void *config);
 extern void uart_cfini(void);
 extern int uart_cin(void);
 extern void uart_cout(uint8_t *buf, unsigned len);
+extern void uart_break_detect_enable(bool enable);
+extern void uart_send_break();
+extern bool uart_break_detected();
