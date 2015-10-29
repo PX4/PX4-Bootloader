@@ -426,9 +426,6 @@ crc32(const uint8_t *src, unsigned len, unsigned state)
 	return state;
 }
 
-/*
- * Bootloader returns -1 for timeout and 0 if it received the reboot command from the uploader (successful).
- */
 void
 bootloader(unsigned timeout)
 {
