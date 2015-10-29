@@ -186,23 +186,20 @@ board_test_force_pin()
 static bool
 board_test_usart_receiving_break()
 {
-	// Start the timer - enable TIM2 clock
-	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
+	/* (re)start the SysTick timer system */
+	systick_interrupt_disable(); // Kill the interrupt if it is still active
+	systick_counter_disable(); // Stop the timer
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
 
-	//Time base configuration
-	timer_set_prescaler(TIM2, 0); // Timer ticks at base clock speed (2 x APBPB1 = 84MHz)
-		
 	/* Set the timer period to be half the bit rate
 	 *
 	 * Baud rate = 115200, therefore bit period = 8.68us
 	 * Half the bit rate = 4.34us
-	 * Set period to 4.34 microseconds (timer_period = timer_tick / timer_reset_frequency -1 = 84MHz / (1/4.34us) -1 = 363.56 ~= 364)
+	 * Set period to 4.3 microseconds (timer_period = timer_tick / timer_reset_frequency -1 = 168MHz / (1/4.34us) -1 = 728.12 ~= 728)
 	 */
-	timer_set_period(TIM2, 364); // XXX ToDo perhaps set this as a configurable number in the hw_config.h file based on the USART baud rate
-
-	// Enable TIM2 counter
-	timer_enable_counter(TIM2);
-
+	systick_set_reload(728);  /* 4.3us tick, magic number */
+	systick_counter_enable(); // Start the timer 
+		
 	uint8_t low = 0;
 	uint8_t high = 0;
 
@@ -210,14 +207,15 @@ board_test_usart_receiving_break()
 	 * 
 	 * One transmission byte is 10 bits (8 bytes of data + 1 start bit + 1 stop bit)
 	 * We sample at every half bit time, therefore 20 samples per transmission byte,
-	 * therefore 60 samples for 3 transmission bytes
+	 * therefore 60 samples for 3 transmission bytes but if multiple breaks are being
+	 * sent, then the line is low for 10 bits and high for a single bit and then low
+	 * for another 10 bits (11 bits in total to count).
 	 */
-	while (low+high <= 60)
+	while (low+high < 66)
 	{
-		// Only read pin when timer is true
-		if (timer_get_flag(TIM2, TIM_SR_UIF) == true)
+		// Only read pin when SysTick timer is true
+		if (systick_get_countflag() == 1)
     		{
-	      		timer_clear_flag(TIM2, TIM_SR_UIF);
 			if(gpio_get(BOARD_PORT_USART, BOARD_PIN_RX) == 0)
 			{
 				low++;
@@ -229,8 +227,7 @@ board_test_usart_receiving_break()
 		}
 	}
 
-	// Disable TIM2 counter
-	timer_disable_counter(TIM2);
+	systick_counter_disable(); // Stop the timer
 
 	/*
 	 * If a break is detected, return true, else false
