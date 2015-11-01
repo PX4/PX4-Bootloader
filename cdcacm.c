@@ -296,6 +296,19 @@ usb_cfini(void)
             usbd_disconnect(usbd_dev, true);
             usbd_dev = NULL;
         }
+
+#if defined(STM32F4)
+	/* Reset the USB pins to being floating inputs */
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
+
+	/* Disable the OTGFS peripheral clock */ 
+	rcc_peripheral_disable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+
+#elif defined(STM32F1)
+	/* Reset the USB pins to being floating inputs */ 
+	gpio_set_mode(GPIOA, GPIO_MODE_INPUT,GPIO_CNF_INPUT_FLOAT, GPIO8);
+	gpio_clear(GPIOA, GPIO8);
+#endif
 }
 
 int

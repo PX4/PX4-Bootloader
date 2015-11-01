@@ -98,6 +98,8 @@ extern void led_off(unsigned led);
 extern void led_toggle(unsigned led);
 
 /* flash helpers from main_*.c */
+extern void board_deinit(void);
+extern void clock_deinit(void);
 extern uint32_t flash_func_sector_size(unsigned sector);
 extern void flash_func_erase_sector(unsigned sector);
 extern void flash_func_write_word(uint32_t address, uint32_t word);

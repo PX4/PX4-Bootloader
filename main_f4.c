@@ -154,8 +154,9 @@ board_test_force_pin()
 			samples++;
 		}
 	}
-	/* revert the driver pin */
+	/* revert the pins */
 	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN_OUT);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN_IN);
 
 	/* the idea here is to reject wire-to-wire coupling, so require > 90% agreement */
 	if ((vote * 100) > (samples * 90))
@@ -174,6 +175,9 @@ board_test_force_pin()
 		if ((gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN) ? 1 : 0) == BOARD_FORCE_BL_STATE)
 			vote++;
 	}
+
+	/* revert the pin */
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN);
 
 	/* reject a little noise */
 	if ((vote * 100) > (samples * 90))
@@ -262,6 +266,20 @@ board_init(void)
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
 #endif
 
+#if INTERFACE_USART
+	/* configure USART pins */
+	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
+
+	/* Setup GPIO pins for USART transmit. */
+	gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_AF, GPIO_PUPD_PULLUP, BOARD_PIN_TX | BOARD_PIN_RX);
+	/* Setup USART TX & RX pins as alternate function. */
+	gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_TX);
+	gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_RX);
+
+	/* configure USART clock */
+	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
+
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_LEDS);
 	gpio_mode_setup(
@@ -280,23 +298,94 @@ board_init(void)
 
 	/* enable the power controller clock */
 	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
-
-#if INTERFACE_USART
-  /* configure USART pins */
-  rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
-
-  /* Setup GPIO pins for USART transmit. */
-  gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_AF, GPIO_PUPD_PULLUP, BOARD_PIN_TX | BOARD_PIN_RX);
-  /* Setup USART TX & RX pins as alternate function. */
-  gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_TX);
-  gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_RX);
-
-  /* configure USART clock */
-  rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
-#endif
 }
 
+void
+board_deinit(void)
+{
+#if INTERFACE_USB
+	/* disable GPIO9 (used to sniff VBUS) */
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9);		
+#endif
 
+#if INTERFACE_USART
+	  /* Setup GPIO pins for USART transmit. */
+	  gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_TX | BOARD_PIN_RX);
+
+	  /* disable USART peripheral clock */
+	  rcc_peripheral_disable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
+
+	/* deinitialise LEDs */	
+	gpio_mode_setup(
+		BOARD_PORT_LEDS, 
+		GPIO_MODE_INPUT, 
+		GPIO_PUPD_NONE,
+		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+	
+	/* disable the power controller clock */
+	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
+
+	/* disable the GPIO port peripheral clocks */
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPCEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPDEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPFEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPGEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPHEN);
+	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPIEN);
+}
+
+/**
+  * @brief  Initializes the RCC clock configuration.
+  *
+  * @param  clock_setup : The clock configuration to set
+  */
+static inline void
+clock_init(void)
+{
+	rcc_clock_setup_hse_3v3(&clock_setup);
+}
+
+/**
+  * @brief  Resets the RCC clock configuration to the default reset state.
+  * @note   The default reset state of the clock configuration is given below:
+  *            - HSI ON and used as system clock source
+  *            - HSE, PLL and PLLI2S OFF
+  *            - AHB, APB1 and APB2 prescaler set to 1.
+  *            - CSS, MCO1 and MCO2 OFF
+  *            - All interrupts disabled
+  * @note   This function doesn't modify the configuration of the
+  *            - Peripheral clocks  
+  *            - LSI, LSE and RTC clocks 
+  */
+void
+clock_deinit(void)
+{
+	/* Enable internal high-speed oscillator. */
+	rcc_osc_on(HSI);
+	rcc_wait_for_osc_ready(HSI);
+
+	/* Reset the RCC_CFGR register */
+	RCC_CFGR = 0x000000;
+
+	/* Stop the HSE, CSS, PLL, PLLI2S, PLLSAI */
+	rcc_osc_off(HSE);
+	rcc_osc_off(PLL);
+	rcc_css_disable();
+
+	/* Reset the RCC_PLLCFGR register */
+	RCC_PLLCFGR = 0x24003010; // XXX Magic reset number from STM32F4xx reference manual
+
+	/* Reset the HSEBYP bit */
+	rcc_osc_bypass_disable(HSE);
+
+	/* Reset the CIR register */
+	RCC_CIR = 0x000000;	
+}
 
 uint32_t
 flash_func_sector_size(unsigned sector)
@@ -362,7 +451,7 @@ flash_func_read_sn(uint32_t address)
 {
 	// read a byte out from unique chip ID area
 	// it's 12 bytes, or 3 words. 
-    return *(uint32_t *)(address + UDID_START);
+	return *(uint32_t *)(address + UDID_START);
 }
 
 void
@@ -422,8 +511,8 @@ main(void)
 	board_init();
 
 	/* configure the clock for bootloader activity */
-	rcc_clock_setup_hse_3v3(&clock_setup);
-
+	clock_init();	
+	
 	/* start the interface */
 #if INTERFACE_USART
 	cinit(BOARD_INTERFACE_CONFIG_USART, USART);

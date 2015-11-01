@@ -79,7 +79,98 @@ board_init(void)
 #ifdef INTERFACE_I2C
 # error I2C GPIO config not handled yet
 #endif
+}
 
+void
+board_deinit(void)
+{
+	/* deinitialise LEDs */
+	gpio_set_mode(BOARD_PORT_LEDS,
+		GPIO_MODE_INPUT,
+		GPIO_CNF_INPUT_FLOAT,
+		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+
+	/* if we have one, disable the force-bootloader pin */
+#ifdef BOARD_FORCE_BL_PIN
+	gpio_set_mode(BOARD_FORCE_BL_PORT,
+		GPIO_MODE_INPUT,
+		GPIO_CNF_INPUT_FLOAT,
+		BOARD_FORCE_BL_PIN);
+	gpio_clear(BOARD_FORCE_BL_PORT,BOARD_FORCE_BL_PIN);
+#endif
+
+	/* disable the backup registers */
+	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
+
+#ifdef INTERFACE_USART
+	/* configure usart pins */	
+	gpio_set_mode(BOARD_PORT_USART, 
+		      GPIO_MODE_INPUT,
+                      GPIO_CNF_INPUT_FLOAT,
+		      BOARD_PIN_TX);
+
+	/* disable USART peripheral clock */
+	rcc_peripheral_disable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
+#ifdef INTERFACE_I2C
+# error I2C GPIO config not handled yet
+#endif
+
+	/* disable the GPIO port peripheral clocks */
+	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
+	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
+	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
+	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
+	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPEEN);
+}
+
+/**
+  * @brief  Initializes the RCC clock configuration.
+  *
+  * @param  clock_setup : The clock configuration to set
+  */
+static inline void
+clock_init(void)
+{
+#if defined(INTERFACE_USB)
+	rcc_clock_setup_in_hsi_out_48mhz();
+#else
+	rcc_clock_setup_in_hsi_out_24mhz();
+#endif
+}
+
+/**
+  * @brief  Resets the RCC clock configuration to the default reset state.
+  * @note   The default reset state of the clock configuration is given below:
+  *            - HSI ON and used as system clock source
+  *            - HSE, PLL and PLLI2S OFF
+  *            - AHB, APB1 and APB2 prescaler set to 1.
+  *            - CSS, MCO1 and MCO2 OFF
+  *            - All interrupts disabled
+  * @note   This function doesn't modify the configuration of the
+  *            - Peripheral clocks  
+  *            - LSI, LSE and RTC clocks 
+  */
+void
+clock_deinit(void)
+{
+	/* Enable internal high-speed oscillator. */
+	rcc_osc_on(HSI);
+	rcc_wait_for_osc_ready(HSI);
+
+	/* Reset the RCC_CFGR register */
+	RCC_CFGR = 0x000000;
+
+	/* Stop the HSE, CSS, PLL, PLLI2S, PLLSAI */
+	rcc_osc_off(HSE);
+	rcc_osc_off(PLL);
+	rcc_css_disable();
+
+	/* Reset the HSEBYP bit */
+	rcc_osc_bypass_disable(HSE);
+
+	/* Reset the CIR register */
+	RCC_CIR = 0x000000;
 }
 
 uint32_t
@@ -214,11 +305,7 @@ main(void)
 	}
 
 	/* configure the clock for bootloader activity */
-#if defined(INTERFACE_USB)
-	rcc_clock_setup_in_hsi_out_48mhz();
-#else
-	rcc_clock_setup_in_hsi_out_24mhz();
-#endif
+	clock_init();
 
 	/* start the interface */
 	cinit(BOARD_INTERFACE_CONFIG, USART);
