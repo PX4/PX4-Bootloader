@@ -56,8 +56,6 @@ uart_cinit(void *config)
         usart_set_parity(usart, USART_PARITY_NONE);
         usart_set_flow_control(usart, USART_FLOWCONTROL_NONE);
 
-        uart_break_detect_enable(true);
-
         /* and enable */
         usart_enable(usart);
 
@@ -101,36 +99,4 @@ uart_cout(uint8_t *buf, unsigned len)
 	{
 		usart_send_blocking(usart, *buf++);
 	}
-}
-
-void
-uart_break_detect_enable(bool enable)
-{
-	if(enable)
-	{
-		USART_CR2(usart) |= USART_CR2_LINEN;
-	}
-	else
-	{
-		USART_CR2(usart) &= ~USART_CR2_LINEN;
-	}
-}
-
-void
-uart_send_break()
-{
-	USART_CR1(usart) |= USART_CR1_SBK;
-}
-
-
-bool
-uart_break_detected()
-{
-	if(USART_SR(usart) & USART_SR_LBD)
-	{
-		USART_SR(usart) &= ~USART_SR_LBD;
-		return true;
-	}
-
-	return false;
 }

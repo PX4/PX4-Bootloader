@@ -195,36 +195,43 @@ board_test_usart_receiving_break()
 	 *
 	 * Baud rate = 115200, therefore bit period = 8.68us
 	 * Half the bit rate = 4.34us
-	 * Set period to 4.3 microseconds (timer_period = timer_tick / timer_reset_frequency -1 = 168MHz / (1/4.34us) -1 = 728.12 ~= 728)
+	 * Set period to 4.34 microseconds (timer_period = timer_tick / timer_reset_frequency = 168MHz / (1/4.34us) = 729.12 ~= 729)
 	 */
-	systick_set_reload(728);  /* 4.3us tick, magic number */
+	systick_set_reload(729);  /* 4.3us tick, magic number */
 	systick_counter_enable(); // Start the timer 
 		
-	uint8_t low = 0;
-	uint8_t high = 0;
+	uint8_t cnt_consecutive_low = 0;
+	uint8_t cnt = 0;
 
 	/* Loop for 3 transmission byte cycles and count the low and high bits. Sampled at a rate to be able to count each bit twice.
 	 * 
 	 * One transmission byte is 10 bits (8 bytes of data + 1 start bit + 1 stop bit)
 	 * We sample at every half bit time, therefore 20 samples per transmission byte,
-	 * therefore 60 samples for 3 transmission bytes but if multiple breaks are being
-	 * sent, then the line is low for 10 bits and high for a single bit and then low
-	 * for another 10 bits (11 bits in total to count).
+	 * therefore 60 samples for 3 transmission bytes
 	 */
-	while (low+high < 66)
+	while (cnt < 60)
 	{
 		// Only read pin when SysTick timer is true
 		if (systick_get_countflag() == 1)
     		{
 			if(gpio_get(BOARD_PORT_USART, BOARD_PIN_RX) == 0)
 			{
-				low++;
+				cnt_consecutive_low++;	// Increment the consecutive low counter		
 			}
 			else
 			{
-				high++;
+				cnt_consecutive_low = 0; // Reset the consecutive low counter				
 			}
+
+			cnt++;
 		}
+
+		// If 9 consecutive low bits were received break out of the loop
+		if(cnt_consecutive_low >= 18)
+		{
+			break;
+		}
+		
 	}
 
 	systick_counter_disable(); // Stop the timer
@@ -232,10 +239,9 @@ board_test_usart_receiving_break()
 	/*
 	 * If a break is detected, return true, else false
 	 *
-	 * Break is detected if USART line detected a break, or if all of the bits were low (RX line held low),
-	 * or if the line was constantly receiving break signals (1 high bit followed by 9 low bits) (even if the USART didn't recognise them).
+	 * Break is detected if line was low for 9 consecutive bits.
 	 */ 
-	if(uart_break_detected() || (low > high && (high == 0 || (float)low/(float)high >= 9.0f)))
+	if(cnt_consecutive_low >= 18)
 	{
 		return true;
 	}
@@ -350,6 +356,7 @@ flash_func_read_otp(uint32_t address)
 
 	return *(uint32_t *)(address + OTP_BASE);
 }
+
 uint32_t
 flash_func_read_sn(uint32_t address)
 {
@@ -357,6 +364,7 @@ flash_func_read_sn(uint32_t address)
 	// it's 12 bytes, or 3 words. 
     return *(uint32_t *)(address + UDID_START);
 }
+
 void
 led_on(unsigned led)
 {
