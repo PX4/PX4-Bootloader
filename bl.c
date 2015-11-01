@@ -259,12 +259,14 @@ jump_to_app()
 	systick_interrupt_disable();
 	systick_counter_disable();
 
-	/* and set a specific LED pattern */
-	led_off(LED_ACTIVITY);
-	led_on(LED_BOOTLOADER);
-
-	/* the interface */
+	/* deinitialise the interface */
 	cfini();
+
+	/* reset the clock */
+	clock_deinit();
+
+	/* deinitialise the board */
+	board_deinit();
 
 	/* switch exception handlers to the application */
 	SCB_VTOR = APP_LOAD_ADDRESS;
