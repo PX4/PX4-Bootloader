@@ -492,7 +492,7 @@ bootloader(unsigned timeout)
 			//
 		case PROTO_GET_SYNC:
 			/* expect EOC */
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(2))
 				goto cmd_bad;
 			break;
 
@@ -511,7 +511,7 @@ bootloader(unsigned timeout)
 			arg = cin_wait(1000);
 			if (arg < 0)
 				goto cmd_bad;
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(2))
 				goto cmd_bad;
 
 			switch (arg) {
@@ -552,7 +552,7 @@ bootloader(unsigned timeout)
 			//
 		case PROTO_CHIP_ERASE:
 			/* expect EOC */
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(2))
 				goto cmd_bad;
 
 			// clear the bootloader LED while erasing - it stops blinking at random
@@ -586,7 +586,7 @@ bootloader(unsigned timeout)
 			//
 		case PROTO_PROG_MULTI:		// program bytes
 			// expect count
-			arg = cin_wait(1000);
+			arg = cin_wait(50);
 			if (arg < 0)
 				goto cmd_bad;
 
@@ -603,7 +603,7 @@ bootloader(unsigned timeout)
 					goto cmd_bad;
 				flash_buffer.c[i] = c;
 			}
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(2))
 				goto cmd_bad;
 			if (address == 0) {
 				// save the first word and don't program it until everything else is done
@@ -631,7 +631,7 @@ bootloader(unsigned timeout)
 			//
 		case PROTO_GET_CRC:
 			// expect EOC
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(2))
 				goto cmd_bad;
 
 			// compute CRC of the programmed area
@@ -661,7 +661,7 @@ bootloader(unsigned timeout)
 				if (cin_word(&index, 100))
 					goto cmd_bad;
 				// expect EOC
-				if (!wait_for_eoc(1000))
+				if (!wait_for_eoc(2))
 					goto cmd_bad;
 				cout_word(flash_func_read_otp(index));
 			}
@@ -678,7 +678,7 @@ bootloader(unsigned timeout)
 				if (cin_word(&index, 100))
 					goto cmd_bad;
 				// expect EOC
-				if (!wait_for_eoc(1000))
+				if (!wait_for_eoc(2))
 					goto cmd_bad;
 				cout_word(flash_func_read_sn(index));
 			}
@@ -691,7 +691,7 @@ bootloader(unsigned timeout)
 		case PROTO_GET_CHIP:
 			{ 
 				// expect EOC
-				if (!wait_for_eoc(1000))
+				if (!wait_for_eoc(2))
 					goto cmd_bad;
 		      	cout_word(*(uint32_t *)DBGMCU_IDCODE);
 			}
@@ -713,7 +713,7 @@ bootloader(unsigned timeout)
 				if (boot_delay > BOOT_DELAY_MAX)
 					goto cmd_bad;
 				// expect EOC
-				if (!wait_for_eoc(1000))
+				if (!wait_for_eoc(2))
 					goto cmd_bad;
 
 				uint32_t sig1 = flash_func_read_word(BOOT_DELAY_ADDRESS);
@@ -738,7 +738,7 @@ bootloader(unsigned timeout)
 		//
 		case PROTO_BOOT:
 			// expect EOC
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(2))
 				goto cmd_bad;
 
 			// program the deferred first word
