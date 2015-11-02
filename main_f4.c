@@ -522,15 +522,6 @@ main(void)
 	/* configure the clock for bootloader activity */
 	clock_init();	
 	
-	/* start the interface */
-#if INTERFACE_USART
-	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
-#endif
-#if INTERFACE_USB
-	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
-#endif
-
-
 
 	/* 
 	 * Check the force-bootloader register; if we find the signature there, don't
@@ -632,6 +623,15 @@ main(void)
 		/* booting failed, stay in the bootloader forever */
 		timeout = 0;
 	}
+
+
+	/* start the interface */
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
 
 
 #if 0
