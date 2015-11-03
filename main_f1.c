@@ -116,12 +116,8 @@ board_deinit(void)
 # error I2C GPIO config not handled yet
 #endif
 
-	/* disable the GPIO port peripheral clocks */
-	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
-	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
-	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
-	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
-	rcc_peripheral_disable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPEEN);
+	/* reset the APB2 peripheral clocks */
+	RCC_APB2ENR = 0x00000000; // XXX Magic reset number from STM32F1x reference manual
 }
 
 /**
