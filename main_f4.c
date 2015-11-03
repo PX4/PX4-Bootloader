@@ -335,17 +335,8 @@ board_deinit(void)
 	/* disable the power controller clock */
 	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 
-	/* disable the GPIO port peripheral clocks */
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPCEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPDEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPFEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPGEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPHEN);
-	rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPIEN);
+	/* disable the AHB peripheral clocks */
+	RCC_AHB1ENR = 0x00100000; // XXX Magic reset number from STM32F4x reference manual
 }
 
 /**
