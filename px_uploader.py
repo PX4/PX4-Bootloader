@@ -63,9 +63,47 @@ import zlib
 import base64
 import time
 import array
+import textwrap
 
 from sys import platform as _platform
 
+# Idea based an answer of the page (most voted first):
+# http://stackoverflow.com/questions/3160699/python-progress-bar
+class bar(object):
+  '''ProgressBar ...'''
+  # Example, b = bar("[", ".", "]", "#", 20)  ->  [##########..........]
+  def __init__(self, b1, b2, b3, b4, w = 40):
+    self.s1 = b1
+    self.s2 = b2
+    self.s3 = b3
+    self.rep = b4
+    if w > 0:
+      self.width = w
+    else:
+      self.width = 1
+
+  def init(self, s = 1):
+    if s <= 0:
+      s = 1
+    self.step_inc = 1.0 * self.width / s
+    self.step = 0
+    self.step_a = 0.0
+    sys.stdout.write(self.s1 + "%s" % (self.s2 * self.width) + self.s3)
+    sys.stdout.flush()
+    sys.stdout.write("\b" * (self.width + 1))
+
+  def update(self):
+    while (self.step_a > self.step):
+      sys.stdout.write(self.rep)
+      sys.stdout.flush()
+      self.step += 1
+    self.step_a += self.step_inc
+
+  def end(self):
+    while self.step < self.width:
+      self.step += 1
+      sys.stdout.write(self.rep)
+    sys.stdout.write("\n")
 
 class firmware(object):
         '''Loads a firmware file'''
@@ -159,6 +197,7 @@ class uploader(object):
         GET_CRC         = b'\x29'     # rev3+
         GET_OTP         = b'\x2a'     # rev4+  , get a word from OTP area
         GET_SN          = b'\x2b'     # rev4+  , get a word from SN area
+        GET_CHIP        = b'\x2c'     #        , read chip version (MCU IDCODE)
         REBOOT          = b'\x30'
         
         INFO_BL_REV     = b'\x01'        # bootloader protocol revision
@@ -221,7 +260,7 @@ class uploader(object):
                 # send a stream of ignored bytes longer than the longest possible conversation
                 # that we might still have in progress
 #               self.__send(uploader.NOP * (uploader.PROG_MULTI_MAX + 2))
-                self.port.flushInput()
+                self.port.flushInput() #self.port.reset_input_buffer()
                 self.__send(uploader.GET_SYNC
                             + uploader.EOC)
                 self.__getSync()
@@ -259,6 +298,105 @@ class uploader(object):
                 value = self.__recv(4)
                 self.__getSync()
                 return value
+
+        def __getCHIP(self):
+                self.__send(uploader.GET_CHIP + uploader.EOC)
+                value = self.__recv_int()
+                self.__getSync()
+                return value
+
+        def __dev_rev_id_s(self):
+                if self.dev_id == 0x413:
+                        self.dev_id_s = "STM32F405xx/07xx or STM32F415xx/17xx"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        elif self.rev_id == 0x1001:
+                                self.rev_id_s = "Revision Z"
+                        elif self.rev_id == 0x1003:
+                                self.rev_id_s = "Revision 1"
+                        elif self.rev_id == 0x1007:
+                                self.rev_id_s = "Revision 2"
+                        elif self.rev_id == 0x100F:
+                                self.rev_id_s = "Revision Y"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x419:
+                        self.dev_id_s = "STM32F42xxx or STM32F43xxx"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        elif self.rev_id == 0x1003:
+                                self.rev_id_s = "Revision Y"
+                        elif self.rev_id == 0x1007:
+                                self.rev_id_s = "Revision 1"
+                        elif self.rev_id == 0x2001:
+                                self.rev_id_s = "Revision 3"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x420:
+                        self.dev_id_s = "STM32F100xx, low and medium density value line devices"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        elif self.rev_id == 0x1001:
+                                self.rev_id_s = "Revision Z"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x428:
+                        self.dev_id_s = "STM32F100xx, high density value line devices"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x412:
+                        self.dev_id_s = "STM32F103xx ..., low density devices"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x410:
+                        self.dev_id_s = "STM32F103xx ..., medium density devices"
+                        if self.rev_id == 0x0000:
+                                self.rev_id_s = "Revision A"
+                        elif self.rev_id == 0x2000:
+                                self.rev_id_s = "Revision B"
+                        elif self.rev_id == 0x2001:
+                                self.rev_id_s = "Revision Z"
+                        elif self.rev_id == 0x2003:
+                                self.rev_id_s = "Revision Y, 1, 2 or X"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x414:
+                        self.dev_id_s = "STM32F103xx ..., high density devices"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A or 1"
+                        elif self.rev_id == 0x1001:
+                                self.rev_id_s = "Revision Z"
+                        elif self.rev_id == 0x1003:
+                                self.rev_id_s = "Revision Y, 1, 2 or X"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x430:
+                        self.dev_id_s = "STM32F103xx ..., XL density devices"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        else:
+                                self.rev_id_s = "unknown"
+                elif self.dev_id == 0x418:
+                        self.dev_id_s = "STM32F103xx ..., connectivity line devices"
+                        if self.rev_id == 0x1000:
+                                self.rev_id_s = "Revision A"
+                        elif self.rev_id == 0x1001:
+                                self.rev_id_s = "Revision Z"
+                        else:
+                                self.rev_id_s = "unknown"
+                else:
+                        self.dev_id_s = "unknown"
+
+        def __chip_name(self):
+                idcode = self.chip
+                self.dev_id = idcode & 0xFFF;          # Device identifier
+                self.rev_id = (idcode >> 16) & 0xFFFF; # Revision identifier
+                self.__dev_rev_id_s()
+                return ("dev_id: 0x%X (%s), rev_id: 0x%X (%s)" % (self.dev_id, self.dev_id_s, self.rev_id, self.rev_id_s))
 
         # send the CHIP_ERASE command and wait for the bootloader to become ready
         def __erase(self):
@@ -328,8 +466,14 @@ class uploader(object):
         def __program(self, fw):
                 code = fw.image
                 groups = self.__split_len(code, uploader.PROG_MULTI_MAX)
+                b = bar("[", ".", "]", "#")
+                g = len(groups)
+                print(g)
+                b.init(g)
                 for bytes in groups:
                         self.__program_multi(bytes)
+                        b.update()
+                b.end()
 
         # verify code
         def __verify_v2(self, fw):
@@ -342,16 +486,52 @@ class uploader(object):
                         if (not self.__verify_multi(bytes)):
                                 raise RuntimeError("Verification failed")
 
-        def __verify_v3(self, fw):
+        def __verify_crc(self, fw, s1, s2):
                 expect_crc = fw.crc(self.fw_maxsize)
-                self.__send(uploader.GET_CRC
-                            + uploader.EOC)
+                self.__send(uploader.GET_CRC + uploader.EOC)
                 report_crc = self.__recv_int()
                 self.__getSync()
-                if report_crc != expect_crc:
-                        print("Expected 0x%x" % expect_crc)
-                        print("Got      0x%x" % report_crc)
+                print(s1 + " 0x%X" % expect_crc)
+                print(s2 + " 0x%X" % report_crc)
+                return (report_crc != expect_crc)
+
+        def __verify_v3(self, fw):
+                if self.__verify_crc(fw, "Expected", "Got     "):
                         raise RuntimeError("Program CRC failed")
+
+        def identify_otp_sn(self):
+                # OTP added in v4:
+                if self.bl_rev > 3:
+                        i = 1
+                        for byte in range(0,32*6,4):
+                                x = self.__getOTP(byte)
+                                self.otp = self.otp + x
+                                if i == 4:
+                                        print(binascii.hexlify(x).decode('Latin-1').upper() + '\n', end='')
+                                        i = 1
+                                else:
+                                        i += 1
+                                        print(binascii.hexlify(x).decode('Latin-1').upper() + ' ', end='')
+                        # see src/modules/systemlib/otp.h in px4 code:
+                        self.otp_id = self.otp[0:4]
+                        self.otp_idtype = self.otp[4:5]
+                        self.otp_vid = self.otp[8:4:-1]
+                        self.otp_pid = self.otp[12:8:-1]
+                        self.otp_coa = self.otp[32:160]
+                        # show user:
+                        print("type: " + self.otp_id.decode('Latin-1'))
+                        print("idtype: " + binascii.b2a_qp(self.otp_idtype).decode('Latin-1'))
+                        print("vid: " + binascii.hexlify(self.otp_vid).decode('Latin-1').upper())
+                        print("pid: "+ binascii.hexlify(self.otp_pid).decode('Latin-1').upper())
+                        print("coa:")
+                        print(textwrap.fill(binascii.b2a_base64(self.otp_coa).decode('Latin-1'), width=32))
+                        print("sn: ", end='')
+                        for byte in range(0,12,4):
+                                x = self.__getSN(byte)
+                                x = x[::-1]  # reverse the bytes
+                                self.sn = self.sn + x
+                                print(binascii.hexlify(x).decode('Latin-1').upper(), end='') # show user
+                        print('')
 
         # get basic data about the board
         def identify(self):
@@ -367,6 +547,8 @@ class uploader(object):
                 self.board_type = self.__getInfo(uploader.INFO_BOARD_ID)
                 self.board_rev = self.__getInfo(uploader.INFO_BOARD_REV)
                 self.fw_maxsize = self.__getInfo(uploader.INFO_FLASH_SIZE)
+                self.chip = self.__getCHIP()
+                self.chip_name = self.__chip_name()
 
         # upload the firmware
         def upload(self, fw):
@@ -376,31 +558,10 @@ class uploader(object):
                 if self.fw_maxsize < fw.property('image_size'):
                         raise RuntimeError("Firmware image is too large for this board")
 
-                # OTP added in v4:
-                if self.bl_rev > 3:
-                    for byte in range(0,32*6,4):
-                        x = self.__getOTP(byte)
-                        self.otp  = self.otp + x
-                        print(binascii.hexlify(x).decode('Latin-1') + ' ', end='')
-                    # see src/modules/systemlib/otp.h in px4 code:
-                    self.otp_id = self.otp[0:4]
-                    self.otp_idtype = self.otp[4:5]
-                    self.otp_vid = self.otp[8:4:-1]
-                    self.otp_pid = self.otp[12:8:-1]
-                    self.otp_coa = self.otp[32:160]
-                    # show user:
-                    print("type: " + self.otp_id.decode('Latin-1'))
-                    print("idtype: " + binascii.b2a_qp(self.otp_idtype).decode('Latin-1'))
-                    print("vid: " + binascii.hexlify(self.otp_vid).decode('Latin-1'))
-                    print("pid: "+ binascii.hexlify(self.otp_pid).decode('Latin-1'))
-                    print("coa: "+ binascii.b2a_base64(self.otp_coa).decode('Latin-1'))
-                    print("sn: ", end='')
-                    for byte in range(0,12,4):
-                        x = self.__getSN(byte)
-                        x = x[::-1]  # reverse the bytes
-                        self.sn  = self.sn + x
-                        print(binascii.hexlify(x).decode('Latin-1'), end='') # show user
-                    print('')
+                if self.bl_rev > 2:
+                        if not self.__verify_crc(fw, "FW File", "Current"):
+                                raise RuntimeError("No need to upload. Already on the board")
+
                 print("erase...")
                 self.__erase()
 
@@ -447,7 +608,31 @@ args = parser.parse_args()
 
 # Load the firmware file
 fw = firmware(args.firmware)
-print("Loaded firmware for %x,%x, waiting for the bootloader..." % (fw.property('board_id'), fw.property('board_revision')))
+
+def __board_name(board_type):
+  if board_type == 0x05:
+    board_name = "PX4 FMU v1.x"
+  elif board_type == 0x06:
+    board_name = "PX4 FLOW v1.x"
+  elif board_type == 0x09:
+    board_name = "PX4 FMU v2.x"
+  elif board_type == 0x0A:
+    board_name = "PX4 IO v1.x/v2.x"
+  elif board_type == 0x14:
+    board_name = "MAVSTATION"
+  elif board_type == 0x62:
+    board_name = "Gumstix AEROCORE v1.x"
+  elif board_type == 0x63:
+    board_name = "DISCOVERY v1.x"
+  else:
+    board_name = "unknown"
+  return board_name
+
+print("Platform:", _platform)
+# python --version (...)
+print("pySerial version:", serial.VERSION)
+print("")
+print("Loaded firmware for %X,%X (%s), waiting for the bootloader..." % (fw.property('board_id'), fw.property('board_revision'), __board_name(fw.property('board_id'))))
 
 # Spin waiting for a device to show up
 while True:
@@ -492,7 +677,12 @@ while True:
                 try:
                         # identify the bootloader
                         up.identify()
-                        print("Found board %x,%x bootloader rev %x on %s" % (up.board_type, up.board_rev, up.bl_rev, port))
+                        print("-" * 80)
+                        print("Found board %X,%X (%s) bootloader rev %X on %s" % (up.board_type, up.board_rev, __board_name(up.board_type), up.bl_rev, port))
+                        print("Max size: %d bytes" % up.fw_maxsize)
+                        print(up.chip_name)
+                        up.identify_otp_sn()
+                        print("-" * 80)
 
                 except Exception:
                         # most probably a timeout talking to the port, no bootloader, try to reboot the board
