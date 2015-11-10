@@ -738,7 +738,7 @@ bootloader(unsigned timeout)
 		//
 		case PROTO_BOOT:
 			// expect EOC
-			if (!wait_for_eoc(2))
+			if (!wait_for_eoc(1000))
 				goto cmd_bad;
 
 			// program the deferred first word
