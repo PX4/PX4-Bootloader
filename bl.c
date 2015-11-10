@@ -657,7 +657,7 @@ bootloader(unsigned timeout)
 				flash_buffer.c[i] = c;
 			}
 
-			if (!wait_for_eoc(2)) {
+			if (!wait_for_eoc(200)) {
 				goto cmd_bad;
 			}
 
