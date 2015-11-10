@@ -44,10 +44,10 @@ board_init(void)
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&BOARD_CLOCK_LEDS_REGISTER, BOARD_CLOCK_LEDS);
 	gpio_set_mode(BOARD_PORT_LEDS,
-		GPIO_MODE_OUTPUT_50_MHZ,
-		GPIO_CNF_OUTPUT_PUSHPULL,
-		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
-	BOARD_LED_ON (
+		      GPIO_MODE_OUTPUT_50_MHZ,
+		      GPIO_CNF_OUTPUT_PUSHPULL,
+		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+	BOARD_LED_ON(
 		BOARD_PORT_LEDS,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 
@@ -55,11 +55,11 @@ board_init(void)
 #ifdef BOARD_FORCE_BL_PIN
 	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
 
-	gpio_set(BOARD_FORCE_BL_PORT,BOARD_FORCE_BL_PIN);
+	gpio_set(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 	gpio_set_mode(BOARD_FORCE_BL_PORT,
-		GPIO_MODE_INPUT,
-		BOARD_FORCE_BL_PULL,
-		BOARD_FORCE_BL_PIN);
+		      GPIO_MODE_INPUT,
+		      BOARD_FORCE_BL_PULL,
+		      BOARD_FORCE_BL_PIN);
 #endif
 
 	/* enable the backup registers */
@@ -68,9 +68,9 @@ board_init(void)
 #ifdef INTERFACE_USART
 	/* configure usart pins */
 	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
-	gpio_set_mode(BOARD_PORT_USART, 
+	gpio_set_mode(BOARD_PORT_USART,
 		      GPIO_MODE_OUTPUT_50_MHZ,
-                      GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
+		      GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
 		      BOARD_PIN_TX);
 
 	/* configure USART clock */
@@ -86,27 +86,27 @@ board_deinit(void)
 {
 	/* deinitialise LEDs */
 	gpio_set_mode(BOARD_PORT_LEDS,
-		GPIO_MODE_INPUT,
-		GPIO_CNF_INPUT_FLOAT,
-		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+		      GPIO_MODE_INPUT,
+		      GPIO_CNF_INPUT_FLOAT,
+		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 
 	/* if we have one, disable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
 	gpio_set_mode(BOARD_FORCE_BL_PORT,
-		GPIO_MODE_INPUT,
-		GPIO_CNF_INPUT_FLOAT,
-		BOARD_FORCE_BL_PIN);
-	gpio_clear(BOARD_FORCE_BL_PORT,BOARD_FORCE_BL_PIN);
+		      GPIO_MODE_INPUT,
+		      GPIO_CNF_INPUT_FLOAT,
+		      BOARD_FORCE_BL_PIN);
+	gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 #endif
 
 	/* disable the backup registers */
 	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
 
 #ifdef INTERFACE_USART
-	/* configure usart pins */	
-	gpio_set_mode(BOARD_PORT_USART, 
+	/* configure usart pins */
+	gpio_set_mode(BOARD_PORT_USART,
 		      GPIO_MODE_INPUT,
-                      GPIO_CNF_INPUT_FLOAT,
+		      GPIO_CNF_INPUT_FLOAT,
 		      BOARD_PIN_TX);
 
 	/* disable USART peripheral clock */
@@ -144,8 +144,8 @@ clock_init(void)
   *            - CSS, MCO1 and MCO2 OFF
   *            - All interrupts disabled
   * @note   This function doesn't modify the configuration of the
-  *            - Peripheral clocks  
-  *            - LSI, LSE and RTC clocks 
+  *            - Peripheral clocks
+  *            - LSI, LSE and RTC clocks
   */
 void
 clock_deinit(void)
@@ -172,16 +172,19 @@ clock_deinit(void)
 uint32_t
 flash_func_sector_size(unsigned sector)
 {
-	if (sector < BOARD_FLASH_SECTORS)
+	if (sector < BOARD_FLASH_SECTORS) {
 		return FLASH_SECTOR_SIZE;
+	}
+
 	return 0;
 }
 
 void
 flash_func_erase_sector(unsigned sector)
 {
-	if (sector < BOARD_FLASH_SECTORS)
+	if (sector < BOARD_FLASH_SECTORS) {
 		flash_erase_page(APP_LOAD_ADDRESS + (sector * FLASH_SECTOR_SIZE));
+	}
 }
 
 void
@@ -190,7 +193,7 @@ flash_func_write_word(uint32_t address, uint32_t word)
 	flash_program_word(address + APP_LOAD_ADDRESS, word);
 }
 
-uint32_t 
+uint32_t
 flash_func_read_word(uint32_t address)
 {
 	return *(uint32_t *)(address + APP_LOAD_ADDRESS);
@@ -204,7 +207,7 @@ flash_func_read_otp(uint32_t address)
 uint32_t
 flash_func_read_sn(uint32_t address)
 {
-    return 0;
+	return 0;
 }
 
 void
@@ -212,10 +215,11 @@ led_on(unsigned led)
 {
 	switch (led) {
 	case LED_ACTIVITY:
-		BOARD_LED_ON (BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
 		break;
+
 	case LED_BOOTLOADER:
-		BOARD_LED_ON (BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
 }
@@ -225,10 +229,11 @@ led_off(unsigned led)
 {
 	switch (led) {
 	case LED_ACTIVITY:
-		BOARD_LED_OFF (BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
 		break;
+
 	case LED_BOOTLOADER:
-		BOARD_LED_OFF (BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
 }
@@ -240,6 +245,7 @@ led_toggle(unsigned led)
 	case LED_ACTIVITY:
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
 		break;
+
 	case LED_BOOTLOADER:
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
@@ -252,10 +258,12 @@ should_wait(void)
 	bool result = false;
 
 	PWR_CR |= PWR_CR_DBP;
+
 	if (BKP_DR1 == BL_WAIT_MAGIC) {
 		result = true;
 		BKP_DR1 = 0;
 	}
+
 	PWR_CR &= ~PWR_CR_DBP;
 
 	return result;
@@ -279,13 +287,17 @@ main(void)
 #endif
 
 	/* if the app left a cookie saying we should wait, then wait */
-	if (should_wait())
+	if (should_wait()) {
 		timeout = BOOTLOADER_DELAY;
+	}
 
 #ifdef BOARD_FORCE_BL_PIN
+
 	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
-	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN))
+	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN)) {
 		timeout = 0xffffffff;
+	}
+
 #endif
 
 	/* look for the magic wait-in-bootloader value in backup register zero */
@@ -306,8 +318,7 @@ main(void)
 	/* start the interface */
 	cinit(BOARD_INTERFACE_CONFIG, USART);
 
-	while (1)
-	{
+	while (1) {
 		/* run the bootloader, possibly coming back after the timeout */
 		bootloader(timeout);
 

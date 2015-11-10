@@ -47,30 +47,31 @@ uart_cinit(void *config)
 
 	/* board is expected to do pin and clock setup */
 
-        /* do usart setup */
-        //USART_CR1(usart) |= (1 << 15);	/* because libopencm3 doesn't know the OVER8 bit */
-        usart_set_baudrate(usart, 115200);
-        usart_set_databits(usart, 8);
-        usart_set_stopbits(usart, USART_STOPBITS_1);
-        usart_set_mode(usart, USART_MODE_TX_RX);
-        usart_set_parity(usart, USART_PARITY_NONE);
-        usart_set_flow_control(usart, USART_FLOWCONTROL_NONE);
+	/* do usart setup */
+	//USART_CR1(usart) |= (1 << 15);	/* because libopencm3 doesn't know the OVER8 bit */
+	usart_set_baudrate(usart, 115200);
+	usart_set_databits(usart, 8);
+	usart_set_stopbits(usart, USART_STOPBITS_1);
+	usart_set_mode(usart, USART_MODE_TX_RX);
+	usart_set_parity(usart, USART_PARITY_NONE);
+	usart_set_flow_control(usart, USART_FLOWCONTROL_NONE);
 
-        /* and enable */
-        usart_enable(usart);
+	/* and enable */
+	usart_enable(usart);
 
 
 #if 0
-        usart_send_blocking(usart, 'B');
-        usart_send_blocking(usart, 'B');
-        usart_send_blocking(usart, 'B');
-        usart_send_blocking(usart, 'B');
+	usart_send_blocking(usart, 'B');
+	usart_send_blocking(usart, 'B');
+	usart_send_blocking(usart, 'B');
+	usart_send_blocking(usart, 'B');
 
-        while (true) {
-        	int c;
-        	c = usart_recv_blocking(usart);
-        	usart_send_blocking(usart, c);
-        }
+	while (true) {
+		int c;
+		c = usart_recv_blocking(usart);
+		usart_send_blocking(usart, c);
+	}
+
 #endif
 }
 
@@ -85,18 +86,17 @@ uart_cin(void)
 {
 	int c = -1;
 
-	if (USART_SR(usart) & USART_SR_RXNE)
-	{
+	if (USART_SR(usart) & USART_SR_RXNE) {
 		c = usart_recv(usart);
 	}
+
 	return c;
 }
 
 void
 uart_cout(uint8_t *buf, unsigned len)
 {
-	while (len--)
-	{
+	while (len--) {
 		usart_send_blocking(usart, *buf++);
 	}
 }
