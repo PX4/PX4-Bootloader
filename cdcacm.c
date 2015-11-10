@@ -198,12 +198,22 @@ static const struct usb_config_descriptor config = {
 	.interface = ifaces,
 };
 
+static const struct usb_cdc_line_coding line_coding = {
+	.dwDTERate = 115200,
+	.bCharFormat = USB_CDC_1_STOP_BITS,
+	.bParityType = USB_CDC_NO_PARITY,
+	.bDataBits = 0x08
+};
+
+#define USB_CDC_REQ_GET_LINE_CODING  0x21 /* do not implemented in libopencm3? */
+
 static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 				  uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
 {
 	(void)complete;
-	(void)buf;
 	(void)usbd_dev;
+
+	*buf = NULL;
 
 	switch (req->bRequest) {
 	case USB_CDC_REQ_SET_CONTROL_LINE_STATE: {
@@ -220,6 +230,9 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 			return 0;
 		}
 
+		return 1;
+	case USB_CDC_REQ_GET_LINE_CODING:
+		*buf = (uint8_t *)&line_coding;
 		return 1;
 	}
 
