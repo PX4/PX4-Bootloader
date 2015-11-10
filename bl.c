@@ -120,69 +120,75 @@ static uint8_t last_input;
 inline void cinit(void *config, uint8_t interface)
 {
 #if INTERFACE_USB
-	if(interface == USB)
-	{
-	  return usb_cinit();
+
+	if (interface == USB) {
+		return usb_cinit();
 	}
+
 #endif
 #if INTERFACE_USART
-	if(interface == USART)
-	{
-  		return uart_cinit(config);
+
+	if (interface == USART) {
+		return uart_cinit(config);
 	}
+
 #endif
 }
 inline void cfini(void)
 {
 #if INTERFACE_USB
-  usb_cfini();
+	usb_cfini();
 #endif
 #if INTERFACE_USART
-  uart_cfini();
+	uart_cfini();
 #endif
 }
 inline int cin(void)
 {
 #if INTERFACE_USB
-	if(bl_type == NONE || bl_type == USB)
-    {
+
+	if (bl_type == NONE || bl_type == USB) {
 		int usb_in = usb_cin();
-		if(usb_in >= 0)
-    	{
+
+		if (usb_in >= 0) {
 			last_input = USB;
 			return usb_in;
-    	}
-    }
+		}
+	}
+
 #endif
 
 #if INTERFACE_USART
-	if(bl_type == NONE || bl_type == USART)
-    {
+
+	if (bl_type == NONE || bl_type == USART) {
 		int	uart_in = uart_cin();
-    	if(uart_in >= 0)
-    	{
+
+		if (uart_in >= 0) {
 			last_input = USART;
 			return uart_in;
 		}
-    }
+	}
+
 #endif
-    
-    return -1;
+
+	return -1;
 }
 
 inline void cout(uint8_t *buf, unsigned len)
 {
 #if INTERFACE_USB
-    if(bl_type == NONE || bl_type == USB)
-    {
-        usb_cout(buf, len);	
-    }
+
+	if (bl_type == NONE || bl_type == USB) {
+		usb_cout(buf, len);
+	}
+
 #endif
 #if INTERFACE_USART
-    if(bl_type == NONE || bl_type == USART)
-    {
-	uart_cout(buf, len);
-    }
+
+	if (bl_type == NONE || bl_type == USART) {
+		uart_cout(buf, len);
+	}
+
 #endif
 
 }
@@ -218,6 +224,7 @@ buf_get(void)
 		ret = rx_buf[tail];
 		tail = (tail + 1) % sizeof(rx_buf);
 	}
+
 	return ret;
 }
 
@@ -227,7 +234,8 @@ do_jump(uint32_t stacktop, uint32_t entrypoint)
 	asm volatile(
 		"msr msp, %0	\n"
 		"bx	%1	\n"
-		: : "r" (stacktop), "r" (entrypoint) : );
+		: : "r"(stacktop), "r"(entrypoint) :);
+
 	// just to keep noreturn happy
 	for (;;) ;
 }
@@ -241,16 +249,21 @@ jump_to_app()
 	 * We refuse to program the first word of the app until the upload is marked
 	 * complete by the host.  So if it's not 0xffffffff, we should try booting it.
 	 */
-	if (app_base[0] == 0xffffffff)
+	if (app_base[0] == 0xffffffff) {
 		return;
+	}
+
 	/*
 	 * The second word of the app is the entrypoint; it must point within the
 	 * flash area (or we have a bad flash).
 	 */
-	if (app_base[1] < APP_LOAD_ADDRESS)
+	if (app_base[1] < APP_LOAD_ADDRESS) {
 		return;
-	if (app_base[1] >= (APP_LOAD_ADDRESS + board_info.fw_size))
+	}
+
+	if (app_base[1] >= (APP_LOAD_ADDRESS + board_info.fw_size)) {
 		return;
+	}
 
 	/* just for paranoia's sake */
 	flash_lock();
@@ -283,8 +296,9 @@ sys_tick_handler(void)
 	unsigned i;
 
 	for (i = 0; i < NTIMERS; i++)
-		if (timer[i] > 0)
+		if (timer[i] > 0) {
 			timer[i]--;
+		}
 
 	if ((_led_state == LED_BLINK) && (timer[TIMER_LED] == 0)) {
 		led_toggle(LED_BOOTLOADER);
@@ -297,7 +311,7 @@ delay(unsigned msec)
 {
 	timer[TIMER_DELAY] = msec;
 
-	while(timer[TIMER_DELAY] > 0)
+	while (timer[TIMER_DELAY] > 0)
 		;
 }
 
@@ -305,7 +319,8 @@ static void
 led_set(enum led_state state)
 {
 	_led_state = state;
-	switch(state) {
+
+	switch (state) {
 	case LED_OFF:
 		led_off(LED_BOOTLOADER);
 		break;
@@ -366,6 +381,7 @@ cin_wait(unsigned timeout)
 
 	do {
 		c = cin();
+
 		if (c >= 0) {
 			cin_count++;
 			break;
@@ -378,7 +394,7 @@ cin_wait(unsigned timeout)
 
 /**
  * Function to wait for EOC
- * 
+ *
  * @param timeout length of time in ms to wait for the EOC to be received
  * @return true if the EOC is returned within the timeout perio, else false
  */
@@ -404,8 +420,11 @@ cin_word(uint32_t *wp, unsigned timeout)
 
 	for (unsigned i = 0; i < 4; i++) {
 		int c = cin_wait(timeout);
-		if (c < 0)
+
+		if (c < 0) {
 			return c;
+		}
+
 		u.b[i] = c & 0xff;
 	}
 
@@ -427,16 +446,20 @@ crc32(const uint8_t *src, unsigned len, unsigned state)
 			for (unsigned j = 0; j < 8; j++) {
 				if (c & 1) {
 					c = 0xedb88320U ^ (c >> 1);
+
 				} else {
 					c = c >> 1;
 				}
 			}
+
 			crctab[i] = c;
 		}
 	}
 
-	for (unsigned i = 0; i < len; i++)
+	for (unsigned i = 0; i < len; i++) {
 		state = crctab[(state ^ src[i]) & 0xff] ^ (state >> 8);
+	}
+
 	return state;
 }
 
@@ -455,8 +478,9 @@ bootloader(unsigned timeout)
 	systick_counter_enable();
 
 	/* if we are working with a timeout, start it running */
-	if (timeout)
+	if (timeout) {
 		timer[TIMER_BL_WAIT] = timeout;
+	}
 
 	/* make the LED blink while we are idle */
 	led_set(LED_BLINK);
@@ -471,48 +495,58 @@ bootloader(unsigned timeout)
 
 		// Wait for a command byte
 		led_off(LED_ACTIVITY);
+
 		do {
 			/* if we have a timeout and the timer has expired, return now */
-			if (timeout && !timer[TIMER_BL_WAIT])
+			if (timeout && !timer[TIMER_BL_WAIT]) {
 				return;
+			}
 
 			/* try to get a byte from the host */
 			c = cin_wait(0);
 
 		} while (c < 0);
+
 		led_on(LED_ACTIVITY);
 
 		// handle the command byte
 		switch (c) {
 
-			// sync
-			//
-			// command:		GET_SYNC/EOC
-			// reply:		INSYNC/OK
-			//
+		// sync
+		//
+		// command:		GET_SYNC/EOC
+		// reply:		INSYNC/OK
+		//
 		case PROTO_GET_SYNC:
+
 			/* expect EOC */
-			if (!wait_for_eoc(2))
+			if (!wait_for_eoc(2)) {
 				goto cmd_bad;
+			}
+
 			break;
 
-			// get device info
-			//
-			// command:		GET_DEVICE/<arg:1>/EOC
-			// BL_REV reply:	<revision:4>/INSYNC/EOC
-			// BOARD_ID reply:	<board type:4>/INSYNC/EOC
-			// BOARD_REV reply:	<board rev:4>/INSYNC/EOC
-			// FW_SIZE reply:	<firmware size:4>/INSYNC/EOC
-			// VEC_AREA reply	<vectors 7-10:16>/INSYNC/EOC
-			// bad arg reply:	INSYNC/INVALID
-			//
+		// get device info
+		//
+		// command:		GET_DEVICE/<arg:1>/EOC
+		// BL_REV reply:	<revision:4>/INSYNC/EOC
+		// BOARD_ID reply:	<board type:4>/INSYNC/EOC
+		// BOARD_REV reply:	<board rev:4>/INSYNC/EOC
+		// FW_SIZE reply:	<firmware size:4>/INSYNC/EOC
+		// VEC_AREA reply	<vectors 7-10:16>/INSYNC/EOC
+		// bad arg reply:	INSYNC/INVALID
+		//
 		case PROTO_GET_DEVICE:
 			/* expect arg then EOC */
 			arg = cin_wait(1000);
-			if (arg < 0)
+
+			if (arg < 0) {
 				goto cmd_bad;
-			if (!wait_for_eoc(2))
+			}
+
+			if (!wait_for_eoc(2)) {
 				goto cmd_bad;
+			}
 
 			switch (arg) {
 			case PROTO_DEVICE_BL_REV:
@@ -537,23 +571,27 @@ bootloader(unsigned timeout)
 
 					cout((uint8_t *)&bytes, sizeof(bytes));
 				}
+
 				break;
 
 			default:
 				goto cmd_bad;
 			}
+
 			break;
 
-			// erase and prepare for programming
-			//
-			// command:		ERASE/EOC
-			// success reply:	INSYNC/OK
-			// erase failure:	INSYNC/FAILURE
-			//
+		// erase and prepare for programming
+		//
+		// command:		ERASE/EOC
+		// success reply:	INSYNC/OK
+		// erase failure:	INSYNC/FAILURE
+		//
 		case PROTO_CHIP_ERASE:
+
 			/* expect EOC */
-			if (!wait_for_eoc(2))
+			if (!wait_for_eoc(2)) {
 				goto cmd_bad;
+			}
 
 			// clear the bootloader LED while erasing - it stops blinking at random
 			// and that's confusing
@@ -561,145 +599,184 @@ bootloader(unsigned timeout)
 
 			// erase all sectors
 			flash_unlock();
-			for (int i = 0; flash_func_sector_size(i) != 0; i++)
+
+			for (int i = 0; flash_func_sector_size(i) != 0; i++) {
 				flash_func_erase_sector(i);
+			}
 
 			// enable the LED while verifying the erase
 			led_set(LED_OFF);
 
 			// verify the erase
 			for (address = 0; address < board_info.fw_size; address += 4)
-				if (flash_func_read_word(address) != 0xffffffff)
+				if (flash_func_read_word(address) != 0xffffffff) {
 					goto cmd_fail;
+				}
+
 			address = 0;
 
 			// resume blinking
 			led_set(LED_BLINK);
 			break;
 
-			// program bytes at current address
-			//
-			// command:		PROG_MULTI/<len:1>/<data:len>/EOC
-			// success reply:	INSYNC/OK
-			// invalid reply:	INSYNC/INVALID
-			// readback failure:	INSYNC/FAILURE
-			//
+		// program bytes at current address
+		//
+		// command:		PROG_MULTI/<len:1>/<data:len>/EOC
+		// success reply:	INSYNC/OK
+		// invalid reply:	INSYNC/INVALID
+		// readback failure:	INSYNC/FAILURE
+		//
 		case PROTO_PROG_MULTI:		// program bytes
 			// expect count
 			arg = cin_wait(50);
-			if (arg < 0)
+
+			if (arg < 0) {
 				goto cmd_bad;
+			}
 
 			// sanity-check arguments
-			if (arg % 4)
+			if (arg % 4) {
 				goto cmd_bad;
-			if ((address + arg) > board_info.fw_size)
+			}
+
+			if ((address + arg) > board_info.fw_size) {
 				goto cmd_bad;
-			if (arg > sizeof(flash_buffer.c))
+			}
+
+			if (arg > sizeof(flash_buffer.c)) {
 				goto cmd_bad;
+			}
+
 			for (int i = 0; i < arg; i++) {
 				c = cin_wait(1000);
-				if (c < 0)
+
+				if (c < 0) {
 					goto cmd_bad;
+				}
+
 				flash_buffer.c[i] = c;
 			}
-			if (!wait_for_eoc(2))
+
+			if (!wait_for_eoc(2)) {
 				goto cmd_bad;
+			}
+
 			if (address == 0) {
 				// save the first word and don't program it until everything else is done
 				first_word = flash_buffer.w[0];
 				// replace first word with bits we can overwrite later
 				flash_buffer.w[0] = 0xffffffff;
 			}
+
 			arg /= 4;
+
 			for (int i = 0; i < arg; i++) {
 
 				// program the word
 				flash_func_write_word(address, flash_buffer.w[i]);
 
 				// do immediate read-back verify
-				if (flash_func_read_word(address) != flash_buffer.w[i])
+				if (flash_func_read_word(address) != flash_buffer.w[i]) {
 					goto cmd_fail;
+				}
+
 				address += 4;
 			}
+
 			break;
 
-			// fetch CRC of the entire flash area
-			//
-			// command:			GET_CRC/EOC
-			// reply:			<crc:4>/INSYNC/OK
-			//
+		// fetch CRC of the entire flash area
+		//
+		// command:			GET_CRC/EOC
+		// reply:			<crc:4>/INSYNC/OK
+		//
 		case PROTO_GET_CRC:
+
 			// expect EOC
-			if (!wait_for_eoc(2))
+			if (!wait_for_eoc(2)) {
 				goto cmd_bad;
+			}
 
 			// compute CRC of the programmed area
 			uint32_t sum = 0;
+
 			for (unsigned p = 0; p < board_info.fw_size; p += 4) {
 				uint32_t bytes;
 
 				if ((p == 0) && (first_word != 0xffffffff)) {
 					bytes = first_word;
+
 				} else {
 					bytes = flash_func_read_word(p);
 				}
+
 				sum = crc32((uint8_t *)&bytes, sizeof(bytes), sum);
 			}
+
 			cout_word(sum);
 			break;
 
-			// read a word from the OTP
-			//
-			// command:			GET_OTP/<addr:4>/EOC
-			// reply:			<value:4>/INSYNC/OK
+		// read a word from the OTP
+		//
+		// command:			GET_OTP/<addr:4>/EOC
+		// reply:			<value:4>/INSYNC/OK
 		case PROTO_GET_OTP:
 			// expect argument
 			{
 				uint32_t index = 0;
 
-				if (cin_word(&index, 100))
+				if (cin_word(&index, 100)) {
 					goto cmd_bad;
+				}
+
 				// expect EOC
-				if (!wait_for_eoc(2))
+				if (!wait_for_eoc(2)) {
 					goto cmd_bad;
+				}
+
 				cout_word(flash_func_read_otp(index));
 			}
 			break;
 
-			// read the SN from the UDID
-			//
-			// command:			GET_SN/<addr:4>/EOC
-			// reply:			<value:4>/INSYNC/OK
+		// read the SN from the UDID
+		//
+		// command:			GET_SN/<addr:4>/EOC
+		// reply:			<value:4>/INSYNC/OK
 		case PROTO_GET_SN:
 			// expect argument
 			{
 				uint32_t index = 0;
-				if (cin_word(&index, 100))
+
+				if (cin_word(&index, 100)) {
 					goto cmd_bad;
+				}
+
 				// expect EOC
-				if (!wait_for_eoc(2))
+				if (!wait_for_eoc(2)) {
 					goto cmd_bad;
+				}
+
 				cout_word(flash_func_read_sn(index));
 			}
 			break;
 
-			// read the chip ID code
-			//
-			// command:			GET_CHIP/EOC
-			// reply:			<value:4>/INSYNC/OK
-		case PROTO_GET_CHIP:
-			{ 
+		// read the chip ID code
+		//
+		// command:			GET_CHIP/EOC
+		// reply:			<value:4>/INSYNC/OK
+		case PROTO_GET_CHIP: {
 				// expect EOC
-				if (!wait_for_eoc(2))
+				if (!wait_for_eoc(2)) {
 					goto cmd_bad;
-		      	cout_word(*(uint32_t *)DBGMCU_IDCODE);
+				}
+
+				cout_word(*(uint32_t *)DBGMCU_IDCODE);
 			}
 			break;
 
 #ifdef BOOT_DELAY_ADDRESS
-                case PROTO_SET_DELAY:
-			{
+
+		case PROTO_SET_DELAY: {
 				/*
 				  Allow for the bootloader to setup a
 				  boot delay signature which tells the
@@ -707,26 +784,36 @@ bootloader(unsigned timeout)
 				  specified number of seconds on boot.
 				 */
 				int v = cin_wait(100);
-				if (v < 0)
+
+				if (v < 0) {
 					goto cmd_bad;
+				}
+
 				uint8_t boot_delay = v & 0xFF;
-				if (boot_delay > BOOT_DELAY_MAX)
+
+				if (boot_delay > BOOT_DELAY_MAX) {
 					goto cmd_bad;
+				}
+
 				// expect EOC
-				if (!wait_for_eoc(2))
+				if (!wait_for_eoc(2)) {
 					goto cmd_bad;
+				}
 
 				uint32_t sig1 = flash_func_read_word(BOOT_DELAY_ADDRESS);
-				uint32_t sig2 = flash_func_read_word(BOOT_DELAY_ADDRESS+4);
+				uint32_t sig2 = flash_func_read_word(BOOT_DELAY_ADDRESS + 4);
 
 				if (sig1 != BOOT_DELAY_SIGNATURE1 ||
-                                    sig2 != BOOT_DELAY_SIGNATURE2)
+				    sig2 != BOOT_DELAY_SIGNATURE2) {
 					goto cmd_bad;
+				}
 
 				uint32_t value = (BOOT_DELAY_SIGNATURE1 & 0xFFFFFF00) | boot_delay;
 				flash_func_write_word(BOOT_DELAY_ADDRESS, value);
-				if (flash_func_read_word(BOOT_DELAY_ADDRESS) != value)
+
+				if (flash_func_read_word(BOOT_DELAY_ADDRESS) != value) {
 					goto cmd_fail;
+				}
 			}
 			break;
 #endif
@@ -737,15 +824,19 @@ bootloader(unsigned timeout)
 		// reply:			INSYNC/OK
 		//
 		case PROTO_BOOT:
+
 			// expect EOC
-			if (!wait_for_eoc(1000))
+			if (!wait_for_eoc(1000)) {
 				goto cmd_bad;
+			}
 
 			// program the deferred first word
 			if (first_word != 0xffffffff) {
 				flash_func_write_word(0, first_word);
-				if (flash_func_read_word(0) != first_word)
+
+				if (flash_func_read_word(0) != first_word) {
 					goto cmd_fail;
+				}
 
 				// revert in case the flash was bad...
 				first_word = 0xffffffff;
@@ -765,13 +856,13 @@ bootloader(unsigned timeout)
 		default:
 			continue;
 		}
+
 		// we got a command worth syncing, so kill the timeout because
 		// we are probably talking to the uploader
 		timeout = 0;
 
 		// Set the bootloader port based on the port from which we received the first valid command
-		if(bl_type == NONE)
-		{
+		if (bl_type == NONE) {
 			bl_type = last_input;
 		}
 
