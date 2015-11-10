@@ -42,6 +42,8 @@
 
 #include "bl.h"
 
+#define USB_CDC_REQ_GET_LINE_CODING			0x21 // Not defined in libopencm3
+
 
 /* Provide the stings for the Index 1-n as a requested index of 0 is used for the supported langages
  *  and is hard coded in the usb lib. The array below is indexed by requested index-1, therefore
@@ -198,6 +200,13 @@ static const struct usb_config_descriptor config = {
 	.interface = ifaces,
 };
 
+static const struct usb_cdc_line_coding line_coding = {
+	.dwDTERate = 115200,
+	.bCharFormat = USB_CDC_1_STOP_BITS,
+	.bParityType = USB_CDC_NO_PARITY,
+	.bDataBits = 0x08
+};
+
 static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 				  uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
 {
@@ -220,6 +229,10 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 			return 0;
 		}
 
+		return 1;
+
+	case USB_CDC_REQ_GET_LINE_CODING:
+		*buf = (uint8_t *)&line_coding;
 		return 1;
 	}
 
