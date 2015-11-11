@@ -307,7 +307,7 @@
 # define BOOTLOADER_DELAY               3000
 # define BOARD_MAVSTATION
 # define INTERFACE_USB                  1
-# define INTERFACE_USART                0
+# define INTERFACE_USART                1
 # define USBDEVICESTRING                "MAVSTATION BL v0.1"
 # define USBPRODUCTID                   0x0014
 
