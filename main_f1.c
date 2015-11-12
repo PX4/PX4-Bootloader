@@ -15,10 +15,7 @@
 
 #include "bl.h"
 
-/*
- * Yes, the nonsense required to configure GPIOs with this
- * library is truly insane...
- */
+#define UDID_START      0x1FFFF7E8
 
 
 #ifdef INTERFACE_USART
@@ -204,10 +201,13 @@ flash_func_read_otp(uint32_t address)
 {
 	return 0;
 }
+
 uint32_t
 flash_func_read_sn(uint32_t address)
 {
-	return 0;
+	// read a byte out from unique chip ID area
+  	// it's 12 bytes, or 3 words.
+  	return *(uint32_t *)(address + UDID_START);
 }
 
 void
