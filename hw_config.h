@@ -327,8 +327,8 @@
 # define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
 # define BOARD_PORT_USART               GPIOA
-# define BOARD_PIN_TX                   GPIO_USART1_TX
-# define BOARD_PIN_RX                   GPIO_USART1_RX
+# define BOARD_PIN_TX                   GPIO_USART2_TX
+# define BOARD_PIN_RX                   GPIO_USART2_RX
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_APB2ENR
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_APB2ENR_IOPAEN
 
