@@ -129,11 +129,7 @@ board_deinit(void)
 static inline void
 clock_init(void)
 {
-#if INTERFACE_USB
 	rcc_clock_setup_in_hsi_out_48mhz();
-#else
-	rcc_clock_setup_in_hsi_out_24mhz();
-#endif
 }
 
 /**
