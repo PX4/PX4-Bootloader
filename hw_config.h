@@ -102,17 +102,17 @@
 # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
 
 /****************************************************************************
- * TARGET_HW_PX4_FMU_V3
+ * TARGET_HW_PX4_FMU_V4
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_PX4_FMU_V3)
+#elif  defined(TARGET_HW_PX4_FMU_V4)
 
 # define APP_LOAD_ADDRESS               0x08004000
 # define BOOTLOADER_DELAY               5000
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
-# define USBDEVICESTRING                "PX4 BL FMU v3.x"
+# define USBDEVICESTRING                "PX4 BL FMU v4.x"
 # define USBPRODUCTID                   0x0012
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
@@ -123,7 +123,7 @@
 
 # define OSC_FREQ                       24
 
-# define BOARD_PIN_LED_ACTIVITY         0               // no activity LED
+# define BOARD_PIN_LED_ACTIVITY         GPIO3
 # define BOARD_PIN_LED_BOOTLOADER       GPIO11|GPIO10
 # define BOARD_PORT_LEDS                GPIOB
 # define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPBEN
