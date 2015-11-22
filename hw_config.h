@@ -356,7 +356,7 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USB_VBUS_SENSE_DISABLED  1
+# define BOARD_USB_VBUS_SENSE_DISABLED
 
 #else
 # error Undefined Target Hardware
