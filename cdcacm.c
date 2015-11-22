@@ -35,6 +35,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/flash.h>
+#include <libopencm3/stm32/otg_fs.h>
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/usb/usbd.h>
@@ -288,6 +289,10 @@ usb_cinit(void)
 
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
+
+#if defined(BOARD_USB_VBUS_SENSE_DISABLED)
+	OTG_FS_GCCFG |= OTG_FS_GCCFG_NOVBUSSENS;
+#endif
 
 	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
 			     usbd_control_buffer, sizeof(usbd_control_buffer));
