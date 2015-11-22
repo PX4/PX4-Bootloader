@@ -342,7 +342,6 @@
 # define INTERFACE_USART                0
 # define USBDEVICESTRING                "Crazyflie BL"
 # define USBPRODUCTID                   0x0016
-# define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     5
 # define BOARD_FLASH_SECTORS            11

@@ -601,12 +601,15 @@ main(void)
 	 * If the force-bootloader pins are tied, we will stay here until they are removed and
 	 * we then time out.
 	 */
+#if defined(BOARD_USB_VBUS_SENSE_DISABLED)
+	try_boot = false;
+#else
 	if (gpio_get(GPIOA, GPIO9) != 0) {
 
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
-
+#endif
 #endif
 
 #if INTERFACE_USART
