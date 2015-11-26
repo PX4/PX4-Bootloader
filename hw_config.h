@@ -94,12 +94,19 @@
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
 
-# define BOARD_FORCE_BL_PIN_OUT         GPIO14
-# define BOARD_FORCE_BL_PIN_IN          GPIO11
-# define BOARD_FORCE_BL_PORT            GPIOE
-# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
-# define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPEEN
-# define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
+/*
+ * Uncommenting this allows to force the bootloader through
+ * a PWM output pin. As this can accidentally initialize
+ * an ESC prematurely, it is not recommended. This feature
+ * has not been used and hence defaults now to off.
+ *
+ * # define BOARD_FORCE_BL_PIN_OUT         GPIO14
+ * # define BOARD_FORCE_BL_PIN_IN          GPIO11
+ * # define BOARD_FORCE_BL_PORT            GPIOE
+ * # define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
+ * # define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPEEN
+ * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
+ */
 
 /****************************************************************************
  * TARGET_HW_PX4_FMU_V4
@@ -141,12 +148,19 @@
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
 
-# define BOARD_FORCE_BL_PIN_OUT         GPIO14
-# define BOARD_FORCE_BL_PIN_IN          GPIO11
-# define BOARD_FORCE_BL_PORT            GPIOE
-# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
-# define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPEEN
-# define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
+/*
+ * Uncommenting this allows to force the bootloader through
+ * a PWM output pin. As this can accidentally initialize
+ * an ESC prematurely, it is not recommended. This feature
+ * has not been used and hence defaults now to off.
+ *
+ * # define BOARD_FORCE_BL_PIN_OUT         GPIO14
+ * # define BOARD_FORCE_BL_PIN_IN          GPIO11
+ * # define BOARD_FORCE_BL_PORT            GPIOE
+ * # define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
+ * # define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPEEN
+ * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
+*/
 
 /****************************************************************************
  * TARGET_HW_PX4_FLOW_V1
