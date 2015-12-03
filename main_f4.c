@@ -54,7 +54,57 @@ static struct {
 #define OTP_SIZE			512
 #define UDID_START		        0x1FFF7A10
 
+// address of MCU IDCODE
+#define DBGMCU_IDCODE		0xE0042000
+#define STM32_UNKNOWN	0
+#define STM32F40x_41x	0x413
+#define STM32F42x_43x	0x419
+#define STM32F42x_446xx	0x421
 
+#define REVID_MASK	0xFFFF0000
+#define DEVID_MASK	0xFFF
+
+/* magic numbers from reference manual */
+
+typedef enum mcu_rev_e {
+	MCU_REV_STM32F4_REV_A = 0x1000,
+	MCU_REV_STM32F4_REV_Z = 0x1001,
+	MCU_REV_STM32F4_REV_Y = 0x1003,
+	MCU_REV_STM32F4_REV_1 = 0x1007,
+	MCU_REV_STM32F4_REV_3 = 0x2001
+} mcu_rev_e;
+
+typedef struct mcu_des_t {
+	uint16_t mcuid;
+	const char *desc;
+	char  rev;
+} mcu_des_t;
+
+// The default CPU ID  of STM32_UNKNOWN is 0 and is in offset 0
+// Before a rev is known it is set to ?
+// There for new silicon will result in STM32F4..,?
+mcu_des_t mcu_descriptions[] = {
+	{ STM32_UNKNOWN,	"STM32F???",    '?'},
+	{ STM32F40x_41x, 	"STM32F40x",	'?'},
+	{ STM32F42x_43x, 	"STM32F42x",	'?'},
+	{ STM32F42x_446xx, 	"STM32F446XX",	'?'},
+};
+
+typedef struct mcu_rev_t {
+	mcu_rev_e revid;
+	char  rev;
+} mcu_rev_t;
+
+const mcu_rev_t silicon_revs[] = {
+	{MCU_REV_STM32F4_REV_3, '3'}, /* Revision 3 */
+
+	{MCU_REV_STM32F4_REV_A, 'A'}, /* Revision A */  // FIRST_BAD_SILICON_OFFSET (place good ones above this line)
+	{MCU_REV_STM32F4_REV_Z, 'Z'}, /* Revision Z */
+	{MCU_REV_STM32F4_REV_Y, 'Y'}, /* Revision Y */
+	{MCU_REV_STM32F4_REV_1, '1'}, /* Revision 1 */
+};
+
+#define FIRST_BAD_SILICON_OFFSET 1
 
 #define APP_SIZE_MAX			(BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
 
@@ -247,11 +297,18 @@ static void
 board_init(void)
 {
 	/* fix up the max firmware size, we have to read memory to get this */
-	board_info.fw_size = APP_SIZE_MAX,
+	board_info.fw_size = APP_SIZE_MAX;
+#if defined(TARGET_HW_PX4_FMU_V2) || defined(TARGET_HW_PX4_FMU_V4)
+
+	if (check_silicon() && board_info.fw_size == (2 * 1024 * 1024) - BOOTLOADER_RESERVATION_SIZE) {
+		board_info.fw_size = (1024 * 1024) - BOOTLOADER_RESERVATION_SIZE;
+	}
+
+#endif
 
 #if INTERFACE_USB
-		   /* enable GPIO9 with a pulldown to sniff VBUS */
-		   rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	/* enable GPIO9 with a pulldown to sniff VBUS */
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
 #endif
 
@@ -463,6 +520,67 @@ flash_func_read_otp(uint32_t address)
 	return *(uint32_t *)(address + OTP_BASE);
 }
 
+uint32_t get_mcu_id(void)
+{
+	return *(uint32_t *)DBGMCU_IDCODE;
+}
+
+int get_mcu_desc(int max, uint8_t *revstr)
+{
+	uint32_t idcode = (*(uint32_t *)DBGMCU_IDCODE);
+	int32_t mcuid = idcode & DEVID_MASK;
+	mcu_rev_e revid = (idcode & REVID_MASK) >> 16;
+
+	mcu_des_t des = mcu_descriptions[STM32_UNKNOWN];
+
+	for (int i = 0; i < arraySize(mcu_descriptions); i++) {
+		if (mcuid == mcu_descriptions[i].mcuid) {
+			des = mcu_descriptions[i];
+			break;
+		}
+	}
+
+	for (int i = 0; i < arraySize(silicon_revs); i++) {
+		if (silicon_revs[i].revid == revid) {
+			des.rev = silicon_revs[i].rev;
+		}
+	}
+
+	uint8_t *endp = &revstr[max - 1];
+	uint8_t *strp = revstr;
+
+	while (strp < endp && *des.desc) {
+		*strp++ = *des.desc++;
+	}
+
+	if (strp < endp) {
+		*strp++ = ',';
+	}
+
+	if (strp < endp) {
+		*strp++ = des.rev;
+	}
+
+	return  strp - revstr;
+}
+
+
+int check_silicon(void)
+{
+#if defined(TARGET_HW_PX4_FMU_V2) || defined(TARGET_HW_PX4_FMU_V4)
+	uint32_t idcode = (*(uint32_t *)DBGMCU_IDCODE);
+	mcu_rev_e revid = (idcode & REVID_MASK) >> 16;
+
+	for (int i = FIRST_BAD_SILICON_OFFSET; i < arraySize(silicon_revs); i++) {
+		if (silicon_revs[i].revid == revid) {
+			return -1;
+		}
+	}
+
+#endif
+	return 0;
+}
+
 uint32_t
 flash_func_read_sn(uint32_t address)
 {
@@ -532,7 +650,6 @@ main(void)
 
 	/* configure the clock for bootloader activity */
 	clock_init();
-
 
 	/*
 	 * Check the force-bootloader register; if we find the signature there, don't

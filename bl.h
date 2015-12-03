@@ -93,6 +93,9 @@ extern int buf_get(void);
 # define BOOT_DELAY_MAX		30
 #endif
 
+#define MAX_DES_LENGTH 20
+
+#define arraySize(a) (sizeof((a))/sizeof(((a)[0])))
 extern void led_on(unsigned led);
 extern void led_off(unsigned led);
 extern void led_toggle(unsigned led);
@@ -106,6 +109,10 @@ extern void flash_func_write_word(uint32_t address, uint32_t word);
 extern uint32_t flash_func_read_word(uint32_t address);
 extern uint32_t flash_func_read_otp(uint32_t address);
 extern uint32_t flash_func_read_sn(uint32_t address);
+
+extern uint32_t get_mcu_id(void);
+int get_mcu_desc(int max, uint8_t *revstr);
+extern int check_silicon(void);
 
 /*****************************************************************************
  * Interface in/output.

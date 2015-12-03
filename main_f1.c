@@ -17,6 +17,9 @@
 
 #define UDID_START      0x1FFFF7E8
 
+// address of MCU IDCODE
+#define DBGMCU_IDCODE		0xE0042000
+
 
 #ifdef INTERFACE_USART
 # define BOARD_INTERFACE_CONFIG		(void *)BOARD_USART
@@ -202,12 +205,36 @@ flash_func_read_otp(uint32_t address)
 	return 0;
 }
 
+uint32_t get_mcu_id(void)
+{
+	return *(uint32_t *)DBGMCU_IDCODE;
+}
+
+// See F4 version for future enhancement for full decoding
+
+int get_mcu_desc(int max, uint8_t *revstr)
+{
+	const char none[] = "STM32F1xxx,?";
+	int i;
+
+	for (i = 0; none[i] && i < max - 1; i++) {
+		revstr[i] = none[i];
+	}
+
+	return i;
+}
+
+int check_silicon(void)
+{
+	return 0;
+}
+
 uint32_t
 flash_func_read_sn(uint32_t address)
 {
 	// read a byte out from unique chip ID area
-  	// it's 12 bytes, or 3 words.
-  	return *(uint32_t *)(address + UDID_START);
+	// it's 12 bytes, or 3 words.
+	return *(uint32_t *)(address + UDID_START);
 }
 
 void
