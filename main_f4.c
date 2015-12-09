@@ -95,10 +95,20 @@ typedef struct mcu_rev_t {
 	char  rev;
 } mcu_rev_t;
 
+/*
+ * This table is used in 2 ways. One to look look up the revision 
+ * of a given chip. Two to see it a revsion is in the group of "Bad" 
+ * silicon.
+ * 
+ * Therefore when adding entries for good silicon rev, they must be inserted
+ * at the beginning of the table. The value of FIRST_BAD_SILICON_OFFSET will
+ * also need to be increased to that of the value of the first bad silicon offset.
+ * 
+ */
 const mcu_rev_t silicon_revs[] = {
 	{MCU_REV_STM32F4_REV_3, '3'}, /* Revision 3 */
 
-	{MCU_REV_STM32F4_REV_A, 'A'}, /* Revision A */  // FIRST_BAD_SILICON_OFFSET (place good ones above this line)
+	{MCU_REV_STM32F4_REV_A, 'A'}, /* Revision A */  // FIRST_BAD_SILICON_OFFSET (place good ones above this line and update the FIRST_BAD_SILICON_OFFSET accordingly)
 	{MCU_REV_STM32F4_REV_Z, 'Z'}, /* Revision Z */
 	{MCU_REV_STM32F4_REV_Y, 'Y'}, /* Revision Y */
 	{MCU_REV_STM32F4_REV_1, '1'}, /* Revision 1 */
