@@ -79,27 +79,30 @@
 // RESET		finalise flash programming, reset chip and starts application
 //
 
+#define BL_PROTOCOL_VERSION 		5		// The revision of the bootloader protocol
 // protocol bytes
-#define PROTO_INSYNC		0x12    // 'in sync' byte sent before status
-#define PROTO_EOC		0x20    // end of command
+#define PROTO_INSYNC				0x12    // 'in sync' byte sent before status
+#define PROTO_EOC					0x20    // end of command
 
 // Reply bytes
-#define PROTO_OK		0x10    // INSYNC/OK      - 'ok' response
-#define PROTO_FAILED		0x11    // INSYNC/FAILED  - 'fail' response
-#define PROTO_INVALID		0x13	// INSYNC/INVALID - 'invalid' response for bad commands
-
+#define PROTO_OK					0x10    // INSYNC/OK      - 'ok' response
+#define PROTO_FAILED				0x11    // INSYNC/FAILED  - 'fail' response
+#define PROTO_INVALID				0x13	// INSYNC/INVALID - 'invalid' response for bad commands
+#define PROTO_BAD_SILICON_REV 		0x14 	// On the F4 series there is an issue with < Rev 3 silicon
+// see https://pixhawk.org/help/errata
 // Command bytes
-#define PROTO_GET_SYNC		0x21    // NOP for re-establishing sync
-#define PROTO_GET_DEVICE	0x22    // get device ID bytes
-#define PROTO_CHIP_ERASE	0x23    // erase program area and reset program address
-#define PROTO_PROG_MULTI	0x27    // write bytes at program address and increment
-#define PROTO_GET_CRC		0x29	// compute & return a CRC
-#define PROTO_GET_OTP		0x2a	// read a byte from OTP at the given address
-#define PROTO_GET_SN		0x2b    // read a word from UDID area ( Serial)  at the given address
-#define PROTO_GET_CHIP		0x2c    // read chip version (MCU IDCODE)
-#define PROTO_SET_DELAY		0x2d    // set minimum boot delay
-#define PROTO_BOOT		0x30    // boot the application
-#define PROTO_DEBUG		0x31    // emit debug information - format not defined
+#define PROTO_GET_SYNC				0x21    // NOP for re-establishing sync
+#define PROTO_GET_DEVICE			0x22    // get device ID bytes
+#define PROTO_CHIP_ERASE			0x23    // erase program area and reset program address
+#define PROTO_PROG_MULTI			0x27    // write bytes at program address and increment
+#define PROTO_GET_CRC				0x29	// compute & return a CRC
+#define PROTO_GET_OTP				0x2a	// read a byte from OTP at the given address
+#define PROTO_GET_SN				0x2b    // read a word from UDID area ( Serial)  at the given address
+#define PROTO_GET_CHIP				0x2c    // read chip version (MCU IDCODE)
+#define PROTO_SET_DELAY				0x2d    // set minimum boot delay
+#define PROTO_GET_CHIP_DES			0x2e    // read chip version In ASCII
+#define PROTO_BOOT					0x30    // boot the application
+#define PROTO_DEBUG					0x31    // emit debug information - format not defined
 
 #define PROTO_PROG_MULTI_MAX    64	// maximum PROG_MULTI size
 #define PROTO_READ_MULTI_MAX    255	// size of the size field
@@ -110,9 +113,6 @@
 #define PROTO_DEVICE_BOARD_REV	3	// board revision
 #define PROTO_DEVICE_FW_SIZE	4	// size of flashable area
 #define PROTO_DEVICE_VEC_AREA	5	// contents of reserved vectors 7-10
-
-// address of MCU IDCODE
-#define DBGMCU_IDCODE		0xE0042000
 
 static uint8_t bl_type;
 static uint8_t last_input;
@@ -195,7 +195,7 @@ inline void cout(uint8_t *buf, unsigned len)
 
 
 
-static const uint32_t	bl_proto_rev = 4;	// value returned by PROTO_DEVICE_BL_REV
+static const uint32_t	bl_proto_rev = BL_PROTOCOL_VERSION;	// value returned by PROTO_DEVICE_BL_REV
 
 static unsigned head, tail;
 static uint8_t rx_buf[256];
@@ -346,6 +346,19 @@ sync_response(void)
 
 	cout(data, sizeof(data));
 }
+
+#if defined(TARGET_HW_PX4_FMU_V4)
+static void
+bad_silicon_response(void)
+{
+	uint8_t data[] = {
+		PROTO_INSYNC,			// "in sync"
+		PROTO_BAD_SILICON_REV	// "issue with < Rev 3 silicon"
+	};
+
+	cout(data, sizeof(data));
+}
+#endif
 
 static void
 invalid_response(void)
@@ -593,6 +606,13 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
+#if defined(TARGET_HW_PX4_FMU_V4)
+
+			if (check_silicon()) {
+				goto bad_silicon;
+			}
+
+#endif
 			// clear the bootloader LED while erasing - it stops blinking at random
 			// and that's confusing
 			led_set(LED_ON);
@@ -662,6 +682,15 @@ bootloader(unsigned timeout)
 			}
 
 			if (address == 0) {
+
+#if defined(TARGET_HW_PX4_FMU_V4)
+
+			if (check_silicon()) {
+				goto bad_silicon;
+			}
+
+#endif
+
 				// save the first word and don't program it until everything else is done
 				first_word = flash_buffer.w[0];
 				// replace first word with bits we can overwrite later
@@ -770,7 +799,26 @@ bootloader(unsigned timeout)
 					goto cmd_bad;
 				}
 
-				cout_word(*(uint32_t *)DBGMCU_IDCODE);
+				cout_word(get_mcu_id());
+			}
+			break;
+
+		// read the chip  description
+		//
+		// command:			GET_CHIP_DES/EOC
+		// reply:			<value:4>/INSYNC/OK
+		case PROTO_GET_CHIP_DES: {
+				uint8_t buffer[MAX_DES_LENGTH];
+				unsigned len = MAX_DES_LENGTH;
+
+				// expect EOC
+				if (!wait_for_eoc(2)) {
+					goto cmd_bad;
+				}
+
+				len = get_mcu_desc(len, buffer);
+				cout_word(len);
+				cout(buffer, len);
 			}
 			break;
 
@@ -878,5 +926,12 @@ cmd_fail:
 		// send a 'command failed' response but don't kill the timeout - could be garbage
 		failure_response();
 		continue;
+
+#if defined(TARGET_HW_PX4_FMU_V4)
+bad_silicon:
+		// send the bad silicon response but don't kill the timeout - could be garbage
+		bad_silicon_response();
+		continue;
+#endif
 	}
 }
