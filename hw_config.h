@@ -131,7 +131,7 @@
 # define OSC_FREQ                       24
 
 # define BOARD_PIN_LED_ACTIVITY         GPIO3
-# define BOARD_PIN_LED_BOOTLOADER       GPIO11|GPIO10
+# define BOARD_PIN_LED_BOOTLOADER       GPIO11|GPIO1
 # define BOARD_PORT_LEDS                GPIOB
 # define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPBEN
 # define BOARD_LED_ON                   gpio_clear
