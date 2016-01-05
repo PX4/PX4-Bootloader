@@ -79,7 +79,7 @@
 // RESET		finalise flash programming, reset chip and starts application
 //
 
-#define BL_PROTOCOL_VERSION 		5		// The revision of the bootloader protocol
+#define BL_PROTOCOL_VERSION 		6		// The revision of the bootloader protocol
 // protocol bytes
 #define PROTO_INSYNC				0x12    // 'in sync' byte sent before status
 #define PROTO_EOC					0x20    // end of command
@@ -90,6 +90,9 @@
 #define PROTO_INVALID				0x13	// INSYNC/INVALID - 'invalid' response for bad commands
 #define PROTO_BAD_SILICON_REV 		0x14 	// On the F4 series there is an issue with < Rev 3 silicon
 // see https://pixhawk.org/help/errata
+#define PROTO_BAD_ADDRESS     0x15  // Incorrect/unexpected address to program received
+#define PROTO_BAD_CRC         0x16  // Bad CRC received
+
 // Command bytes
 #define PROTO_GET_SYNC				0x21    // NOP for re-establishing sync
 #define PROTO_GET_DEVICE			0x22    // get device ID bytes
@@ -361,6 +364,32 @@ bad_silicon_response(void)
 #endif
 
 static void
+bad_address_response(uint32_t expected_address)
+{
+  uint8_t data[] = {
+    PROTO_INSYNC,     // "in sync"
+    PROTO_BAD_ADDRESS, // "unexpected address to program received"
+    ((uint8_t *)&expected_address)[0], // return the expected address
+    ((uint8_t *)&expected_address)[1], // return the expected address
+    ((uint8_t *)&expected_address)[2], // return the expected address
+    ((uint8_t *)&expected_address)[3]  // return the expected address
+  };
+
+  cout(data, sizeof(data));
+}
+
+static void
+bad_crc_response(void)
+{
+  uint8_t data[] = {
+    PROTO_INSYNC,  // "in sync"
+    PROTO_BAD_CRC  // "bad CRC received"
+  };
+
+  cout(data, sizeof(data));
+}
+
+static void
 invalid_response(void)
 {
 	uint8_t data[] = {
@@ -405,16 +434,59 @@ cin_wait(unsigned timeout)
 	return c;
 }
 
+static void
+cin_flush(unsigned timeout)
+{
+  int c = -1;
+
+  // Read until the input buffer is empty
+  do {
+    c = cin_wait(timeout);
+  } while (c >= 0);
+
+}
+
 /**
  * Function to wait for EOC
  *
  * @param timeout length of time in ms to wait for the EOC to be received
- * @return true if the EOC is returned within the timeout perio, else false
+ * @return true if the EOC is returned within the timeout period, else false
  */
 inline static bool
 wait_for_eoc(unsigned timeout)
 {
 	return cin_wait(timeout) == PROTO_EOC;
+}
+
+/**
+ * Function to wait for the CRC for the data sent
+ *
+ * @param timeout length of time in ms to wait for the CRC to be received
+ * @return true if the CRC is returned within the timeout period, else false
+ */
+static bool
+wait_for_crc(uint32_t * crc, unsigned timeout)
+{
+  volatile int c;
+  static union {
+    uint8_t   c[256];
+    uint32_t  w[64];
+  } receive_buffer;
+
+  // expect the begin_address
+  for (int i = 0; i < 4; i++) {
+    c = cin_wait(timeout);
+
+    //if (c < 0) {
+    //  return false;
+    //}
+
+    receive_buffer.c[i] = c;
+  }
+
+  *crc = receive_buffer.w[0];
+
+  return true;
 }
 
 static void
@@ -501,6 +573,7 @@ bootloader(unsigned timeout)
 	while (true) {
 		volatile int c;
 		int arg;
+		uint32_t recv_crc;
 		static union {
 			uint8_t		c[256];
 			uint32_t	w[64];
@@ -641,13 +714,29 @@ bootloader(unsigned timeout)
 
 		// program bytes at current address
 		//
-		// command:		PROG_MULTI/<len:1>/<data:len>/EOC
+		// command:		PROG_MULTI/<begin_address:4>/<len:1>/<data:len>/<crc:4>/EOC
 		// success reply:	INSYNC/OK
 		// invalid reply:	INSYNC/INVALID
 		// readback failure:	INSYNC/FAILURE
 		//
 		case PROTO_PROG_MULTI:		// program bytes
-			// expect count
+			// expect the begin_address
+		  for (int i = 0; i < 4; i++) {
+		    c = cin_wait(1000);
+
+		    if (c < 0) {
+		      goto cmd_bad;
+		    }
+
+		    flash_buffer.c[i] = c;
+		  }
+
+		  if(address != flash_buffer.w[0])
+		  {
+		    goto bad_address;
+		  }
+
+		  // expect count
 			arg = cin_wait(50);
 
 			if (arg < 0) {
@@ -675,6 +764,18 @@ bootloader(unsigned timeout)
 				}
 
 				flash_buffer.c[i] = c;
+			}
+
+			// Receive the CRC
+			if(!wait_for_crc(&recv_crc, 1000))
+			{
+			  goto cmd_bad;
+			}
+
+			// Check the CRC
+			if(recv_crc != crc32((uint8_t *)&flash_buffer.c[0], arg, 0))
+			{
+			  goto bad_crc;
 			}
 
 			if (!wait_for_eoc(200)) {
@@ -914,24 +1015,40 @@ bootloader(unsigned timeout)
 			bl_type = last_input;
 		}
 
+
 		// send the sync response for this command
 		sync_response();
 		continue;
 cmd_bad:
 		// send an 'invalid' response but don't kill the timeout - could be garbage
+    cin_flush(200); // flush the input buffer, so that it is clean for the next command received
 		invalid_response();
 		continue;
 
 cmd_fail:
 		// send a 'command failed' response but don't kill the timeout - could be garbage
+    cin_flush(200); // flush the input buffer, so that it is clean for the next command received
 		failure_response();
 		continue;
 
 #if defined(TARGET_HW_PX4_FMU_V4)
 bad_silicon:
 		// send the bad silicon response but don't kill the timeout - could be garbage
+    cin_flush(200); // flush the input buffer, so that it is clean for the next command received
 		bad_silicon_response();
 		continue;
 #endif
+
+bad_address:
+  // send a 'bad_address' response but don't kill the timeout - could be garbage
+  cin_flush(200); // flush the input buffer, so that it is clean for the next command received
+  bad_address_response(address);
+  continue;
+
+bad_crc:
+  // send a 'bad_crc' response but don't kill the timeout - could be garbage
+  cin_flush(200); // flush the input buffer, so that it is clean for the next command received
+  bad_crc_response();
+  continue;
 	}
 }
