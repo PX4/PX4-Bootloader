@@ -47,12 +47,19 @@
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
 
-# define BOARD_FORCE_BL_PIN             GPIO10
-# define BOARD_FORCE_BL_PORT            GPIOA
-# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
-# define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPAEN
-# define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
-# define BOARD_FORCE_BL_STATE           0
+/*
+ * Uncommenting this allows to force the bootloader through
+ * the PPM-in pin. Some receivers pull their PPM output low
+ * when the transmitter is off, resulting in a stuck bootup,
+ * so this feature is best disabled.
+ *
+ * # define BOARD_FORCE_BL_PIN             GPIO10
+ * # define BOARD_FORCE_BL_PORT            GPIOA
+ * # define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
+ * # define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPAEN
+ * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
+ * # define BOARD_FORCE_BL_STATE           0
+ */
 
 /****************************************************************************
  * TARGET_HW_PX4_FMU_V2
