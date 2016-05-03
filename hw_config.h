@@ -181,7 +181,7 @@
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "MindPX-V2.x BL"
-# define USBPRODUCTID                   0x0011
+# define USBPRODUCTID                   0x0030
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     9
