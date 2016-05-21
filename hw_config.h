@@ -180,11 +180,11 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
-# define USBDEVICESTRING                "MindPX-V2.x BL"
+# define USBDEVICESTRING                "MindPX BL FMU v2.x"
 # define USBPRODUCTID                   0x0030
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
-# define BOARD_TYPE                     9
+# define BOARD_TYPE                     88
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)
 # define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 11 : 23)
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
