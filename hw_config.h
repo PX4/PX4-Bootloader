@@ -404,8 +404,48 @@
 # define BOARD_TYPE                     0x14
 # define FLASH_SECTOR_SIZE              0x400
 
+/****************************************************************************
+ * TARGET_HW_TAP_V1
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_TAP_V1)
+
+# define APP_LOAD_ADDRESS               0x08004000
+# define BOOTLOADER_DELAY               5000
+# define BOARD_TAP
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                0
+# define USBDEVICESTRING                "PX4 BL TAP v1.x"
+# define USBPRODUCTID                   0x0040
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     78
+# define BOARD_FLASH_SECTORS            11
+# define BOARD_FLASH_SIZE               (1024 * 1024)
+
+# define OSC_FREQ                       16
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO4
+# define BOARD_PIN_LED_BOOTLOADER       GPIO5
+# define BOARD_PORT_LEDS                GPIOC
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPCEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_POWER_PIN_OUT            GPIO4
+# define BOARD_POWER_PORT               GPIOA
+# define BOARD_POWER_CLOCK_REGISTER     RCC_AHB1ENR
+# define BOARD_POWER_CLOCK_BIT          RCC_AHB1ENR_IOPAEN
+# define BOARD_POWER_ON                 gpio_set
+# define BOARD_POWER_OFF                gpio_clear
+# undef  BOARD_POWER_PIN_RELEASE
+# define USBMFGSTRING                   "The Autopilot"
+
 #else
 # error Undefined Target Hardware
 #endif
 
+#if !defined(USBMFGSTRING)
+# define USBMFGSTRING "3D Robotics"
+#endif
 #endif /* HW_CONFIG_H_ */

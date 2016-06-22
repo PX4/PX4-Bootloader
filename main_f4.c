@@ -316,6 +316,14 @@ board_init(void)
 
 #endif
 
+#if defined(BOARD_POWER_PIN_OUT)
+	/* Configure the Power pins */
+	rcc_peripheral_enable_clock(&BOARD_POWER_CLOCK_REGISTER, BOARD_POWER_CLOCK_BIT);
+	gpio_mode_setup(BOARD_POWER_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, BOARD_POWER_PIN_OUT);
+	gpio_set_output_options(BOARD_POWER_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, BOARD_POWER_PIN_OUT);
+	BOARD_POWER_ON(BOARD_POWER_PORT, BOARD_POWER_PIN_OUT);
+#endif
+
 #if INTERFACE_USB
 	/* enable GPIO9 with a pulldown to sniff VBUS */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
@@ -395,6 +403,11 @@ board_deinit(void)
 #if defined(BOARD_FORCE_BL_PIN)
 	/* deinitialise the force BL pin */
 	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN);
+#endif
+
+#if defined(BOARD_POWER_PIN) && defined(BOARD_POWER_PIN_RELEASE)
+	/* deinitialize the POWER pin */
+	gpio_mode_setup(BOARD_POWER_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_POWER_PIN);
 #endif
 
 	/* deinitialise LEDs */
