@@ -438,7 +438,7 @@
 # define BOARD_POWER_CLOCK_BIT          RCC_AHB1ENR_IOPAEN
 # define BOARD_POWER_ON                 gpio_set
 # define BOARD_POWER_OFF                gpio_clear
-# undef  BOARD_POWER_PIN_RELEASE
+# undef  BOARD_POWER_PIN_RELEASE		/* Leave pin enabling Power - un comment to release (disable power)*/
 # define USBMFGSTRING                   "The Autopilot"
 
 #else

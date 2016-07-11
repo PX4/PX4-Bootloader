@@ -96,14 +96,14 @@ typedef struct mcu_rev_t {
 } mcu_rev_t;
 
 /*
- * This table is used in 2 ways. One to look look up the revision 
- * of a given chip. Two to see it a revsion is in the group of "Bad" 
+ * This table is used in 2 ways. One to look look up the revision
+ * of a given chip. Two to see it a revsion is in the group of "Bad"
  * silicon.
- * 
+ *
  * Therefore when adding entries for good silicon rev, they must be inserted
  * at the beginning of the table. The value of FIRST_BAD_SILICON_OFFSET will
  * also need to be increased to that of the value of the first bad silicon offset.
- * 
+ *
  */
 const mcu_rev_t silicon_revs[] = {
 	{MCU_REV_STM32F4_REV_3, '3'}, /* Revision 3 */
@@ -137,8 +137,9 @@ struct boardinfo board_info = {
 
 static void board_init(void);
 
-#define BOOT_RTC_SIGNATURE	0xb007b007
-#define BOOT_RTC_REG		MMIO32(RTC_BASE + 0x50)
+#define BOOT_RTC_SIGNATURE          0xb007b007
+#define POWER_DOWN_RTC_SIGNATURE    0xdeaddead // Written by app fw to not re-power on.
+#define BOOT_RTC_REG                MMIO32(RTC_BASE + 0x50)
 
 /* standard clocking for all F4 boards */
 static const clock_scale_t clock_setup = {
@@ -405,8 +406,11 @@ board_deinit(void)
 	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN);
 #endif
 
-#if defined(BOARD_POWER_PIN) && defined(BOARD_POWER_PIN_RELEASE)
-	/* deinitialize the POWER pin */
+#if defined(BOARD_POWER_PIN_OUT) && defined(BOARD_POWER_PIN_RELEASE)
+	/* deinitialize the POWER pin - with the assumption the hold up time of
+	 * the voltage being bleed off by an inupt pin impedance will allow
+	 * enough time to boot the app
+	 */
 	gpio_mode_setup(BOARD_POWER_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_POWER_PIN);
 #endif
 
@@ -667,6 +671,19 @@ main(void)
 
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
+
+#if defined(BOARD_POWER_PIN_OUT)
+
+	/* Here we check for the app setting the POWER_DOWN_RTC_SIGNATURE
+	 * in this case, we reset the signature and wait to die
+	 */
+	if (board_get_rtc_signature() == POWER_DOWN_RTC_SIGNATURE) {
+		board_set_rtc_signature(0);
+
+		while (1);
+	}
+
+#endif
 
 	/* do board-specific initialisation */
 	board_init();
