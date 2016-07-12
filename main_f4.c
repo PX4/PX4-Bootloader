@@ -22,7 +22,24 @@ static struct {
 	uint32_t	sector_number;
 	uint32_t	size;
 } flash_sectors[] = {
-	/* flash sector zero reserved for bootloader */
+
+	/* Physical FLASH sector 0 is reserved for bootloader and is not
+	 * the table below.
+	 * N sectors may aslo be reserved for the app fw in which case
+	 * the zero based define BOARD_FIRST_FLASH_SECTOR_TO_ERASE must
+	 * be defined to begin the erase above of the reserved sectors.
+	 * The default value of BOARD_FIRST_FLASH_SECTOR_TO_ERASE is 0
+	 * and begins flash erase operations at phsical sector 1 the 0th entry
+	 * in the table below.
+	 * A value of 1 for BOARD_FIRST_FLASH_SECTOR_TO_ERASE would reserve
+	 * the 0th entry and begin erasing a index 1 the third physical sector
+	 * on the device.
+	 *
+	 * When BOARD_FIRST_FLASH_SECTOR_TO_ERASE is defined APP_RESERVATION_SIZE
+	 * must also be defined to remove that additonal reserved FLASH space
+	 * from the BOARD_FLASH_SIZE. See APP_SIZE_MAX below.
+	 */
+
 	{0x01, 16 * 1024},
 	{0x02, 16 * 1024},
 	{0x03, 16 * 1024},
@@ -116,7 +133,7 @@ const mcu_rev_t silicon_revs[] = {
 
 #define FIRST_BAD_SILICON_OFFSET 1
 
-#define APP_SIZE_MAX			(BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
+#define APP_SIZE_MAX			(BOARD_FLASH_SIZE - (BOOTLOADER_RESERVATION_SIZE + APP_RESERVATION_SIZE))
 
 /* context passed to cinit */
 #if INTERFACE_USART
@@ -489,14 +506,16 @@ flash_func_sector_size(unsigned sector)
 void
 flash_func_erase_sector(unsigned sector)
 {
-	if (sector >= BOARD_FLASH_SECTORS) {
+	if (sector >= BOARD_FLASH_SECTORS || sector < BOARD_FIRST_FLASH_SECTOR_TO_ERASE) {
 		return;
 	}
 
-	/* get the base address of the sector */
+	/* Caculate the logical base address of the sector
+	 * flash_func_read_word will add APP_LOAD_ADDRESS
+	 */
 	uint32_t address = 0;
 
-	for (unsigned i = 0; i < sector; i++) {
+	for (unsigned i = BOARD_FIRST_FLASH_SECTOR_TO_ERASE; i < sector; i++) {
 		address += flash_func_sector_size(i);
 	}
 
