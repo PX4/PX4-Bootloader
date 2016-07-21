@@ -151,19 +151,19 @@ void
 clock_deinit(void)
 {
 	/* Enable internal high-speed oscillator. */
-	rcc_osc_on(HSI);
-	rcc_wait_for_osc_ready(HSI);
+	rcc_osc_on(RCC_HSI);
+	rcc_wait_for_osc_ready(RCC_HSI);
 
 	/* Reset the RCC_CFGR register */
 	RCC_CFGR = 0x000000;
 
 	/* Stop the HSE, CSS, PLL, PLLI2S, PLLSAI */
-	rcc_osc_off(HSE);
-	rcc_osc_off(PLL);
+	rcc_osc_off(RCC_HSE);
+	rcc_osc_off(RCC_PLL);
 	rcc_css_disable();
 
 	/* Reset the HSEBYP bit */
-	rcc_osc_bypass_disable(HSE);
+	rcc_osc_bypass_disable(RCC_HSE);
 
 	/* Reset the CIR register */
 	RCC_CIR = 0x000000;
