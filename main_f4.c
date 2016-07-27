@@ -164,6 +164,9 @@ static const struct rcc_clock_scale clock_setup = {
 	.plln = 336,
 	.pllp = 2,
 	.pllq = 7,
+#if defined(STM32F446) || defined(STM32F469)
+	.pllr = 2,
+#endif
 	.hpre = RCC_CFGR_HPRE_DIV_NONE,
 	.ppre1 = RCC_CFGR_PPRE_DIV_4,
 	.ppre2 = RCC_CFGR_PPRE_DIV_2,
