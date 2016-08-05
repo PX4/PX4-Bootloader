@@ -47,6 +47,7 @@ TARGETS	= \
 	px4fmuv4_bl \
 	px4fmuv4pro_bl \
 	px4io_bl \
+	px4iov3_bl \
 	tapv1_bl \
 
 all:	$(TARGETS)
@@ -96,6 +97,9 @@ crazyflie_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 #
 px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f1 TARGET_HW=PX4_PIO_V1 LINKER_FILE=stm32f1.ld TARGET_FILE_NAME=$@
+
+px4iov3_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f3 TARGET_HW=PX4_PIO_V3 LINKER_FILE=stm32f3.ld TARGET_FILE_NAME=$@
 
 tapv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET_HW=TAP_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@

@@ -420,6 +420,53 @@
 # define FLASH_SECTOR_SIZE              0x400
 
 /****************************************************************************
+ * TARGET_HW_PX4_PIO_V3
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_PX4_PIO_V3)
+
+# define APP_LOAD_ADDRESS               0x08001000
+# define APP_SIZE_MAX                   0x3f000
+# define BOOTLOADER_DELAY               200
+# define BOARD_PIO
+# define INTERFACE_USB                	0
+# define INTERFACE_USART                1
+# define USBDEVICESTRING                ""
+# define USBPRODUCTID                   -1
+
+# define OSC_FREQ                       24
+
+# define BOARD_PIN_LED_ACTIVITY         0
+# define BOARD_PIN_LED_BOOTLOADER       GPIO13
+# define BOARD_PORT_LEDS                GPIOB
+# define BOARD_CLOCK_LEDS_REGISTER      RCC_AHBENR
+# define BOARD_CLOCK_LEDS               RCC_AHBENR_IOPBEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART               GPIOA
+# define BOARD_PORT_USART_AF 			GPIO_AF7
+# define BOARD_PIN_TX     				GPIO2
+# define BOARD_PIN_RX		     		GPIO3
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_IOPAEN
+
+# define BOARD_FORCE_BL_PIN             GPIO5
+# define BOARD_FORCE_BL_PORT            GPIOB
+# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHBENR
+# define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHBENR_IOPBEN
+# define BOARD_FORCE_BL_PULL            GPIO_PUPD_NONE // depend on external pull
+# define BOARD_FORCE_BL_VALUE           BOARD_FORCE_BL_PIN
+
+# define BOARD_FLASH_SECTORS            60
+# define BOARD_TYPE                     13
+# define FLASH_SECTOR_SIZE              0x800
+
+/****************************************************************************
  * TARGET_HW_PX4_AEROCORE_V1
  ****************************************************************************/
 

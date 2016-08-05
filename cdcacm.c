@@ -43,7 +43,7 @@
 #include <libopencm3/usb/cdc.h>
 
 #include "bl.h"
-
+#if INTERFACE_USB != 0
 #define USB_CDC_REQ_GET_LINE_CODING			0x21 // Not defined in libopencm3
 
 
@@ -379,3 +379,4 @@ usb_cout(uint8_t *buf, unsigned count)
 		}
 	}
 }
+#endif
