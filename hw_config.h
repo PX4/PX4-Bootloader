@@ -478,6 +478,7 @@
 # define BOARD_POWER_OFF                gpio_clear
 # undef  BOARD_POWER_PIN_RELEASE		/* Leave pin enabling Power - un comment to release (disable power)*/
 # define USBMFGSTRING                   "The Autopilot"
+# define USB_FORCE_DISCONNECT			1
 
 #else
 # error Undefined Target Hardware
