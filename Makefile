@@ -35,7 +35,7 @@ export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4fmuv2_bl px4fmuv4_bl mindpxv2_bl px4flow_bl px4discovery_bl px4aerocore_bl px4io_bl px4mavstation_bl tapv1_bl
+TARGETS			 = px4fmu_bl px4fmuv2_bl px4fmuv4_bl mindpxv2_bl px4flow_bl px4discovery_bl px4aerocore_bl px4io_bl px4mavstation_bl tapv1_bl crazyflie_bl
 
 # px4io_bl px4flow_bl
 
@@ -71,8 +71,11 @@ px4flow_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 px4aerocore_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET_HW=PX4_AEROCORE_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
+crazyflie_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f4 TARGET_HW=CRAZYFLIE LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
 # Default bootloader delay is *very* short, just long enough to catch
-# the board for recovery but not so long as to make restarting after a 
+# the board for recovery but not so long as to make restarting after a
 # brownout problematic.
 #
 px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
