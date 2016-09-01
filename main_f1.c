@@ -20,11 +20,12 @@
 // address of MCU IDCODE
 #define DBGMCU_IDCODE		0xE0042000
 
-
-#ifdef INTERFACE_USART
-# define BOARD_INTERFACE_CONFIG		(void *)BOARD_USART
-#else
-# define BOARD_INTERFACE_CONFIG		NULL
+/* context passed to cinit */
+#if INTERFACE_USART
+# define BOARD_INTERFACE_CONFIG_USART	(void *)BOARD_USART
+#endif
+#if INTERFACE_USB
+# define BOARD_INTERFACE_CONFIG_USB  	NULL
 #endif
 
 /* board definition */
@@ -128,11 +129,7 @@ board_deinit(void)
 static inline void
 clock_init(void)
 {
-#if defined(INTERFACE_USB)
 	rcc_clock_setup_in_hsi_out_48mhz();
-#else
-	rcc_clock_setup_in_hsi_out_24mhz();
-#endif
 }
 
 /**
@@ -304,7 +301,7 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#if defined(INTERFACE_USART) | defined (INTERFACE_USB)
+#if INTERFACE_USART || INTERFACE_USB
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
 #endif
@@ -343,7 +340,12 @@ main(void)
 	clock_init();
 
 	/* start the interface */
-	cinit(BOARD_INTERFACE_CONFIG, USART);
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
 
 	while (1) {
 		/* run the bootloader, possibly coming back after the timeout */
