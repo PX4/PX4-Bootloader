@@ -505,7 +505,7 @@
 # define USBDEVICESTRING                "Crazyflie BL"
 # define USBPRODUCTID                   0x0016
 
-# define BOARD_TYPE                     5
+# define BOARD_TYPE                     12
 # define BOARD_FLASH_SECTORS            11
 # define BOARD_FLASH_SIZE               (1024 * 1024)
 
