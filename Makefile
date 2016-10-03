@@ -43,7 +43,7 @@ all:	$(TARGETS)
 
 
 clean:
-	cd libopencm3 && make --no-print-directory clean & cd ..
+	cd libopencm3 && make --no-print-directory clean && cd ..
 	rm -f *.elf *.bin
 
 #
