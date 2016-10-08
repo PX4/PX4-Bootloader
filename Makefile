@@ -35,7 +35,18 @@ export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 #
 # Bootloaders to build
 #
-TARGETS			 = px4fmu_bl px4fmuv2_bl px4fmuv4_bl mindpxv2_bl px4flow_bl px4discovery_bl px4aerocore_bl px4io_bl tapv1_bl crazyflie_bl
+TARGETS	= \
+	auavx2v1_bl \
+	crazyflie_bl \
+	mindpxv2_bl \
+	px4aerocore_bl \
+	px4discovery_bl \
+	px4flow_bl \
+	px4fmu_bl \
+	px4fmuv2_bl \
+	px4fmuv4_bl \
+	px4io_bl \
+	tapv1_bl \
 
 # px4io_bl px4flow_bl
 
@@ -49,6 +60,9 @@ clean:
 #
 # Specific bootloader targets.
 #
+
+auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	make -f Makefile.f4 TARGET_HW=AUAV_X2V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET_HW=PX4_FMU_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
@@ -83,6 +97,7 @@ px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 tapv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET_HW=TAP_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
 
 #
 # Binary management
