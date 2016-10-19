@@ -5,5 +5,5 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PX4/Firmware?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * Build instructions: Check the Makefile for supported targets
-*   License: GPL for infastructure, BSD for core bootloader (see LICENSE.md)
+*   License: LGPL for libopencm3, BSD for core bootloader (see LICENSE.md)
 *   Mailing list: [Google Groups](http://groups.google.com/group/px4users)
