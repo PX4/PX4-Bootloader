@@ -305,7 +305,7 @@ usb_cinit(void)
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
 
 #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
-	OTG_FS_GCCFG |= OTG_FS_GCCFG_NOVBUSSENS;
+	OTG_FS_GCCFG |= OTG_GCCFG_NOVBUSSENS;
 #endif
 
 	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings, NUM_USB_STRINGS,
