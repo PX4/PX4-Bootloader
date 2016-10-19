@@ -35,6 +35,7 @@ env:
     - PX4_EMAIL_SUBJECT="Travis CI result"
 
 script:
+  - set -e
   - arm-none-eabi-gcc --version
   - echo 'Building libopencm3..' && echo -en 'travis_fold:start:script.2\\r'
   - make libopencm3
@@ -45,6 +46,7 @@ script:
   - echo 'Packaging Bootloader for deployment..' && echo -en 'travis_fold:start:script.4\\r'
   - make deploy
   - echo -en 'travis_fold:end:script.4\\r'
+  - set +e
 
 deploy:
   provider: releases
