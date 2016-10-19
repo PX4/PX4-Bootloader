@@ -11,7 +11,7 @@
 /****************************************************************************
  * 10-8--2016:
  *  To simplify the ripple effect on the tools, we will be using
- *  /dev/serial/by-id/*PX4* to locate PX4 devices. Therefore
+ *  /dev/serial/by-id/<asterisk>PX4<asterisk> to locate PX4 devices. Therefore
  *  moving forward all Bootloaders must contain the prefix "PX4 BL "
  *  in the USBDEVICESTRING
  *  This Change will be made in an upcoming BL release
