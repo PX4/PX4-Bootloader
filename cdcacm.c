@@ -309,10 +309,10 @@ usb_cinit(void)
 	systick_interrupt_disable();
 	systick_counter_disable(); // Stop the timer
 #endif
-	/* Configure to use the Alternate IO Functions USB DP,DM and VBUS */
+	/* Configure to use the Alternate IO Functions USB DP,DM */
 
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
-	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO11 | GPIO12);
+	gpio_set_af(GPIOA, GPIO_AF10, GPIO11 | GPIO12);
 
 #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	OTG_FS_GCCFG |= OTG_GCCFG_NOVBUSSENS;
@@ -361,7 +361,7 @@ usb_cfini(void)
 
 #if defined(STM32F4)
 	/* Reset the USB pins to being floating inputs */
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9 | GPIO11 | GPIO12);
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO11 | GPIO12);
 
 	/* Disable the OTGFS peripheral clock */
 	rcc_peripheral_disable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
