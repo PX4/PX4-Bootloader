@@ -395,53 +395,6 @@
 # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
 
 /****************************************************************************
- * TARGET_HW_PX4_MAVSTATION_V1
- ****************************************************************************/
-
-#elif  defined(TARGET_HW_PX4_MAVSTATION_V1)
-
-# define APP_LOAD_ADDRESS               0x08003000
-# define APP_SIZE_MAX                   0x1C000
-# define BOOTLOADER_DELAY               3000
-# define BOARD_MAVSTATION
-# define INTERFACE_USB                  1
-# define INTERFACE_USART                0
-# define USBDEVICESTRING                "MAVSTATION BL v0.1"
-# define USBPRODUCTID                   0x0014
-
-
-# define OSC_FREQ                       24
-
-# define BOARD_PIN_LED_ACTIVITY         GPIO14
-# define BOARD_PIN_LED_BOOTLOADER       GPIO15
-# define BOARD_PORT_LEDS                GPIOB
-# define BOARD_CLOCK_LEDS_REGISTER      RCC_APB2ENR
-# define BOARD_CLOCK_LEDS               RCC_APB2ENR_IOPBEN
-# define BOARD_LED_ON                   gpio_clear
-# define BOARD_LED_OFF                  gpio_set
-
-# define BOARD_USART                    USART2
-# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
-
-# define BOARD_PORT_USART               GPIOA
-# define BOARD_PIN_TX                   GPIO_USART1_TX
-# define BOARD_PIN_RX                   GPIO_USART1_RX
-# define BOARD_USART_PIN_CLOCK_REGISTER RCC_APB2ENR
-# define BOARD_USART_PIN_CLOCK_BIT      RCC_APB2ENR_IOPAEN
-
-# define BOARD_FORCE_BL_PIN             GPIO4
-# define BOARD_FORCE_BL_PORT            GPIOA
-# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_APB2ENR
-# define BOARD_FORCE_BL_CLOCK_BIT       RCC_APB2ENR_IOPAEN
-# define BOARD_FORCE_BL_PULL            GPIO_CNF_INPUT_PULL_UPDOWN // depend on external pull
-# define BOARD_FORCE_BL_VALUE           0
-
-# define BOARD_FLASH_SECTORS            116
-# define BOARD_TYPE                     0x14
-# define FLASH_SECTOR_SIZE              0x400
-
-/****************************************************************************
  * TARGET_HW_TAP_V1
  ****************************************************************************/
 
