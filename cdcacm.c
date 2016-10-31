@@ -27,6 +27,7 @@
 /**
  * @file cdcacm.c
  * @author Gareth McMullin <gareth@blacksphere.co.nz>
+ * @author David Sidrane <david_s5@nscdg.com>
  */
 #include "hw_config.h"
 
@@ -46,6 +47,15 @@
 #if INTERFACE_USB != 0
 #define USB_CDC_REQ_GET_LINE_CODING			0x21 // Not defined in libopencm3
 
+/*
+ * ST changed the meaning and sense of a few critical bits
+ * in the USB IP block identified as 0x00002000
+ * libopencm3 has failed to merge my PR to fix this
+ * So the the following are defined to fix the issue
+ * herein.
+ */
+#define OTG_CID_HAS_VBDEN 0x00002000
+#define OTG_GCCFG_VBDEN   (1 << 21)
 
 /* Provide the stings for the Index 1-n as a requested index of 0 is used for the supported langages
  *  and is hard coded in the usb lib. The array below is indexed by requested index-1, therefore
@@ -323,6 +333,16 @@ usb_cinit(void)
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
 
 #if defined(STM32F4)
+
+	if (OTG_FS_CID == OTG_CID_HAS_VBDEN) {
+
+		OTG_FS_GCCFG |= OTG_GCCFG_VBDEN | OTG_GCCFG_PWRDWN;
+
+		/* Set the Soft Connect (STMF32446, STMF32469 comes up disconnected) */
+
+		OTG_FS_DCTL &= ~OTG_DCTL_SDIS;
+	}
+
 	nvic_enable_irq(NVIC_OTG_FS_IRQ);
 #endif
 }
