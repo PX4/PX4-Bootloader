@@ -346,9 +346,9 @@ board_init(void)
 #endif
 
 #if INTERFACE_USB
-	/* enable GPIO9 with a pulldown to sniff VBUS */
+
+	/* enable Port A GPIO9 to sample VBUS */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
 #endif
 
 #if INTERFACE_USART
@@ -402,10 +402,6 @@ board_init(void)
 void
 board_deinit(void)
 {
-#if INTERFACE_USB
-	/* deinitialise GPIO9 (used to sniff VBUS) */
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9);
-#endif
 
 #if INTERFACE_USART
 	/* deinitialise GPIO pins for USART transmit. */
