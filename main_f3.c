@@ -1,13 +1,13 @@
 /*
- * STM32F1 board support for the bootloader.
+ * STM32F3 board support for the bootloader.
  *
  */
 #include "hw_config.h"
 
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/f1/bkp.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/desig.h>
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/pwr.h>
@@ -19,6 +19,8 @@
 
 // address of MCU IDCODE
 #define DBGMCU_IDCODE		0xE0042000
+#define FLASH_BASE			(0x08000000U)
+#define BOOT_RTC_REG        MMIO32(RTC_BASE + 0x50)
 
 
 #ifdef INTERFACE_USART
@@ -26,6 +28,18 @@
 #else
 # define BOARD_INTERFACE_CONFIG		NULL
 #endif
+const struct rcc_clock_scale _rcc_hsi_8mhz = {
+
+	.pll = RCC_CFGR_PLLMUL_PLL_IN_CLK_X16,
+	.pllsrc = RCC_CFGR_PLLSRC_HSI_DIV2,
+	.hpre = RCC_CFGR_HPRE_DIV_NONE,
+	.ppre1 = RCC_CFGR_PPRE1_DIV_2,
+	.ppre2 = RCC_CFGR_PPRE2_DIV_NONE,
+	.flash_config = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY_2WS,
+	.ahb_frequency	= 64000000,
+	.apb1_frequency = 32000000,
+	.apb2_frequency = 64000000,
+};
 
 /* board definition */
 struct boardinfo board_info = {
@@ -43,10 +57,16 @@ board_init(void)
 {
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&BOARD_CLOCK_LEDS_REGISTER, BOARD_CLOCK_LEDS);
-	gpio_set_mode(BOARD_PORT_LEDS,
-		      GPIO_MODE_OUTPUT_50_MHZ,
-		      GPIO_CNF_OUTPUT_PUSHPULL,
-		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+	gpio_mode_setup(
+		BOARD_PORT_LEDS,
+		GPIO_MODE_OUTPUT,
+		GPIO_PUPD_NONE,
+		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+	gpio_set_output_options(
+		BOARD_PORT_LEDS,
+		GPIO_OTYPE_PP,
+		GPIO_OSPEED_2MHZ,
+		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 	BOARD_LED_ON(
 		BOARD_PORT_LEDS,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
@@ -54,24 +74,23 @@ board_init(void)
 	/* if we have one, enable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
 	rcc_peripheral_enable_clock(&BOARD_FORCE_BL_CLOCK_REGISTER, BOARD_FORCE_BL_CLOCK_BIT);
-
-	gpio_set(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
-	gpio_set_mode(BOARD_FORCE_BL_PORT,
-		      GPIO_MODE_INPUT,
-		      BOARD_FORCE_BL_PULL,
-		      BOARD_FORCE_BL_PIN);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT,
+			GPIO_MODE_INPUT,
+			BOARD_FORCE_BL_PULL,
+			BOARD_FORCE_BL_PIN);
 #endif
 
 	/* enable the backup registers */
-	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
+	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 
 #ifdef INTERFACE_USART
 	/* configure usart pins */
 	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
-	gpio_set_mode(BOARD_PORT_USART,
-		      GPIO_MODE_OUTPUT_50_MHZ,
-		      GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
-		      BOARD_PIN_TX);
+	/* Setup GPIO pins for USART transmit. */
+	gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_AF, GPIO_PUPD_PULLUP, BOARD_PIN_TX | BOARD_PIN_RX);
+	/* Setup USART TX & RX pins as alternate function. */
+	gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_TX);
+	gpio_set_af(BOARD_PORT_USART, BOARD_PORT_USART_AF, BOARD_PIN_RX);
 
 	/* configure USART clock */
 	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
@@ -85,29 +104,22 @@ void
 board_deinit(void)
 {
 	/* deinitialise LEDs */
-	gpio_set_mode(BOARD_PORT_LEDS,
-		      GPIO_MODE_INPUT,
-		      GPIO_CNF_INPUT_FLOAT,
-		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+	gpio_mode_setup(BOARD_PORT_LEDS,
+			GPIO_MODE_INPUT,
+			GPIO_PUPD_NONE,
+			BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 
 	/* if we have one, disable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
-	gpio_set_mode(BOARD_FORCE_BL_PORT,
-		      GPIO_MODE_INPUT,
-		      GPIO_CNF_INPUT_FLOAT,
-		      BOARD_FORCE_BL_PIN);
-	gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN);
 #endif
 
 	/* disable the backup registers */
-	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
+	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 
 #ifdef INTERFACE_USART
-	/* configure usart pins */
-	gpio_set_mode(BOARD_PORT_USART,
-		      GPIO_MODE_INPUT,
-		      GPIO_CNF_INPUT_FLOAT,
-		      BOARD_PIN_TX);
+	/* deinitialise GPIO pins for USART transmit. */
+	gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_TX | BOARD_PIN_RX);
 
 	/* disable USART peripheral clock */
 	rcc_peripheral_disable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
@@ -117,7 +129,7 @@ board_deinit(void)
 #endif
 
 	/* reset the APB2 peripheral clocks */
-	RCC_APB2ENR = 0x00000000; // XXX Magic reset number from STM32F1x reference manual
+	RCC_AHBENR = 0x00000014; // XXX Magic reset number from STM32F3x reference manual
 }
 
 /**
@@ -128,11 +140,7 @@ board_deinit(void)
 static inline void
 clock_init(void)
 {
-#if defined(INTERFACE_USB)
-	rcc_clock_setup_in_hsi_out_48mhz();
-#else
-	rcc_clock_setup_in_hsi_out_24mhz();
-#endif
+	rcc_clock_setup_hsi(&_rcc_hsi_8mhz);
 }
 
 /**
@@ -167,6 +175,77 @@ clock_deinit(void)
 
 	/* Reset the CIR register */
 	RCC_CIR = 0x000000;
+}
+
+/*---------------------------------------------------------------------------*/
+/** @brief Program a Half Word to FLASH
+
+This performs all operations necessary to program a 16 bit word to FLASH memory.
+The program error flag should be checked separately for the event that memory
+was not properly erased.
+
+Status bit polling is used to detect end of operation.
+
+@param[in] address Full address of flash half word to be programmed.
+@param[in] data half word to write
+*/
+
+void flash_program_half_word(uint32_t address, uint16_t data)
+{
+	flash_wait_for_last_operation();
+
+	FLASH_CR |= FLASH_CR_PG;
+
+	MMIO16(address) = data;
+
+	flash_wait_for_last_operation();
+
+	FLASH_CR &= ~FLASH_CR_PG;
+}
+
+/*---------------------------------------------------------------------------*/
+/** @brief Program a 32 bit Word to FLASH
+
+This performs all operations necessary to program a 32 bit word to FLASH memory.
+The program error flag should be checked separately for the event that memory
+was not properly erased.
+
+Status bit polling is used to detect end of operation.
+
+@param[in] address Full address of flash word to be programmed.
+@param[in] data word to write
+*/
+
+void flash_program_word(uint32_t address, uint32_t data)
+{
+	flash_program_half_word(address, (uint16_t)data);
+	flash_program_half_word(address + 2, (uint16_t)(data >> 16));
+}
+
+/*---------------------------------------------------------------------------*/
+/** @brief Erase a Page of FLASH
+
+This performs all operations necessary to erase a page in FLASH memory.
+The page should be checked to ensure that it was properly erased. A page must
+first be fully erased before attempting to program it.
+
+Note that the page sizes differ between devices. See the reference manual or
+the FLASH programming manual for details.
+
+@param[in] page_address Full address of flash page to be erased.
+*/
+
+void flash_erase_page(uint32_t page_address)
+{
+	flash_wait_for_last_operation();
+
+	FLASH_CR |= FLASH_CR_PER;
+	FLASH_AR = page_address;
+	FLASH_CR |= FLASH_CR_STRT;
+
+	flash_wait_for_last_operation();
+
+	FLASH_CR &= ~FLASH_CR_PER;
 }
 
 uint32_t
@@ -214,7 +293,7 @@ uint32_t get_mcu_id(void)
 
 int get_mcu_desc(int max, uint8_t *revstr)
 {
-	const char none[] = "STM32F1xxx,?";
+	const char none[] = "STM32F3xxx,?";
 	int i;
 
 	for (i = 0; none[i] && i < max - 1; i++) {
@@ -286,9 +365,9 @@ should_wait(void)
 
 	PWR_CR |= PWR_CR_DBP;
 
-	if (BKP_DR1 == BL_WAIT_MAGIC) {
+	if (BOOT_RTC_REG == BL_WAIT_MAGIC) {
 		result = true;
-		BKP_DR1 = 0;
+		BOOT_RTC_REG = 0;
 	}
 
 	PWR_CR &= ~PWR_CR_DBP;

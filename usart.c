@@ -35,6 +35,9 @@
 
 #include <libopencm3/stm32/usart.h>
 
+#if !defined(USART_SR)
+#define USART_SR USART_ISR
+#endif
 #include "bl.h"
 #include "uart.h"
 
