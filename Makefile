@@ -2,6 +2,13 @@
 # Common Makefile for the PX4 bootloaders
 #
 
+# This option runs the standard link-time optimizer (lto).
+# To learn more, see "Using the GNU Compiler Collection".
+#FLTO = -flto
+
+# newlib-nano
+#NANO = --specs=nano.specs
+
 #
 # Paths to common dependencies
 #
@@ -11,7 +18,7 @@ export LIBOPENCM3	?= $(wildcard libopencm3)
 #
 # Tools
 #
-export CC	 	 = arm-none-eabi-gcc
+export CC	 	 = arm-none-eabi-gcc $(FLTO)
 export OBJCOPY		 = arm-none-eabi-objcopy
 
 #
@@ -26,9 +33,9 @@ export FLAGS		 = -std=gnu99 \
 			   -I$(LIBOPENCM3)/include \
 			   -ffunction-sections \
 			   -nostartfiles \
-			   -lnosys \
+			   --specs=nosys.specs \
 			   -Wl,-gc-sections \
-			   -Werror
+			   -Werror $(NANO)
 
 export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 
@@ -53,6 +60,8 @@ TARGETS	= \
 
 all:	$(TARGETS)
 
+distclean: clean
+	make -C $(LIBOPENCM3) clean
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
@@ -119,8 +128,12 @@ deploy:
 # Submodule management
 #
 
+# What better place for "cp"? here? checksubmodules (last line)? updatesubmodules (last line)?
 $(LIBOPENCM3): checksubmodules
-	make -C $(LIBOPENCM3) lib
+	cp locm3/Makefile.0 libopencm3/Makefile
+	cp locm3/Makefile.1 libopencm3/lib/stm32/f1/Makefile
+	cp locm3/Makefile.4 libopencm3/lib/stm32/f4/Makefile
+	make -C $(LIBOPENCM3) FLTO=$(FLTO) NANO=$(NANO) lib
 
 .PHONY: checksubmodules
 checksubmodules: updatesubmodules
