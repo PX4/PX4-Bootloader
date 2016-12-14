@@ -266,6 +266,59 @@
 */
 
 /****************************************************************************
+ * TARGET_HW_PX4_FMU_V4_PRO
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_PX4_FMU_V5)
+
+# define APP_LOAD_ADDRESS               0x08008000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                1
+# define USBDEVICESTRING                "PX4 BL FMU v5.x"
+# define USBPRODUCTID                   0x0032
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     50
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
+# define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+
+# define OSC_FREQ                       16
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO7 // BLUE
+# define BOARD_PIN_LED_BOOTLOADER       GPIO6 // GREEN
+# define BOARD_PORT_LEDS                GPIOC
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPCEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USART  					USART2
+# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART   			GPIOD
+# define BOARD_PORT_USART_AF 			GPIO_AF7
+# define BOARD_PIN_TX     				GPIO5
+# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+
+/*
+ * Uncommenting this allows to force the bootloader through
+ * a PWM output pin. As this can accidentally initialize
+ * an ESC prematurely, it is not recommended. This feature
+ * has not been used and hence defaults now to off.
+ *
+ * # define BOARD_FORCE_BL_PIN_OUT         GPIO14
+ * # define BOARD_FORCE_BL_PIN_IN          GPIO11
+ * # define BOARD_FORCE_BL_PORT            GPIOE
+ * # define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
+ * # define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPEEN
+ * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
+*/
+
+/****************************************************************************
  * TARGET_HW_MINDPX_V2
  ****************************************************************************/
 
