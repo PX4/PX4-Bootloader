@@ -226,7 +226,7 @@
 # define USBPRODUCTID                   0x0013
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
-# define BOARD_TYPE                     50
+# define BOARD_TYPE                     13
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)
 # define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 11 : 23)
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
