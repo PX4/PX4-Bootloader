@@ -240,6 +240,7 @@ board_test_force_pin()
 static bool
 board_test_usart_receiving_break()
 {
+#if !defined(SERIAL_BREAK_DETECT_DISABLED)
 	/* (re)start the SysTick timer system */
 	systick_interrupt_disable(); // Kill the interrupt if it is still active
 	systick_counter_disable(); // Stop the timer
@@ -293,6 +294,7 @@ board_test_usart_receiving_break()
 	if (cnt_consecutive_low >= 18) {
 		return true;
 	}
+#endif // !defined(SERIAL_BREAK_DETECT_DISABLED)
 
 	return false;
 }
