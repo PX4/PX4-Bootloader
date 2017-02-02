@@ -26,6 +26,7 @@
  * BOARD_FMUV2
  * INTERFACE_USB        1                     - (Optional) Scan and use the USB interface for bootloading
  * INTERFACE_USART      1                     - (Optional) Scan and use the Serial interface for bootloading
+ * USART_BAUDRATE       115200                - Baudrate to use on serial interface for bootloading
  * USBDEVICESTRING      "PX4 BL FMU v2.x"     - USB id string
  * USBPRODUCTID         0x0011                - PID Should match defconfig
  * BOOT_DELAY_ADDRESS   0x000001a0            - (Optional) From the linker script from Linker Script to get a custom
@@ -62,6 +63,7 @@
 # define BOARD_FMU
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL FMU v1.x"
 # define USBPRODUCTID                   0x0010
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -115,6 +117,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL FMU v2.x"
 # define USBPRODUCTID                   0x0011
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -169,6 +172,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL FMU v4.x"
 # define USBPRODUCTID                   0x0012
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -222,6 +226,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL FMU v4.x PRO"
 # define USBPRODUCTID                   0x0013
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -275,6 +280,7 @@
 # define BOOTLOADER_DELAY               5000
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL FMU v5.x"
 # define USBPRODUCTID                   0x0032
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -329,6 +335,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "MindPX BL FMU v2.x"
 # define USBPRODUCTID                   0x0030
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -438,6 +445,7 @@
 # define BOARD_PIO
 # define INTERFACE_USB                	0
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
 
@@ -484,6 +492,7 @@
 # define BOARD_PIO
 # define INTERFACE_USB                	0
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
 
@@ -564,6 +573,7 @@
 # define BOARD_TAP
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL TAP v1.x"
 # define USBPRODUCTID                   0x0040
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -645,6 +655,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
+# define USART_BAUDRATE                 115200
 # define USBDEVICESTRING                "PX4 BL AUAV X2.1"
 # define USBPRODUCTID                   0x0021
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -702,7 +713,8 @@
 # define USBDEVICESTRING			""
 # define USBPRODUCTID				0
 
-# define INTERFACE_USART			1
+# define INTERFACE_USART            1
+# define USART_BAUDRATE             115200
 # define BOOT_DELAY_ADDRESS			0x000001a0
 
 # define BOARD_TYPE				65
