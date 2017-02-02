@@ -394,6 +394,12 @@ usb_cout(uint8_t *buf, unsigned count)
 
 			sent = usbd_ep_write_packet(usbd_dev, 0x82, buf, len);
 
+			if (sent == 0) {
+				// usbd_ep_write_packet() returns 0 if it failed in which
+				// case we do not want to busy loop but give up.
+				return;
+			}
+
 			count -= sent;
 			buf += sent;
 		}
