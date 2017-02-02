@@ -52,6 +52,7 @@
  *                                                                        BOARD_FLASH_SIZE to determine the size of the App FW
  *                                                                        and hence the address space of FLASH to erase and program.
  * USBMFGSTRING            "PX4 AP"            - Optional USB MFG string (default is '3D Robotics' if not defined.)
+ * SERIAL_BREAK_DETECT_DISABLED                -  Optional prevent break selection on Serial port from entering or staying in BL
  *
  * * Other defines are somewhat self explanatory.
  */
@@ -602,6 +603,7 @@
 # undef  BOARD_POWER_PIN_RELEASE		/* Leave pin enabling Power - un comment to release (disable power)*/
 # define USBMFGSTRING                   "The Autopilot"
 # define USB_FORCE_DISCONNECT			1
+#define  SERIAL_BREAK_DETECT_DISABLED   1
 
 /****************************************************************************
  * TARGET_HW_CRAZYFLIE
