@@ -756,4 +756,10 @@
 #  define BOARD_FIRST_FLASH_SECTOR_TO_ERASE 0
 #endif
 
+#if defined(OVERRIDE_USART_BAUDRATE)
+#  define USART_BAUDRATE OVERRIDE_USART_BAUDRATE
+#else
+#  define USART_BAUDRATE 115200
+#endif
+
 #endif /* HW_CONFIG_H_ */

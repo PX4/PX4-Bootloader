@@ -52,7 +52,7 @@ uart_cinit(void *config)
 
 	/* do usart setup */
 	//USART_CR1(usart) |= (1 << 15);	/* because libopencm3 doesn't know the OVER8 bit */
-	usart_set_baudrate(usart, 115200);
+	usart_set_baudrate(usart, USART_BAUDRATE);
 	usart_set_databits(usart, 8);
 	usart_set_stopbits(usart, USART_STOPBITS_1);
 	usart_set_mode(usart, USART_MODE_TX_RX);
