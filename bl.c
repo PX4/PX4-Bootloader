@@ -178,19 +178,18 @@ inline void cout(uint8_t *buf, unsigned len)
 {
 #if INTERFACE_USB
 
-	if (bl_type == NONE || bl_type == USB) {
+	if (bl_type == USB) {
 		usb_cout(buf, len);
 	}
 
 #endif
 #if INTERFACE_USART
 
-	if (bl_type == NONE || bl_type == USART) {
+	if (bl_type == USART) {
 		uart_cout(buf, len);
 	}
 
 #endif
-
 }
 
 
