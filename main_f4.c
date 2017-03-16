@@ -278,7 +278,7 @@ board_test_usart_receiving_break()
 	 * Half the bit rate = 4.34us
 	 * Set period to 4.34 microseconds (timer_period = timer_tick / timer_reset_frequency = 168MHz / (1/4.34us) = 729.12 ~= 729)
 	 */
-	systick_set_reload(729);  /* 4.3us tick, magic number */
+	systick_set_reload(((board_info.systick_mhz * 1000000) / USART_BAUDRATE) >> 1);
 	systick_counter_enable(); // Start the timer
 
 	uint8_t cnt_consecutive_low = 0;
