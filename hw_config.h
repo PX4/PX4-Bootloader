@@ -516,7 +516,7 @@
 # define BOARD_FORCE_BL_PULL            GPIO_PUPD_NONE // depend on external pull
 # define BOARD_FORCE_BL_VALUE           BOARD_FORCE_BL_PIN
 
-# define BOARD_FLASH_SECTORS            60
+# define BOARD_FLASH_SECTORS            (128-4) /* application #sec - bootloader - sec */
 # define BOARD_TYPE                     13
 # define FLASH_SECTOR_SIZE              0x800
 
