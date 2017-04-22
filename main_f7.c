@@ -452,7 +452,7 @@ clock_deinit(void)
 	rcc_css_disable();
 
 	/* Reset the RCC_PLLCFGR register */
-	RCC_PLLCFGR = 0x24003010; // XXX Magic reset number from STM32F4xx reference manual
+	RCC_PLLCFGR = 0x24003010; // XXX Magic reset number from STM32F7xx reference manual
 
 	/* Reset the HSEBYP bit */
 	rcc_osc_bypass_disable(RCC_HSE);
