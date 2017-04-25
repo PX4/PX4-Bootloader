@@ -82,6 +82,12 @@ static struct {
 #define REVID_MASK	0xFFFF0000
 #define DEVID_MASK	0xFFF
 
+#define PX4_CPU_UUID_BYTE_LENGTH            12
+#define CPU_UUID_BYTE_FORMAT_ORDER          {3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8}
+
+// A type suitable for holding the reordering array for the byte format of the UUID
+typedef const uint8_t uuid_uint8_reorder_t[PX4_CPU_UUID_BYTE_LENGTH];
+
 /* magic numbers from reference manual */
 
 typedef enum mcu_rev_e {
@@ -679,13 +685,13 @@ led_toggle(unsigned led)
 	}
 }
 
+#ifdef 	INTERFACE_USB
 union udid {
-	uint32_t serial[3];
-	uint8_t  data[12];
+	uint32_t udid_word[PX4_CPU_UUID_BYTE_LENGTH/4];
+	uint8_t  udid_byte[PX4_CPU_UUID_BYTE_LENGTH];
 };
 
-#ifdef 	INTERFACE_USB
-void ascii_char_for_hex_number(uint8_t num, char * ch)
+void hex_nibble_to_ascii_char(uint8_t num, char * ch)
 {
 	// If the number is 0-9 return the ASCII character 0-9
 	if(num<10)
@@ -700,30 +706,34 @@ void ascii_char_for_hex_number(uint8_t num, char * ch)
 
 void get_serial_number_string(char *serial_number)
 {
-	// serial_number must be at least 25 bytes; 24 bytes for the serial numnber and 1 byte for the terminating null character
+	// Serial number character string must be at least 25 bytes long; 24 bytes for the serial number and 1 byte for the terminating null character
 
+	/* Copy the serial from the chip's memory */
 	union udid id;
-	id.serial[0] = *(uint32_t *)(UDID_START);
-	id.serial[1] = *(uint32_t *)(UDID_START+4);
-	id.serial[2] = *(uint32_t *)(UDID_START+8);
+	id.udid_word[0] = *(uint32_t *)(UDID_START);
+	id.udid_word[1] = *(uint32_t *)(UDID_START+4);
+	id.udid_word[2] = *(uint32_t *)(UDID_START+8);
 
-	uint8_t len = 12;
-	uint8_t serialid[len];
+	uint8_t len = PX4_CPU_UUID_BYTE_LENGTH;
+	uint8_t serialid[PX4_CPU_UUID_BYTE_LENGTH];
 
-	// Swap the endianess of the bytes according to the Px4 convention for reading out the UDID
-	serialid[0] = id.data[3];   serialid[1] = id.data[2];  serialid[2] = id.data[1];  serialid[3] = id.data[0];
-	serialid[4] = id.data[7];   serialid[5] = id.data[6];  serialid[6] = id.data[5];  serialid[7] = id.data[4];
-	serialid[8] = id.data[11];   serialid[9] = id.data[10];  serialid[10] = id.data[9];  serialid[11] = id.data[8];
-	uint8_t hex_num = 0;
+	uuid_uint8_reorder_t reorder = CPU_UUID_BYTE_FORMAT_ORDER;
+
+	/* swap endianess of the bytes according to the Px4 convention for reading out the UDID */
+	for (int i = 0; i < PX4_CPU_UUID_BYTE_LENGTH; i++) {
+		serialid[i] = id.udid_byte[reorder[i]];
+	}
+
+	uint8_t hex_nibble = 0;
 	uint8_t * id_ptr = &serialid[0];
 	while(len--)
 	{
-		hex_num = (*(uint8_t *)id_ptr >> 4) & 0x0F;
-		ascii_char_for_hex_number(hex_num, serial_number);
+		hex_nibble = (*(uint8_t *)id_ptr >> 4) & 0x0F;
+		hex_nibble_to_ascii_char(hex_nibble, serial_number);
 		++serial_number;
 
-		hex_num = (*(uint8_t *)id_ptr) & 0x0F;
-		ascii_char_for_hex_number(hex_num, serial_number);
+		hex_nibble = (*(uint8_t *)id_ptr) & 0x0F;
+		hex_nibble_to_ascii_char(hex_nibble, serial_number);
 		++serial_number;
 
 		id_ptr += 1;
