@@ -148,8 +148,11 @@ struct boardinfo board_info = {
 	.board_type	= BOARD_TYPE,
 	.board_rev	= 0,
 	.fw_size	= 0,
-
-	.systick_mhz	= 168,
+#ifndef CUSTOM_CLOCK_CONFIG
+	.systick_mhz  = 168,
+#else
+	.systick_mhz  = CLOCK_CONFIG_SYSTICK_MHZ,
+#endif
 };
 
 static void board_init(void);
@@ -160,13 +163,14 @@ static void board_init(void);
 
 /* standard clocking for all F4 boards */
 static const struct rcc_clock_scale clock_setup = {
+#ifndef CUSTOM_CLOCK_CONFIG
 	.pllm = OSC_FREQ,
 	.plln = 336,
 	.pllp = 2,
 	.pllq = 7,
-#if defined(STM32F446) || defined(STM32F469)
+# if defined(STM32F446) || defined(STM32F469)
 	.pllr = 2,
-#endif
+# endif
 	.hpre = RCC_CFGR_HPRE_DIV_NONE,
 	.ppre1 = RCC_CFGR_PPRE_DIV_4,
 	.ppre2 = RCC_CFGR_PPRE_DIV_2,
@@ -174,6 +178,22 @@ static const struct rcc_clock_scale clock_setup = {
 	.flash_config = FLASH_ACR_ICE | FLASH_ACR_DCE | FLASH_ACR_LATENCY_5WS,
 	.apb1_frequency = 42000000,
 	.apb2_frequency = 84000000,
+#else
+	.pllm = CLOCK_CONFIG_PLL_M,
+	.plln = CLOCK_CONFIG_PLL_N,
+	.pllp = CLOCK_CONFIG_PLL_P,
+	.pllq = CLOCK_CONFIG_PLL_Q,
+# if defined(CLOCK_CONFIG_PLL_R)
+	.pllr = CLOCK_CONFIG_PLL_R,
+# endif
+	.hpre = CLOCK_CONFIG_HPRE,
+	.ppre1 = CLOCK_CONFIG_PPRE1,
+	.ppre2 = CLOCK_CONFIG_PPRE2,
+	.power_save = CLOCK_CONFIG_POWER_SAVE,
+	.flash_config = CLOCK_CONFIG_FLASH_CONFIG,
+	.apb1_frequency = CLOCK_CONFIG_APB1_FREQ,
+	.apb2_frequency = CLOCK_CONFIG_APB2_FREQ,
+#endif
 };
 
 static uint32_t

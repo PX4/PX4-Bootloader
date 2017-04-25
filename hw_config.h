@@ -55,6 +55,25 @@
  * SERIAL_BREAK_DETECT_DISABLED                -  Optional prevent break selection on Serial port from entering or staying in BL
  *
  * USE_INTERNAL_OSCILLATOR                     - Optional - if defined, then the internal oscillator is used as clock source
+ * CUSTOM_CLOCK_CONFIG                         - Optional - if defined, then another clock clock configuration other than the standard
+ *                                               STM32F4 clock configuration with a sysclock speed of 168MHz can be used. If using a custom
+ *                                               clock configuration, then the following defines must be specified:
+ *                                                - CLOCK_CONFIG_SYSTICK_MHZ
+ *                                                - CLOCK_CONFIG_PLL_M
+ *                                                - CLOCK_CONFIG_SYSTICK_MHZ
+ *                                                - CLOCK_CONFIG_PLL_M
+ *                                                - CLOCK_CONFIG_PLL_N
+ *                                                - CLOCK_CONFIG_PLL_P
+ *                                                - CLOCK_CONFIG_PLL_Q
+ *                                                - CLOCK_CONFIG_PLL_R
+ *                                                - CLOCK_CONFIG_HPRE
+ *                                                - CLOCK_CONFIG_PPRE1
+ *                                                - CLOCK_CONFIG_PPRE2
+ *                                                - CLOCK_CONFIG_POWER_SAVE
+ *                                                - CLOCK_CONFIG_FLASH_CONFIG
+ *                                                - CLOCK_CONFIG_APB1_FREQ
+ *                                                - CLOCK_CONFIG_APB2_FREQ
+ *                                               These defines are copied to the appropriate fields in the clock_setup struct.
  *
  * * Other defines are somewhat self explanatory.
  */
