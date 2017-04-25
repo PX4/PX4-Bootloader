@@ -54,6 +54,8 @@
  * USBMFGSTRING            "PX4 AP"            - Optional USB MFG string (default is '3D Robotics' if not defined.)
  * SERIAL_BREAK_DETECT_DISABLED                -  Optional prevent break selection on Serial port from entering or staying in BL
  *
+ * USE_INTERNAL_OSCILLATOR                     - Optional - if defined, then the internal oscillator is used as clock source
+ *
  * * Other defines are somewhat self explanatory.
  */
 #if  defined(TARGET_HW_PX4_FMU_V1)
