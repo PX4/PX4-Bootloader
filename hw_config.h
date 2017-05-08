@@ -748,6 +748,10 @@
 # define USBMFGSTRING "3D Robotics"
 #endif
 
+#if !defined(USBVENDORID)
+#  define USBVENDORID 0x26AC
+#endif
+
 #if !defined(APP_RESERVATION_SIZE)
 #  define APP_RESERVATION_SIZE 0
 #endif
