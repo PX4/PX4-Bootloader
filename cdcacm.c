@@ -388,14 +388,28 @@ void
 usb_cout(uint8_t *buf, unsigned count)
 {
 	if (usbd_dev) {
+
 		while (count) {
 			unsigned len = (count > 64) ? 64 : count;
-			unsigned sent;
 
-			sent = usbd_ep_write_packet(usbd_dev, 0x82, buf, len);
+			unsigned retries = 0;
+			while (true) {
 
-			count -= sent;
-			buf += sent;
+				unsigned sent = usbd_ep_write_packet(usbd_dev, 0x82, buf, len);
+				// usbd_ep_write_packet() returns 0 if it failed in which
+				// case we do not want to busy loop but give up.
+				if (sent == 0) {
+					// Still, it seems that we need to retry a couple of times.
+					if (retries++ == 1000) {
+						// Give up
+						return;
+					}
+				} else {
+					count -= sent;
+					buf += sent;
+					break;
+				}
+			}
 		}
 	}
 }
