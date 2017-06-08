@@ -41,6 +41,7 @@
 #include "bl.h"
 #include "uart.h"
 
+#if INTERFACE_USART
 uint32_t usart;
 
 void
@@ -103,3 +104,5 @@ uart_cout(uint8_t *buf, unsigned len)
 		usart_send_blocking(usart, *buf++);
 	}
 }
+
+#endif // INTERFACE_USART
