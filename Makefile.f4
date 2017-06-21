@@ -23,21 +23,11 @@ FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
 		   -lopencm3_stm32f4 \
         $(EXTRAFLAGS)
 
-ELF		 = $(TARGET_FILE_NAME).elf
-BINARY		 = $(TARGET_FILE_NAME).bin
-
-all:		$(ELF) $(BINARY)
-
-# Compile and generate dependency files
-$(OBJS):	$(SRCS)
-	$(CC) -c $(FLAGS) $*.c -o $*.o
-	$(CC) -MM $(FLAGS) $*.c > $*.d
-
-$(ELF):		$(OBJS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(OBJS) $(FLAGS)
-
-$(BINARY):	$(ELF)
-	$(OBJCOPY) -O binary $(ELF) $(BINARY)
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk
 
 #upload: all flash flash-bootloader
 upload: all flash-bootloader
@@ -49,6 +39,3 @@ flash-bootloader:
 # build openocd with "cd openocd; ./bootstrap; ./configure --enable-maintainer-mode --enable-stlink"
 upload-discovery: 
 	$(OPENOCD) --search ../px4_bootloader -f board/stm32f4discovery.cfg -c init -c "reset halt" -c "flash probe 0" -c "stm32f2x mass_erase 0" -c "flash write_image erase $(BINARY) 0x08000000" -c "reset" -c shutdown
-
-# Dependencies for .o files
--include $(DEPS)

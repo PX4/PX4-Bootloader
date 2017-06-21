@@ -14,9 +14,6 @@ PX4_BOOTLOADER_DELAY	?= 5000
 
 SRCS		 = $(COMMON_SRCS) main_f7.c
 
-OBJS		:= $(patsubst %.c,%.o,$(SRCS))
-DEPS		:= $(OBJS:.o=.d)
-
 FLAGS		+= -g -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 \
        -DTARGET_HW_$(TARGET_HW) \
        -DSTM32F4 \
@@ -25,27 +22,14 @@ FLAGS		+= -g -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 \
 		   -lopencm3_stm32f4 \
         $(EXTRAFLAGS)
 
-ELF		 = $(TARGET_FILE_NAME).elf
-BINARY		 = $(TARGET_FILE_NAME).bin
-
-all:		$(ELF) $(BINARY)
-
-# Compile and generate dependency files
-$(OBJS):	$(SRCS)
-	$(CC) -c $(FLAGS) $*.c -o $*.o
-	$(CC) -MM $(FLAGS) $*.c > $*.d
-
-$(ELF):		$(OBJS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(OBJS) $(FLAGS)
-
-$(BINARY):	$(ELF)
-	$(OBJCOPY) -O binary $(ELF) $(BINARY)
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk
 
 #upload: all flash flash-bootloader
 upload: all flash-bootloader
 
 flash-bootloader:
 	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f4x.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY) 0x08000000" -c "reset run" -c shutdown
-
-# Dependencies for .o files
--include $(DEPS)
