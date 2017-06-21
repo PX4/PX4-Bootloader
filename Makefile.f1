@@ -29,4 +29,4 @@ include rules.mk
 upload: all flash-bootloader
 
 flash-bootloader:
-	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f1.cfg -c init -c "reset halt" -c "flash write_image erase $(BUILD_DIR)/$(BINARY)" -c "reset run" -c shutdown
+	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f1.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY)" -c "reset run" -c shutdown

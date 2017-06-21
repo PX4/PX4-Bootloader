@@ -2,27 +2,30 @@
 # Common rules for makefiles for the PX4 bootloaders
 #
 
-OBJS		:= $(patsubst %.c,%.o,$(SRCS))
-DEPS		:= $(OBJS:.o=.d)
-
 BUILD_DIR	 = build_$(TARGET_FILE_NAME)
 
-ELF		 = $(TARGET_FILE_NAME).elf
-BINARY		 = $(TARGET_FILE_NAME).bin
+OBJS		:= $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(SRCS)))
+DEPS		:= $(OBJS:.o=.d)
 
-all:		$(ELF) $(BINARY)
+ELF		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).elf
+BINARY		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).bin
+
+all:		$(BUILD_DIR) $(ELF) $(BINARY)
 
 # Compile and generate dependency files
-$(OBJS):	$(SRCS)
-	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(FLAGS) $*.c -o $(BUILD_DIR)/$*.o
-	$(CC) -MM $(FLAGS) $*.c > $(BUILD_DIR)/$*.d
+$(BUILD_DIR)/%.o:	%.c
+	@echo Generating object $@
+	$(CC) -c -MMD $(FLAGS) -o $@ $*.c
+
+# Make the build directory
+$(BUILD_DIR):
+	mkdir $(BUILD_DIR)
 
 $(ELF):		$(OBJS) $(MAKEFILE_LIST)
-	$(CC) -o $(BUILD_DIR)/$@ $(addprefix $(BUILD_DIR)/, $(OBJS)) $(FLAGS)
+	$(CC) -o $@ $(OBJS) $(FLAGS)
 
 $(BINARY):	$(ELF)
-	$(OBJCOPY) -O binary $(BUILD_DIR)/$(ELF) $(BUILD_DIR)/$(BINARY)
+	$(OBJCOPY) -O binary $(ELF) $(BINARY)
 
 # Dependencies for .o files
--include $(BUILD_DIR)/$(DEPS)
+-include $(DEPS)
