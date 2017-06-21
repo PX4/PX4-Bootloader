@@ -58,7 +58,7 @@ all:	$(TARGETS)
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
-	rm -f *.elf *.bin *.o *.d
+	rm -r build_*
 
 #
 # Specific bootloader targets.
