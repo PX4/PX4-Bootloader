@@ -3,6 +3,7 @@
 .project
 .settings
 *.o
+*.d
 *.elf
 *.bin
 Bootloader.zip
