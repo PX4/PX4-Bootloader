@@ -118,7 +118,7 @@ aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 #
 .PHONY: deploy
 deploy:
-	zip Bootloader.zip *.bin
+	zip -j Bootloader.zip build_*/*.bin
 
 #
 # Submodule management
