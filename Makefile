@@ -53,8 +53,7 @@ TARGETS	= \
 	px4iov3_bl \
 	tapv1_bl
 
-all:	$(TARGETS)
-
+all:	$(TARGETS) sizes
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
@@ -112,6 +111,13 @@ tapv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	make -f Makefile.f4 TARGET_HW=AEROFC_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+#
+# Show sizes
+#
+.PHONY: sizes
+sizes:
+	@-find build_* -name *.elf -type f | xargs size 2> /dev/null || :
 
 #
 # Binary management
