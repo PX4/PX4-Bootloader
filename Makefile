@@ -131,7 +131,7 @@ deploy:
 #
 
 $(LIBOPENCM3): checksubmodules
-	make -C $(LIBOPENCM3) lib
+	${MAKE} -C $(LIBOPENCM3) lib
 
 .PHONY: checksubmodules
 checksubmodules: updatesubmodules
