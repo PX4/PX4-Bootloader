@@ -117,7 +117,7 @@ aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 #
 .PHONY: sizes
 sizes:
-	@-find build_* -name *.elf -type f | xargs size 2> /dev/null || :
+	@-find build_* -name '*.elf' -type f | xargs size 2> /dev/null || :
 
 #
 # Binary management
