@@ -57,6 +57,7 @@ all:	$(TARGETS) sizes
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
+	rm -f *.elf *.bin
 	rm -rf build_*
 
 #
