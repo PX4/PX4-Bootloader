@@ -57,8 +57,8 @@ all:	$(TARGETS) sizes
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
-	rm -f *.elf *.bin
-	rm -rf build_*
+	rm -f *.elf *.bin # Remove any elf or bin files contained directly in the Bootloader directory
+	rm -rf build_* # Remove build directories
 
 #
 # Specific bootloader targets.
