@@ -12,7 +12,7 @@ PX4_BOOTLOADER_DELAY	?= 5000
 
 SRCS		 = $(COMMON_SRCS) main_f3.c
 
-FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
+FLAGS 		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
        -DTARGET_HW_$(TARGET_HW) \
        -DSTM32F3 \
        -T$(LINKER_FILE) \
@@ -20,16 +20,11 @@ FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
 		   -lopencm3_stm32f3 \
         $(EXTRAFLAGS)
 
-ELF		 = $(TARGET_FILE_NAME).elf
-BINARY		 = $(TARGET_FILE_NAME).bin
-
-all:		$(ELF) $(BINARY)
-
-$(ELF):		$(SRCS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(SRCS) $(FLAGS)
-
-$(BINARY):	$(ELF)
-	$(OBJCOPY) -O binary $(ELF) $(BINARY)
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk
 
 #upload: all flash flash-bootloader
 upload: all flash-bootloader

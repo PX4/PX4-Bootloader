@@ -22,16 +22,11 @@ FLAGS		+= -g -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 \
 		   -lopencm3_stm32f4 \
         $(EXTRAFLAGS)
 
-ELF		 = $(TARGET_FILE_NAME).elf
-BINARY		 = $(TARGET_FILE_NAME).bin
-
-all:		$(ELF) $(BINARY)
-
-$(ELF):		$(SRCS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(SRCS) $(FLAGS)
-
-$(BINARY):	$(ELF)
-	$(OBJCOPY) -O binary $(ELF) $(BINARY)
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk
 
 #upload: all flash flash-bootloader
 upload: all flash-bootloader
