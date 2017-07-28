@@ -16,6 +16,7 @@
 
 #include "bl.h"
 #include "uart.h"
+#include "cdcacm.h"
 
 /* flash parameters that we should not really know */
 static struct {
@@ -66,6 +67,12 @@ static struct {
 
 #define REVID_MASK	0xFFFF0000
 #define DEVID_MASK	0xFFF
+
+#define PX4_CPU_UUID_BYTE_LENGTH            12
+#define CPU_UUID_BYTE_FORMAT_ORDER          {3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8}
+
+// A type suitable for holding the reordering array for the byte format of the UUID
+typedef const uint8_t uuid_uint8_reorder_t[PX4_CPU_UUID_BYTE_LENGTH];
 
 /* magic numbers from reference manual */
 
@@ -661,6 +668,63 @@ led_toggle(unsigned led)
 	}
 }
 
+#ifdef 	INTERFACE_USB
+union udid {
+	uint32_t udid_word[PX4_CPU_UUID_BYTE_LENGTH/4];
+	uint8_t  udid_byte[PX4_CPU_UUID_BYTE_LENGTH];
+};
+
+void hex_nibble_to_ascii_char(uint8_t num, char * ch)
+{
+	// If the number is 0-9 return the ASCII character 0-9
+	if(num<10)
+	{
+		*ch = num+48;
+	}
+	else // else if the number is A-F (10-16), return the ASCII character A-F
+	{
+		*ch = num+55;
+	}
+}
+
+void get_serial_number_string(char *serial_number)
+{
+	// Serial number character string must be at least 25 bytes long; 24 bytes for the serial number and 1 byte for the terminating null character
+
+	/* Copy the serial from the chip's memory */
+	union udid id;
+	id.udid_word[0] = *(uint32_t *)(UDID_START);
+	id.udid_word[1] = *(uint32_t *)(UDID_START+4);
+	id.udid_word[2] = *(uint32_t *)(UDID_START+8);
+
+	uint8_t len = PX4_CPU_UUID_BYTE_LENGTH;
+	uint8_t serialid[PX4_CPU_UUID_BYTE_LENGTH];
+
+	uuid_uint8_reorder_t reorder = CPU_UUID_BYTE_FORMAT_ORDER;
+
+	/* swap endianess of the bytes according to the Px4 convention for reading out the UDID */
+	for (int i = 0; i < PX4_CPU_UUID_BYTE_LENGTH; i++) {
+		serialid[i] = id.udid_byte[reorder[i]];
+	}
+
+	uint8_t hex_nibble = 0;
+	uint8_t * id_ptr = &serialid[0];
+	while(len--)
+	{
+		hex_nibble = (*(uint8_t *)id_ptr >> 4) & 0x0F;
+		hex_nibble_to_ascii_char(hex_nibble, serial_number);
+		++serial_number;
+
+		hex_nibble = (*(uint8_t *)id_ptr) & 0x0F;
+		hex_nibble_to_ascii_char(hex_nibble, serial_number);
+		++serial_number;
+
+		id_ptr += 1;
+	}
+	*serial_number = '\0'; // terminating null character for the string
+}
+#endif
+
 /* we should know this, but we don't */
 #ifndef SCB_CPACR
 # define SCB_CPACR (*((volatile uint32_t *) (((0xE000E000UL) + 0x0D00UL) + 0x088)))
@@ -814,6 +878,11 @@ main(void)
 	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
 #endif
 #if INTERFACE_USB
+	// Set the USB serial number
+	char sn[25];
+	get_serial_number_string((char *)&sn);
+	usb_set_sn(sn);
+
 	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
 #endif
 
