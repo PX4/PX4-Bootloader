@@ -770,6 +770,7 @@
 # define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
 
 # define BOARD_PORT_USART               GPIOA
+# define BOARD_PORT_USART_AF            GPIO_AF1
 # define BOARD_PIN_TX                   GPIO9
 # define BOARD_PIN_RX                   GPIO10
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
