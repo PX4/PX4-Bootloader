@@ -38,6 +38,15 @@
 #if !defined(USART_SR)
 #define USART_SR USART_ISR
 #endif
+
+#if !defined(USART_SR_RXNE) && defined(USART_ISR_RXNE)
+#define USART_SR_RXNE USART_ISR_RXNE
+#endif
+
+#if !defined(USART_STOPBITS_1) && defined(USART_CR2_STOP_1_0BIT)
+#define USART_STOPBITS_1 USART_CR2_STOP_1_0BIT
+#endif
+
 #include "bl.h"
 #include "uart.h"
 
