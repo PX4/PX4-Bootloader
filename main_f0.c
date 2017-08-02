@@ -1,12 +1,11 @@
 /*
- * STM32F1 board support for the bootloader.
+ * STM32F0 board support for the bootloader.
  *
  */
 #include "hw_config.h"
 
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/f1/bkp.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/usart.h>
@@ -15,10 +14,8 @@
 
 #include "bl.h"
 
-#define UDID_START      0x1FFFF7E8
-
 // address of MCU IDCODE
-#define DBGMCU_IDCODE		0xE0042000
+#define DBGMCU_IDCODE		0x40015800
 
 
 #ifdef INTERFACE_USART
@@ -41,6 +38,7 @@ static void board_init(void);
 static void
 board_init(void)
 {
+#ifdef BOARD_CLOCK_LEDS_REGISTER
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&BOARD_CLOCK_LEDS_REGISTER, BOARD_CLOCK_LEDS);
 	gpio_set_mode(BOARD_PORT_LEDS,
@@ -50,6 +48,7 @@ board_init(void)
 	BOARD_LED_ON(
 		BOARD_PORT_LEDS,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+#endif
 
 	/* if we have one, enable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
@@ -62,8 +61,8 @@ board_init(void)
 		      BOARD_FORCE_BL_PIN);
 #endif
 
-	/* enable the backup registers */
-	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
+//	/* enable the backup registers */
+//	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
 
 #ifdef INTERFACE_USART
 	/* configure usart pins */
@@ -84,11 +83,13 @@ board_init(void)
 void
 board_deinit(void)
 {
+#ifdef BOARD_CLOCK_LEDS_REGISTER
 	/* deinitialise LEDs */
 	gpio_set_mode(BOARD_PORT_LEDS,
 		      GPIO_MODE_INPUT,
 		      GPIO_CNF_INPUT_FLOAT,
 		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+#endif
 
 	/* if we have one, disable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
@@ -99,8 +100,8 @@ board_deinit(void)
 	gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 #endif
 
-	/* disable the backup registers */
-	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
+//	/* disable the backup registers */
+//	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
 
 #ifdef INTERFACE_USART
 	/* configure usart pins */
@@ -117,7 +118,10 @@ board_deinit(void)
 #endif
 
 	/* reset the APB2 peripheral clocks */
-	RCC_APB2ENR = 0x00000000; // XXX Magic reset number from STM32F1x reference manual
+	RCC_APB2ENR = 0x00000000; // XXX Magic reset number from STM32F0x reference manual
+
+	/* reset then AHB peripheral clocks */
+	RCC_AHBENR = 0x00000014; // XXX Magic reset number from STM32F0x reference manual
 }
 
 /**
@@ -128,7 +132,7 @@ board_deinit(void)
 static inline void
 clock_init(void)
 {
-#if defined(INTERFACE_USB)
+#if defined(INTERFACE_USB) && INTERFACE_USB != 0
 	rcc_clock_setup_in_hsi_out_48mhz();
 #else
 	rcc_clock_setup_in_hsi_out_24mhz();
@@ -169,21 +173,27 @@ clock_deinit(void)
 	RCC_CIR = 0x000000;
 }
 
+/* Bootloader API uses "sector", whereas F0 reference manual refers to the same thing as
+ * "pages" and refers to bigger units as "sectors".
+ */
 uint32_t
-flash_func_sector_size(unsigned sector)
+flash_func_sector_size(unsigned page)
 {
-	if (sector < BOARD_FLASH_SECTORS) {
-		return FLASH_SECTOR_SIZE;
+	if (page < BOARD_FLASH_PAGES) {
+		return FLASH_PAGE_SIZE;
 	}
 
 	return 0;
 }
 
+/* Bootloader API uses "sector", whereas F0 reference manual refers to the same thing as
+ * "pages" and refers to bigger units as "sectors".
+ */
 void
-flash_func_erase_sector(unsigned sector)
+flash_func_erase_sector(unsigned page)
 {
-	if (sector < BOARD_FLASH_SECTORS) {
-		flash_erase_page(APP_LOAD_ADDRESS + (sector * FLASH_SECTOR_SIZE));
+	if (page < BOARD_FLASH_PAGES) {
+		flash_erase_page(APP_LOAD_ADDRESS + (page * FLASH_PAGE_SIZE));
 	}
 }
 
@@ -214,7 +224,7 @@ uint32_t get_mcu_id(void)
 
 int get_mcu_desc(int max, uint8_t *revstr)
 {
-	const char none[] = "STM32F1xxx,?";
+	const char none[] = "STM32F0xxx,?";
 	int i;
 
 	for (i = 0; none[i] && i < max - 1; i++) {
@@ -232,14 +242,14 @@ int check_silicon(void)
 uint32_t
 flash_func_read_sn(uint32_t address)
 {
-	// read a byte out from unique chip ID area
-	// it's 12 bytes, or 3 words.
-	return *(uint32_t *)(address + UDID_START);
+	// F0 chips don't have a serial
+	return 0;
 }
 
 void
 led_on(unsigned led)
 {
+#ifdef BOARD_CLOCK_LEDS_REGISTER
 	switch (led) {
 	case LED_ACTIVITY:
 		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
@@ -249,11 +259,13 @@ led_on(unsigned led)
 		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
+#endif
 }
 
 void
 led_off(unsigned led)
 {
+#ifdef BOARD_CLOCK_LEDS_REGISTER
 	switch (led) {
 	case LED_ACTIVITY:
 		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
@@ -263,11 +275,13 @@ led_off(unsigned led)
 		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
+#endif
 }
 
 void
 led_toggle(unsigned led)
 {
+#ifdef BOARD_CLOCK_LEDS_REGISTER
 	switch (led) {
 	case LED_ACTIVITY:
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
@@ -277,24 +291,25 @@ led_toggle(unsigned led)
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
+#endif
 }
 
-static bool
-should_wait(void)
-{
-	bool result = false;
-
-	PWR_CR |= PWR_CR_DBP;
-
-	if (BKP_DR1 == BL_WAIT_MAGIC) {
-		result = true;
-		BKP_DR1 = 0;
-	}
-
-	PWR_CR &= ~PWR_CR_DBP;
-
-	return result;
-}
+//static bool
+//should_wait(void)
+//{
+//	bool result = false;
+//
+//	PWR_CR |= PWR_CR_DBP;
+//
+//	if (BKP_DR1 == BL_WAIT_MAGIC) {
+//		result = true;
+//		BKP_DR1 = 0;
+//	}
+//
+//	PWR_CR &= ~PWR_CR_DBP;
+//
+//	return result;
+//}
 
 int
 main(void)
@@ -304,7 +319,7 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#if defined(INTERFACE_USART) | defined (INTERFACE_USB)
+#if defined(INTERFACE_USART) || defined (INTERFACE_USB) && INTERFACE_USB != 0
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
 #endif
@@ -314,9 +329,9 @@ main(void)
 #endif
 
 	/* if the app left a cookie saying we should wait, then wait */
-	if (should_wait()) {
-		timeout = BOOTLOADER_DELAY;
-	}
+//	if (should_wait()) {
+//		timeout = BOOTLOADER_DELAY;
+//	}
 
 #ifdef BOARD_FORCE_BL_PIN
 
