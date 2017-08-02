@@ -51,7 +51,8 @@ TARGETS	= \
 	px4fmuv5_bl \
 	px4io_bl \
 	px4iov3_bl \
-	tapv1_bl
+	tapv1_bl \
+	gopro_chip_bl
 
 all:	$(TARGETS) sizes
 
@@ -112,6 +113,9 @@ tapv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AEROFC_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+gopro_chip_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f0 TARGET_HW=AD_GOPRO_CHIP LINKER_FILE=stm32f0.ld TARGET_FILE_NAME=$@
 
 #
 # Show sizes
