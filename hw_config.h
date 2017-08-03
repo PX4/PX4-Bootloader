@@ -771,6 +771,8 @@
 # define BOARD_FLASH_PAGES              64
 # define FLASH_PAGE_SIZE                0x400
 
+# define OVERRIDE_USART_BAUDRATE        57600
+
 # define BOARD_TYPE                     12
 
 #else
