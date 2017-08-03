@@ -61,9 +61,6 @@ board_init(void)
 		      BOARD_FORCE_BL_PIN);
 #endif
 
-//	/* enable the backup registers */
-//	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
-
 #ifdef INTERFACE_USART
 	/* configure USART pins */
 	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
@@ -101,9 +98,6 @@ board_deinit(void)
 		      BOARD_FORCE_BL_PIN);
 	gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 #endif
-
-//	/* disable the backup registers */
-//	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN);
 
 #ifdef INTERFACE_USART
 	/* deinitialise GPIO pins for USART transmit. */
@@ -293,23 +287,6 @@ led_toggle(unsigned led)
 #endif
 }
 
-//static bool
-//should_wait(void)
-//{
-//	bool result = false;
-//
-//	PWR_CR |= PWR_CR_DBP;
-//
-//	if (BKP_DR1 == BL_WAIT_MAGIC) {
-//		result = true;
-//		BKP_DR1 = 0;
-//	}
-//
-//	PWR_CR &= ~PWR_CR_DBP;
-//
-//	return result;
-//}
-
 int
 main(void)
 {
@@ -327,11 +304,6 @@ main(void)
 # error I2C bootloader detection logic not implemented
 #endif
 
-	/* if the app left a cookie saying we should wait, then wait */
-//	if (should_wait()) {
-//		timeout = BOOTLOADER_DELAY;
-//	}
-
 #ifdef BOARD_FORCE_BL_PIN
 
 	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
@@ -340,9 +312,6 @@ main(void)
 	}
 
 #endif
-
-	/* look for the magic wait-in-bootloader value in backup register zero */
-
 
 	/* if we aren't expected to wait in the bootloader, try to boot immediately */
 	if (timeout == 0) {

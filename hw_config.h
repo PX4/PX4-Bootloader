@@ -748,22 +748,13 @@
 
 # define APP_LOAD_ADDRESS               0x08001800
 # define APP_SIZE_MAX                   0xe800
-# define BOOTLOADER_DELAY               5000 // ??!!! Will it cause problems for I2C communication? Can we allow the main firmware to get booted much later?
+# define BOOTLOADER_DELAY               5000
 # define INTERFACE_USART                1
 # define INTERFACE_USB                  0
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
 
 # define OSC_FREQ                       24
-
-// LEDs are not present on our board
-//# define BOARD_PIN_LED_ACTIVITY         GPIO14
-//# define BOARD_PIN_LED_BOOTLOADER       GPIO15
-//# define BOARD_PORT_LEDS                GPIOB
-//# define BOARD_CLOCK_LEDS_REGISTER      RCC_APB2ENR
-//# define BOARD_CLOCK_LEDS               RCC_APB2ENR_IOPBEN
-//# define BOARD_LED_ON                   gpio_clear
-//# define BOARD_LED_OFF                  gpio_set
 
 # define BOARD_USART                    USART1
 # define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
@@ -776,17 +767,11 @@
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_GPIOAEN
 
-// Force bootloader pin is not present on our board
-//# define BOARD_FORCE_BL_PIN             GPIO5
-//# define BOARD_FORCE_BL_PORT            GPIOB
-//# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_APB2ENR
-//# define BOARD_FORCE_BL_CLOCK_BIT       RCC_APB2ENR_IOPBEN
-//# define BOARD_FORCE_BL_PULL            GPIO_CNF_INPUT_FLOAT // depend on external pull
-//# define BOARD_FORCE_BL_VALUE           BOARD_FORCE_BL_PIN
-
+// Bootloader API uses "sectors" instead, but F0 reference refers to them as "pages"
 # define BOARD_FLASH_PAGES              64
-# define BOARD_TYPE                     12
 # define FLASH_PAGE_SIZE                0x400
+
+# define BOARD_TYPE                     12
 
 #else
 # error Undefined Target Hardware
