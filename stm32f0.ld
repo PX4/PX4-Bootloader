@@ -27,7 +27,7 @@
 /**
  * @file stm32f0.ld
  *
- * Linker script for ST STM32F0 bootloader (use first 4K of flash, 8K RAM).
+ * Linker script for ST STM32F0 bootloader (use first 6K of flash, 8K RAM).
  *
  * @author Uwe Hermann <uwe@hermann-uwe.de>
  * @author Stephen Caudle <scaudle@doceme.com>
@@ -36,7 +36,7 @@
 /* Define memory regions. */
 MEMORY
 {
-	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 4K
+	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 6K
 	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
 }
 

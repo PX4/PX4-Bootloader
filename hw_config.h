@@ -746,8 +746,8 @@
 
 #elif  defined(TARGET_HW_AD_GOPRO_CHIP)
 
-# define APP_LOAD_ADDRESS               0x08001000
-# define APP_SIZE_MAX                   0xf000
+# define APP_LOAD_ADDRESS               0x08001800
+# define APP_SIZE_MAX                   0xe800
 # define BOOTLOADER_DELAY               5000 // ??!!! Will it cause problems for I2C communication? Can we allow the main firmware to get booted much later?
 # define INTERFACE_USART                1
 # define INTERFACE_USB                  0
