@@ -775,6 +775,12 @@
 
 # define BOARD_TYPE                     12
 
+/* Alternative method of remapping the vector table to application when SCB_VTOR is not supported
+ * Requires _ram_vector_start and _ram_vector_end to be defined in the linker script
+ * See stm32f0.ld for an example
+ */
+# define USE_SYSCFG_CFGR1_MEM_MODE_SRAM
+
 #else
 # error Undefined Target Hardware
 #endif

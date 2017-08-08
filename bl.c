@@ -46,6 +46,7 @@
 # include <libopencm3/stm32/rcc.h>
 # include <libopencm3/stm32/gpio.h>
 # include <libopencm3/stm32/flash.h>
+# include <libopencm3/stm32/syscfg.h>
 
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/systick.h>
@@ -280,8 +281,19 @@ jump_to_app()
 	/* deinitialise the board */
 	board_deinit();
 
-	/* switch exception handlers to the application */
+#if defined(USE_SYSCFG_CFGR1_MEM_MODE_SRAM)
+	/* We can't switch exception handlers to app using SCB_VTOR,
+	 * we need to copy them to RAM and switch boot mode to RAM */
+	extern uint8_t _ram_vector_start, _ram_vector_end; // exported by linker
+	uint8_t *app_vector = (uint8_t*) APP_LOAD_ADDRESS;
+	for (uint8_t *destination = &_ram_vector_start; destination < &_ram_vector_end; ++destination) {
+		*(destination) = *(app_vector++); // We just hope that app has correct vector table for the same processor
+	}
+	SYSCFG_CFGR1 = (SYSCFG_CFGR1 & ~SYSCFG_CFGR1_MEM_MODE) | SYSCFG_CFGR1_MEM_MODE_SRAM;
+#else
+	/* by default use SCB_VTOR to switch exception handlers to the application */
 	SCB_VTOR = APP_LOAD_ADDRESS;
+#endif
 
 	/* extract the stack and entrypoint from the app vector table and go */
 	do_jump(app_base[0], app_base[1]);

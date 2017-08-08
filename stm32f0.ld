@@ -36,8 +36,9 @@
 /* Define memory regions. */
 MEMORY
 {
-	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 6K
-	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
+	rom (rx)          : ORIGIN = 0x08000000, LENGTH = 6K
+    ram_vectors (rwx) : ORIGIN = 0x20000000, LENGTH = 0xC0
+	ram (rwx)         : ORIGIN = 0x200000C0, LENGTH = 8K - 0xC0
 }
 
 /* Enforce emmission of the vector table. */
@@ -46,6 +47,8 @@ EXTERN (vector_table)
 /* Define sections. */
 SECTIONS
 {
+        _ram_vector_start = ORIGIN(ram_vectors);
+        _ram_vector_end = ORIGIN(ram_vectors) + LENGTH(ram_vectors);
         . = ORIGIN(rom);
 
         .text : {
