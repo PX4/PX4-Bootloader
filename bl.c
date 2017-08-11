@@ -901,6 +901,11 @@ bootloader(unsigned timeout)
 				first_word = 0xffffffff;
 			}
 
+			// Set the bootloader port in case BOOT is the first command we've received
+			if (bl_type == NONE) {
+				bl_type = last_input;
+			}
+
 			// send a sync and wait for it to be collected
 			sync_response();
 			delay(100);
