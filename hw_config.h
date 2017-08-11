@@ -748,7 +748,7 @@
 
 # define APP_LOAD_ADDRESS               0x08001800
 # define APP_SIZE_MAX                   0xe800
-# define BOOTLOADER_DELAY               5000
+# define START_APP_ONLY_ON_COMMAND
 # define INTERFACE_USART                1
 # define INTERFACE_USB                  0
 # define USBDEVICESTRING                ""

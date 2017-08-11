@@ -295,7 +295,7 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#if defined(INTERFACE_USART) || defined (INTERFACE_USB) && INTERFACE_USB != 0
+#if (defined(INTERFACE_USART) || defined (INTERFACE_USB) && INTERFACE_USB != 0) && !defined(START_APP_ONLY_ON_COMMAND)
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
 #endif
@@ -313,6 +313,9 @@ main(void)
 
 #endif
 
+#ifdef START_APP_ONLY_ON_COMMAND
+	timeout = 0;
+#else
 	/* if we aren't expected to wait in the bootloader, try to boot immediately */
 	if (timeout == 0) {
 		/* try to boot immediately */
@@ -321,6 +324,7 @@ main(void)
 		/* if we returned, there is no app; go to the bootloader and stay there */
 		timeout = 0;
 	}
+#endif
 
 	/* configure the clock for bootloader activity */
 	clock_init();
