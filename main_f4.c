@@ -476,6 +476,12 @@ clock_deinit(void)
 	rcc_osc_on(RCC_HSI);
 	rcc_wait_for_osc_ready(RCC_HSI);
 
+	/* Select HSI as SYSCLK source. */
+	rcc_set_sysclk_source(RCC_CFGR_SW_HSI);
+
+	/* Wait for HSI clock to be selected. */
+	rcc_wait_for_sysclk_status(RCC_HSI);
+
 	/* Reset the RCC_CFGR register */
 	RCC_CFGR = 0x000000;
 

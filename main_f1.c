@@ -154,6 +154,17 @@ clock_deinit(void)
 	rcc_osc_on(RCC_HSI);
 	rcc_wait_for_osc_ready(RCC_HSI);
 
+	/* Select HSI as SYSCLK source. */
+	rcc_set_sysclk_source(RCC_CFGR_SW_SYSCLKSEL_HSICLK);
+
+	/* Wait for HSI clock to be selected. */
+	/* The libopencm3 library currently doesn't have a rcc_wait_for_sysclk_status
+	   function for the f1s like what they have for the f4s. If/when this function has
+	   been added to the library, the function should be called here to ensure that the
+	   HSI is being used for the SYSCLK.
+	*/
+
+
 	/* Reset the RCC_CFGR register */
 	RCC_CFGR = 0x000000;
 
