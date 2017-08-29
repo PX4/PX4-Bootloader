@@ -768,8 +768,8 @@
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_GPIOAEN
 
 // Bootloader API uses "sectors" instead, but F0 reference refers to them as "pages"
-# define BOARD_FLASH_PAGES              64
 # define FLASH_PAGE_SIZE                0x400
+# define BOARD_FLASH_PAGES              APP_SIZE_MAX / FLASH_PAGE_SIZE
 
 # define OVERRIDE_USART_BAUDRATE        57600
 
