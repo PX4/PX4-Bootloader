@@ -9,10 +9,13 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/pwr.h>
 #include <libopencm3/cm3/systick.h>
+#include <libopencm3/stm32/f0/nvic.h>
 
 #include "bl.h"
+#include "uart.h"
 
 // address of MCU IDCODE
 #define DBGMCU_IDCODE		0x40015800
@@ -82,8 +85,20 @@ board_init(void)
 	/* configure USART clock */
 	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
 #endif
-#ifdef INTERFACE_I2C
-# error I2C GPIO config not handled yet
+#if defined(INTERFACE_I2C) && INTERFACE_I2C != 0
+	/* configure I2C pins */
+	rcc_peripheral_enable_clock(&BOARD_I2C_PIN_CLOCK_REGISTER, BOARD_I2C_PIN_CLOCK_BIT);
+
+	/* Setup GPIO pins for I2C. */
+	gpio_mode_setup(BOARD_PORT_I2C, GPIO_MODE_AF, GPIO_PUPD_NONE, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+	/* Setup I2C SCL & SDA pins as alternate function. */
+	gpio_set_af(BOARD_PORT_I2C, BOARD_PORT_I2C_AF, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+
+	gpio_set_output_options(BOARD_PORT_I2C, GPIO_OTYPE_OD, GPIO_OSPEED_MED, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+
+	/* configure I2C clock */
+	BOARD_I2C_CLOCK_SOURCE_REGISTER |= BOARD_I2C_CLOCK_SOURCE_BIT; // set system clock as source for I2C
+	rcc_peripheral_enable_clock(&BOARD_I2C_CLOCK_REGISTER, BOARD_I2C_CLOCK_BIT);
 #endif
 }
 
@@ -114,8 +129,26 @@ board_deinit(void)
 	/* disable USART peripheral clock */
 	rcc_peripheral_disable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
 #endif
-#ifdef INTERFACE_I2C
-# error I2C GPIO config not handled yet
+#if defined(INTERFACE_I2C) && INTERFACE_I2C != 0
+	// Disable all the triggers we might have enabled
+	I2C_CR1(BOARD_I2C) &= ~(I2C_CR1_PE | I2C_CR1_ADDRIE | I2C_CR1_ERRIE
+			| I2C_CR1_STOPIE | I2C_CR1_RXIE | I2C_CR1_TXIE | I2C_CR1_NACKIE);
+
+	// disable clocks
+	rcc_peripheral_disable_clock(&BOARD_I2C_PIN_CLOCK_REGISTER, BOARD_I2C_PIN_CLOCK_BIT);
+	rcc_peripheral_disable_clock(&BOARD_I2C_CLOCK_REGISTER, BOARD_I2C_CLOCK_BIT);
+
+	// reset GPIO config
+	gpio_mode_setup(BOARD_PORT_I2C, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+	gpio_set_af(BOARD_PORT_I2C, GPIO_AF0, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+	gpio_set_output_options(BOARD_PORT_I2C, GPIO_OTYPE_PP, GPIO_OSPEED_LOW, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+
+	// reset I2C configuration
+	BOARD_I2C_CLOCK_SOURCE_REGISTER &= ~BOARD_I2C_CLOCK_SOURCE_BIT;
+	I2C_TIMINGR(BOARD_I2C) = 0;
+	nvic_disable_irq(BOARD_I2C_IRQ_NUMBER);
+	I2C_OAR1(BOARD_I2C) = 0;
+
 #endif
 
 	/* reset the APB2 peripheral clocks */
@@ -172,6 +205,31 @@ clock_deinit(void)
 
 	/* Reset the CIR register */
 	RCC_CIR = 0x000000;
+}
+
+void
+i2c_enable(void)
+{
+	// Configure I2C timings
+	I2C_TIMINGR(BOARD_I2C) = 0x50420F13; // Set from "Table 76. Examples of timings settings" from reference to 100Hz mode, scaled to 24MHz instead of 48MHz
+	// Enable interface and interrupts
+	nvic_enable_irq(BOARD_I2C_IRQ_NUMBER);
+	I2C_CR1(BOARD_I2C) = I2C_CR1_PE | I2C_CR1_ADDRIE | I2C_CR1_ERRIE | I2C_CR1_STOPIE;
+	// Set own address for slave comms
+	I2C_OAR1(BOARD_I2C) |= I2C_OAR1_OA1_VAL(I2C_OWN_ADDRESS << 1); // 7-bit addressing shifts by 1 bit
+	I2C_OAR1(BOARD_I2C) |= I2C_OAR1_OA1EN;
+}
+
+void
+i2c_perform_reset(void)
+{
+	I2C_CR1(BOARD_I2C) &= ~I2C_CR1_PE;
+	/* Reference states that PE must be kept low for at least 3 cycles
+	 * And suggests to do it by writing 0, checking 0 and then writing 1
+	 */
+	if (!(I2C_CR1(BOARD_I2C) & I2C_CR1_PE)) {
+		I2C_CR1(BOARD_I2C) |= I2C_CR1_PE;
+	}
 }
 
 /* Bootloader API uses "sector", whereas F0 reference manual refers to the same thing as
@@ -303,13 +361,9 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#if (defined(INTERFACE_USART) || defined (INTERFACE_USB) && INTERFACE_USB != 0) && !defined(START_APP_ONLY_ON_COMMAND)
+#if (defined(INTERFACE_I2C) || defined(INTERFACE_USART) || defined (INTERFACE_USB) && INTERFACE_USB != 0) && !defined(START_APP_ONLY_ON_COMMAND)
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
-#endif
-
-#ifdef INTERFACE_I2C
-# error I2C bootloader detection logic not implemented
 #endif
 
 #ifdef BOARD_FORCE_BL_PIN
@@ -339,10 +393,22 @@ main(void)
 
 	/* start the interface */
 	cinit(BOARD_INTERFACE_CONFIG, USART);
+#ifdef I2C_DEBUG_ENABLE
+	uart_cout((uint8_t*) "\r\nI am boot!\r\n", 14);
+#endif
 
 	while (1) {
 		/* run the bootloader, possibly coming back after the timeout */
 		bootloader(timeout);
+
+#ifdef I2C_DEBUG_ENABLE
+		// During debug prints we might have sent "stop transmitting"
+		// Control character. This would kill TX channel of the debugger
+		// So we need to send "continue transmitting" character
+		uint8_t tmp = 17; // "continue transmitting"
+		uart_cout(&tmp, 1);
+		uart_cout((uint8_t*) "\r\nStarting app\r\n", 16);
+#endif
 
 		/* look to see if we can boot the app */
 		jump_to_app();

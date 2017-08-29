@@ -750,9 +750,11 @@
 # define APP_SIZE_MAX                   0xe800
 # define START_APP_ONLY_ON_COMMAND
 # define INTERFACE_USART                1
+# define INTERFACE_I2C                  1
 # define INTERFACE_USB                  0
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
+# define I2C_OWN_ADDRESS                0x23
 
 # define OSC_FREQ                       24
 
@@ -767,13 +769,38 @@
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_GPIOAEN
 
+# define BOARD_I2C                      I2C1
+# define BOARD_I2C_CLOCK_REGISTER       RCC_APB1ENR
+# define BOARD_I2C_CLOCK_BIT            RCC_APB1ENR_I2C1EN
+# define BOARD_I2C_CLOCK_SOURCE_REGISTER RCC_CFGR3
+# define BOARD_I2C_CLOCK_SOURCE_BIT     RCC_CFGR3_I2C1SW
+
+# define BOARD_I2C_IRQ_NUMBER           NVIC_I2C1_IRQ
+# define BOARD_I2C_IRQ_FUNCTION         i2c1_isr
+
+# define BOARD_PORT_I2C                 GPIOB
+# define BOARD_PORT_I2C_AF              GPIO_AF1
+# define BOARD_PORT_I2C_PIN_SCL         GPIO6
+# define BOARD_PORT_I2C_PIN_SDA         GPIO7
+# define BOARD_I2C_PIN_CLOCK_REGISTER   RCC_AHBENR
+# define BOARD_I2C_PIN_CLOCK_BIT        RCC_AHBENR_GPIOBEN
+
 // Bootloader API uses "sectors" instead, but F0 reference refers to them as "pages"
 # define FLASH_PAGE_SIZE                0x400
 # define BOARD_FLASH_PAGES              APP_SIZE_MAX / FLASH_PAGE_SIZE
 
-# define OVERRIDE_USART_BAUDRATE        57600
+// Bootloader command durations, in ms up to max uint16_t
+// Be conservative. We can't time this value and it is once-only, so no big deal
+# define FLASH_ERASE_TIME               5000
+# define FLASH_PROGRAM_BLOCK_TIME       60 // One block is limited by I2C interface - 193 bytes
+# define CHECK_CRC_TIME                 150
+
 
 # define BOARD_TYPE                     12
+# define BOARD_REVISION                 2
+
+# define OVERRIDE_USART_BAUDRATE        57600
+# define I2C_DEBUG_ENABLE
 
 /* Alternative method of remapping the vector table to application when SCB_VTOR is not supported
  * Requires _ram_vector_start and _ram_vector_end to be defined in the linker script
