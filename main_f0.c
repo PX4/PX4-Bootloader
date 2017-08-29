@@ -18,7 +18,7 @@
 #define DBGMCU_IDCODE		0x40015800
 
 
-#ifdef INTERFACE_USART
+#if INTERFACE_USART
 # define BOARD_INTERFACE_CONFIG		(void *)BOARD_USART
 #else
 # define BOARD_INTERFACE_CONFIG		NULL
@@ -61,7 +61,7 @@ board_init(void)
 		      BOARD_FORCE_BL_PIN);
 #endif
 
-#ifdef INTERFACE_USART
+#if INTERFACE_USART
 	/* configure USART pins */
 	rcc_peripheral_enable_clock(&BOARD_USART_PIN_CLOCK_REGISTER, BOARD_USART_PIN_CLOCK_BIT);
 
@@ -99,7 +99,7 @@ board_deinit(void)
 	gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 #endif
 
-#ifdef INTERFACE_USART
+#if INTERFACE_USART
 	/* deinitialise GPIO pins for USART transmit. */
 	gpio_mode_setup(BOARD_PORT_USART, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_TX | BOARD_PIN_RX);
 
