@@ -749,7 +749,7 @@
 # define APP_LOAD_ADDRESS               0x08001800
 # define APP_SIZE_MAX                   0xe800
 # define START_APP_ONLY_ON_COMMAND
-# define INTERFACE_USART                1
+# define INTERFACE_USART                0
 # define INTERFACE_I2C                  1
 # define INTERFACE_USB                  0
 # define USBDEVICESTRING                ""
@@ -758,16 +758,16 @@
 
 # define OSC_FREQ                       24
 
-# define BOARD_USART                    USART1
-# define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
-# define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
-
-# define BOARD_PORT_USART               GPIOA
-# define BOARD_PORT_USART_AF            GPIO_AF1
-# define BOARD_PIN_TX                   GPIO9
-# define BOARD_PIN_RX                   GPIO10
-# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
-# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_GPIOAEN
+//# define BOARD_USART                    USART1
+//# define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
+//# define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
+//
+//# define BOARD_PORT_USART               GPIOA
+//# define BOARD_PORT_USART_AF            GPIO_AF1
+//# define BOARD_PIN_TX                   GPIO9
+//# define BOARD_PIN_RX                   GPIO10
+//# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
+//# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_GPIOAEN
 
 # define BOARD_I2C                      I2C1
 # define BOARD_I2C_CLOCK_REGISTER       RCC_APB1ENR
@@ -799,8 +799,8 @@
 # define BOARD_TYPE                     12
 # define BOARD_REVISION                 2
 
-# define OVERRIDE_USART_BAUDRATE        57600
-# define I2C_DEBUG_ENABLE
+//# define OVERRIDE_USART_BAUDRATE        57600
+//# define I2C_DEBUG_ENABLE
 
 /* Alternative method of remapping the vector table to application when SCB_VTOR is not supported
  * Requires _ram_vector_start and _ram_vector_end to be defined in the linker script
