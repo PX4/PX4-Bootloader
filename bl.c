@@ -56,7 +56,7 @@
 #include "cdcacm.h"
 #include "uart.h"
 
-// bootloader flash update protocol.
+// bootloader flash update protocol (USART and USB).
 //
 // Command format:
 //
@@ -80,6 +80,72 @@
 // GET_CRC		verify CRC of entire flashable area
 // RESET		finalise flash programming, reset chip and starts application
 //
+//
+//
+// I2C protocol.
+//
+// I2C update is done with bootloader device in slave mode.
+// All integers are Little-endian
+//
+// All "write" commands, where updater sends some data or requests
+// bootloader to perform an action (like erase, for example)
+// have to be followed by I2C_REPLY_ACK byte.
+// After the command has finished, the updater must perform
+// "I2C_COMMAND_GET_PROGRESS" before sending any new writes.
+// See bootloader_status_t enum for possible replies,
+// Only values starting with BOOT_STATUS are possible in I2C replies,
+// Other values are for internal usage only.
+//
+// All "read" commands, where updater requests some data from bootloader
+// are sent as follows: updater sets I2C to updater->bootloader mode
+// and sends 1 byte command code from i2c_commands_t,
+// after that updater sets I2C to bootloader->updater mode and reads
+// 1 byte ACK/NAK reply (see i2c_reply_codes_t),
+// and in case reply is I2C_REPLY_ACK, requested data will follow.
+// See i2c_commands_t for list of possible commands and their data.
+//
+// Expected workflow (protocol 5):
+// IMPORTANT!!! I2C communication is not guaranteed to work for
+// up to X ms time after ERASE or WRITE command is sent, where X
+// is set by bootloader firmware and returned in
+// I2C_COMMAND_GET_ERASE_TIME and I2C_COMMAND_GET_WRITE_TIME
+// commands respectively.
+// This is due to chip not being able to write and read flash
+// at the same time. Be nice and obey the timeouts.
+//
+// Send, I2C_COMMAND_GET_STATUS to and check bootloader protocol
+// and board type and revision.
+//
+// Send I2C_COMMAND_GET_ERASE_TIME, I2C_COMMAND_GET_WRITE_TIME,
+// I2C_COMMAND_GET_WRITE_SIZE, and I2C_COMMAND_GET_CRC_TIME
+// and save the values to be used later.
+//
+// Send I2C_PERFORM_ERASE_COMMAND and wait for <erase time> ms.
+// Send I2C_COMMAND_GET_PROGRESS and check that everything ok.
+// Send I2C_PERFORM_WRITE_COMMAND - the program-data payload
+// must be <write size> maximum and divisible by 4.
+// Wait for <write time> ms and check progress.
+// Repeat the write command for all application bytes.
+// Send I2C_PREPARE_APP_CRC, wait for <CRC time> and get progress.
+// Send I2C_COMMAND_GET_APP_CRC and compare to application CRC32.
+// Note that CRC is calculated up to maximum application size, so
+// add FF-s until the application size matches the fw_size parameter of
+// the I2C_COMMAND_GET_STATUS command.
+// If CRC is correct, finish upload and boot the app by sending
+// I2C_FINISH_AND_BOOT command.
+// The BOOT command also sets progress after a very brief delay,
+// but updater might want to wait a bit more - in case
+// I2C_FINISH_AND_BOOT command has failed, the status will change
+// from OK to FAILURE as soon as boot has failed.
+// This change WON'T happen if progress was read by updater before
+// failure has occurred.
+// The boot command will report "OK" for 500 ms and then try to boot the app.
+// Alternatively, if updater reads the OK status and after 500ms is still able
+// to communicate with bootloader - this is also an indication that
+// bootloader failed to go to app.
+//
+// Updater can also use I2C_COMMAND_CHECK_APP command to see if
+// BOOT is likely to succeed, but only if no erase/writes were performed.
 
 #define BL_PROTOCOL_VERSION 		5		// The revision of the bootloader protocol
 // protocol bytes
@@ -608,9 +674,9 @@ enum i2c_commands_t {
 };
 
 enum i2c_reply_codes_t {
-	I2C_REPLY_ACK =                0x12,
-	I2C_REPLY_NAK =                0x13,
-	I2C_REPLY_BUSY =               0x14
+	I2C_REPLY_ACK =                0x12, // All is fine with the world
+	I2C_REPLY_NAK =                0x13, // Unknown command or command rejected
+	I2C_REPLY_BUSY =               0x14  // Command rejected, because another command is in progress
 };
 
 # define I2C_MAX_PAYLOAD_SIZE 200 // maximum amount of data we are allowed to reply
@@ -627,13 +693,13 @@ static volatile uint32_t full_app_crc = 0;
 
 // Variable to sync main bootloader thread with I2C interrupt handler
 static volatile enum bootloader_status_t {
-	BOOT_STATUS_IDLE =        0x00,
+	BOOT_STATUS_IDLE =        0x00, // No command active
 	// Replies main loop -> I2C handler, also used in I2C_COMMAND_GET_PROGRESS
-	BOOT_STATUS_FINISHED_OK = 0x01,
-	BOOT_STATUS_IN_PROGRESS = 0x02,
-	BOOT_STATUS_BAD_SILICON = 0x03,
-	BOOT_STATUS_FAILURE =     0x04,
-	BOOT_STATUS_BAD_COMMAND = 0x05,
+	BOOT_STATUS_FINISHED_OK = 0x01, // Previous command finished successfully
+	BOOT_STATUS_IN_PROGRESS = 0x02, // Command processing is in progress
+	BOOT_STATUS_BAD_SILICON = 0x03, // Command failed because of bad silicon
+	BOOT_STATUS_FAILURE =     0x04, // Command failed for unspecified reason
+	BOOT_STATUS_BAD_COMMAND = 0x05, // Command rejected because of malformed packet or bad data
 	// Requests I2C handler -> main loop
 	BOOT_COMMAND_ERASE =      0x80,
 	BOOT_COMMAND_WRITE =      0x81,
