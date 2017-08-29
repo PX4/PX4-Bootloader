@@ -47,7 +47,8 @@
 enum {
 	NONE,
 	USART,
-	USB
+	USB,
+	I2C
 };
 
 /* board info forwarded from board-specific code to booloader */
@@ -122,3 +123,7 @@ extern void cinit(void *config, uint8_t interface);
 extern void cfini(void);
 extern int cin(void);
 extern void cout(uint8_t *buf, unsigned len);
+
+/* I2C functions from main_*.c */
+extern void i2c_enable(void);
+extern void i2c_perform_reset(void);
