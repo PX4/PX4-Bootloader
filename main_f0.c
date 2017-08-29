@@ -27,7 +27,11 @@
 /* board definition */
 struct boardinfo board_info = {
 	.board_type	= BOARD_TYPE,
+#ifdef BOARD_REVISION
+	.board_rev	= BOARD_REVISION,
+#else
 	.board_rev	= 0,
+#endif
 	.fw_size	= APP_SIZE_MAX,
 
 	.systick_mhz	= OSC_FREQ,
