@@ -49,13 +49,13 @@ board_init(void)
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&BOARD_CLOCK_LEDS_REGISTER, BOARD_CLOCK_LEDS);
 	gpio_mode_setup(BOARD_PORT_LEDS,
-		      GPIO_MODE_OUTPUT,
-		      GPIO_PUPD_NONE,
-		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+			GPIO_MODE_OUTPUT,
+			GPIO_PUPD_NONE,
+			BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 	gpio_set_output_options(BOARD_PORT_LEDS,
-		      GPIO_OTYPE_PP,
-		      GPIO_OSPEED_HIGH,
-		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+				GPIO_OTYPE_PP,
+				GPIO_OSPEED_HIGH,
+				BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 	BOARD_LED_ON(
 		BOARD_PORT_LEDS,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
@@ -67,9 +67,9 @@ board_init(void)
 
 	gpio_set(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 	gpio_mode_setup(BOARD_FORCE_BL_PORT,
-		      GPIO_MODE_INPUT,
-		      BOARD_FORCE_BL_PULL,
-		      BOARD_FORCE_BL_PIN);
+			GPIO_MODE_INPUT,
+			BOARD_FORCE_BL_PULL,
+			BOARD_FORCE_BL_PIN);
 #endif
 
 #if INTERFACE_USART
@@ -94,7 +94,8 @@ board_init(void)
 	/* Setup I2C SCL & SDA pins as alternate function. */
 	gpio_set_af(BOARD_PORT_I2C, BOARD_PORT_I2C_AF, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
 
-	gpio_set_output_options(BOARD_PORT_I2C, GPIO_OTYPE_OD, GPIO_OSPEED_MED, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+	gpio_set_output_options(BOARD_PORT_I2C, GPIO_OTYPE_OD, GPIO_OSPEED_MED,
+				BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
 
 	/* configure I2C clock */
 	BOARD_I2C_CLOCK_SOURCE_REGISTER |= BOARD_I2C_CLOCK_SOURCE_BIT; // set system clock as source for I2C
@@ -108,17 +109,17 @@ board_deinit(void)
 #ifdef BOARD_CLOCK_LEDS_REGISTER
 	/* deinitialise LEDs */
 	gpio_mode_setup(BOARD_PORT_LEDS,
-		      GPIO_MODE_INPUT,
-		      GPIO_PUPD_NONE,
-		      BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+			GPIO_MODE_INPUT,
+			GPIO_PUPD_NONE,
+			BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
 #endif
 
 	/* if we have one, disable the force-bootloader pin */
 #ifdef BOARD_FORCE_BL_PIN
 	gpio_mode_setup(BOARD_FORCE_BL_PORT,
-		      GPIO_MODE_INPUT,
-		      GPIO_PUPD_NONE,
-		      BOARD_FORCE_BL_PIN);
+			GPIO_MODE_INPUT,
+			GPIO_PUPD_NONE,
+			BOARD_FORCE_BL_PIN);
 	gpio_clear(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN);
 #endif
 
@@ -132,7 +133,7 @@ board_deinit(void)
 #if defined(INTERFACE_I2C) && INTERFACE_I2C
 	// Disable all the triggers we might have enabled
 	I2C_CR1(BOARD_I2C) &= ~(I2C_CR1_PE | I2C_CR1_ADDRIE | I2C_CR1_ERRIE
-			| I2C_CR1_STOPIE | I2C_CR1_RXIE | I2C_CR1_TXIE | I2C_CR1_NACKIE);
+				| I2C_CR1_STOPIE | I2C_CR1_RXIE | I2C_CR1_TXIE | I2C_CR1_NACKIE);
 
 	// disable clocks
 	rcc_peripheral_disable_clock(&BOARD_I2C_PIN_CLOCK_REGISTER, BOARD_I2C_PIN_CLOCK_BIT);
@@ -141,7 +142,8 @@ board_deinit(void)
 	// reset GPIO config
 	gpio_mode_setup(BOARD_PORT_I2C, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
 	gpio_set_af(BOARD_PORT_I2C, GPIO_AF0, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
-	gpio_set_output_options(BOARD_PORT_I2C, GPIO_OTYPE_PP, GPIO_OSPEED_LOW, BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
+	gpio_set_output_options(BOARD_PORT_I2C, GPIO_OTYPE_PP, GPIO_OSPEED_LOW,
+				BOARD_PORT_I2C_PIN_SCL | BOARD_PORT_I2C_PIN_SDA);
 
 	// reset I2C configuration
 	BOARD_I2C_CLOCK_SOURCE_REGISTER &= ~BOARD_I2C_CLOCK_SOURCE_BIT;
@@ -212,7 +214,8 @@ void
 i2c_enable(void)
 {
 	// Configure I2C timings
-	I2C_TIMINGR(BOARD_I2C) = 0x50420F13; // Set from "Table 76. Examples of timings settings" from reference to 100Hz mode, scaled to 24MHz instead of 48MHz
+	I2C_TIMINGR(BOARD_I2C) =
+		0x50420F13; // Set from "Table 76. Examples of timings settings" from reference to 100Hz mode, scaled to 24MHz instead of 48MHz
 	// Enable interface and address, error and stop interrupts
 	nvic_enable_irq(BOARD_I2C_IRQ_NUMBER);
 	I2C_CR1(BOARD_I2C) = I2C_CR1_PE | I2C_CR1_ADDRIE | I2C_CR1_ERRIE | I2C_CR1_STOPIE;
@@ -226,6 +229,7 @@ i2c_perform_reset(void)
 {
 	// Disable I2C interface
 	I2C_CR1(BOARD_I2C) &= ~I2C_CR1_PE;
+
 	/* Reference states that PE must be kept low for at least 3 cycles
 	 * And suggests to do it by writing 0, checking 0 and then writing 1
 	 */
@@ -312,6 +316,7 @@ void
 led_on(unsigned led)
 {
 #ifdef BOARD_CLOCK_LEDS_REGISTER
+
 	switch (led) {
 	case LED_ACTIVITY:
 		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
@@ -321,6 +326,7 @@ led_on(unsigned led)
 		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
+
 #endif
 }
 
@@ -328,6 +334,7 @@ void
 led_off(unsigned led)
 {
 #ifdef BOARD_CLOCK_LEDS_REGISTER
+
 	switch (led) {
 	case LED_ACTIVITY:
 		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
@@ -337,6 +344,7 @@ led_off(unsigned led)
 		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
+
 #endif
 }
 
@@ -344,6 +352,7 @@ void
 led_toggle(unsigned led)
 {
 #ifdef BOARD_CLOCK_LEDS_REGISTER
+
 	switch (led) {
 	case LED_ACTIVITY:
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
@@ -353,6 +362,7 @@ led_toggle(unsigned led)
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
 		break;
 	}
+
 #endif
 }
 
@@ -381,6 +391,7 @@ main(void)
 #ifdef START_APP_ONLY_ON_COMMAND
 	timeout = 0;
 #else
+
 	/* if we aren't expected to wait in the bootloader, try to boot immediately */
 	if (timeout == 0) {
 		/* try to boot immediately */
@@ -389,6 +400,7 @@ main(void)
 		/* if we returned, there is no app; go to the bootloader and stay there */
 		timeout = 0;
 	}
+
 #endif
 
 	/* configure the clock for bootloader activity */
@@ -397,7 +409,7 @@ main(void)
 	/* start the interface */
 	cinit(BOARD_INTERFACE_CONFIG, USART);
 #ifdef I2C_DEBUG_ENABLE
-	uart_cout((uint8_t*) "\r\nI am boot!\r\n", 14);
+	uart_cout((uint8_t *) "\r\nI am boot!\r\n", 14);
 #endif
 
 	while (1) {
@@ -410,7 +422,7 @@ main(void)
 		// So we need to send "continue transmitting" character
 		uint8_t tmp = 17; // "continue transmitting"
 		uart_cout(&tmp, 1);
-		uart_cout((uint8_t*) "\r\nStarting app\r\n", 16);
+		uart_cout((uint8_t *) "\r\nStarting app\r\n", 16);
 #endif
 
 		/* look to see if we can boot the app */

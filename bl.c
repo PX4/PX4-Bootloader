@@ -357,10 +357,12 @@ jump_to_app()
 	/* We can't switch exception handlers to app using SCB_VTOR,
 	 * we need to copy them to RAM and switch boot mode to RAM */
 	extern uint8_t _ram_vector_start, _ram_vector_end; // exported by linker
-	uint8_t *app_vector = (uint8_t*) APP_LOAD_ADDRESS;
+	uint8_t *app_vector = (uint8_t *) APP_LOAD_ADDRESS;
+
 	for (uint8_t *destination = &_ram_vector_start; destination < &_ram_vector_end; ++destination) {
 		*(destination) = *(app_vector++); // We just hope that app has correct vector table for the same processor
 	}
+
 	SYSCFG_CFGR1 = (SYSCFG_CFGR1 & ~SYSCFG_CFGR1_MEM_MODE) | SYSCFG_CFGR1_MEM_MODE_SRAM;
 #else
 	/* by default use SCB_VTOR to switch exception handlers to the application */
@@ -439,11 +441,11 @@ enum flash_command_result_t {
 };
 
 static enum flash_command_result_t
-perform_chip_erase(uint32_t *address)
-{
+perform_chip_erase(uint32_t *address) {
 #if defined(TARGET_HW_PX4_FMU_V4)
 
-	if (check_silicon()) {
+	if (check_silicon())
+	{
 		return FLASH_COMMAND_BAD_SILICON;
 	}
 
@@ -455,7 +457,8 @@ perform_chip_erase(uint32_t *address)
 	// erase all sectors
 	flash_unlock();
 
-	for (int i = 0; flash_func_sector_size(i) != 0; i++) {
+	for (int i = 0; flash_func_sector_size(i) != 0; i++)
+	{
 		flash_func_erase_sector(i);
 	}
 
@@ -464,7 +467,8 @@ perform_chip_erase(uint32_t *address)
 
 	// verify the erase
 	for (*address = 0; *address < board_info.fw_size; *address += 4)
-		if (flash_func_read_word(*address) != 0xffffffff) {
+		if (flash_func_read_word(*address) != 0xffffffff)
+		{
 			return FLASH_COMMAND_FAILURE;
 		}
 
@@ -476,15 +480,15 @@ perform_chip_erase(uint32_t *address)
 }
 
 static enum flash_command_result_t
-perform_flash_write(int write_size, uint32_t *address, uint32_t *first_word)
-{
-	if (*address == 0) {
+perform_flash_write(int write_size, uint32_t *address, uint32_t *first_word) {
+	if (*address == 0)
+	{
 
 #if defined(TARGET_HW_PX4_FMU_V4)
 
-	if (check_silicon()) {
-		return FLASH_COMMAND_BAD_SILICON;
-	}
+		if (check_silicon()) {
+			return FLASH_COMMAND_BAD_SILICON;
+		}
 
 #endif
 
@@ -494,7 +498,8 @@ perform_flash_write(int write_size, uint32_t *address, uint32_t *first_word)
 		flash_buffer.w[0] = 0xffffffff;
 	}
 
-	for (int i = 0; i < write_size; i++) {
+	for (int i = 0; i < write_size; i++)
+	{
 
 		// program the word
 		flash_func_write_word(*address, flash_buffer.w[i]);
@@ -545,6 +550,7 @@ static uint32_t
 calc_app_crc(uint32_t first_word)
 {
 	uint32_t sum = 0;
+
 	for (unsigned p = 0; p < board_info.fw_size; p += 4) {
 		uint32_t bytes;
 
@@ -557,6 +563,7 @@ calc_app_crc(uint32_t first_word)
 
 		sum = crc32((uint8_t *)&bytes, sizeof(bytes), sum);
 	}
+
 	return sum;
 }
 
@@ -575,25 +582,27 @@ static volatile bool i2c_debug_buffer_overflow = false;
 // This function is blocking and should be called from a single interrupt
 // So don't worry about possible other callers - we only have to think about the emptying thread
 void
-i2c_send_to_uart(const char * const data, uint8_t data_size)
+i2c_send_to_uart(const char *const data, uint8_t data_size)
 {
 	uint8_t new_end = i2c_debug_end + data_size;
 	bool write_allowed = false;
+
 	// This condition can't get "worse", the "start" can only go up to the end
 	if (i2c_debug_end >= i2c_debug_start) {
 		if (new_end > sizeof(i2c_debug_buffer)) {
 			new_end -= sizeof(i2c_debug_buffer);
+
 			// If end was overlapped over the edge
 			// but the start overlapped only after the previous if, though luck
 			if (new_end < i2c_debug_start) {
 				write_allowed = true;
 			}
-		}
-		else {
+
+		} else {
 			write_allowed = true;
 		}
-	}
-	else {
+
+	} else {
 		// If end was overlapped over the edge
 		// but the start overlapped only after the previous if, though luck
 		if (new_end < i2c_debug_start) {
@@ -605,21 +614,25 @@ i2c_send_to_uart(const char * const data, uint8_t data_size)
 	if (write_allowed) {
 		uint8_t data_left = data_size;
 		int i = i2c_debug_end;
+
 		for (; data_left && i < sizeof(i2c_debug_buffer); ++i) {
 			i2c_debug_buffer[i] = data[i - i2c_debug_end];
 			data_left--;
 		}
+
 		// No problems if data_left is zero at the same time
 		if (i == sizeof(i2c_debug_buffer)) {
 			uint8_t data_offset = data_size - data_left;
 			i = 0;
+
 			for (; i < data_left; ++i) {
 				i2c_debug_buffer[i] = data[data_offset + i];
 			}
 		}
+
 		i2c_debug_end = i;
-	}
-	else {
+
+	} else {
 		i2c_debug_buffer_overflow = true;
 	}
 }
@@ -635,11 +648,11 @@ i2c_send_to_uart(const char * const data, uint8_t data_size)
 
 // Message templates, preallocated to save time during I2C interrupts
 static struct {
-		uint32_t protocol;
-		uint32_t board_type;
-		uint32_t board_rev;
-		uint32_t fw_size;
-		uint32_t vec_area[4];
+	uint32_t protocol;
+	uint32_t board_type;
+	uint32_t board_rev;
+	uint32_t fw_size;
+	uint32_t vec_area[4];
 } __attribute__((packed)) i2c_status_reply;
 
 enum i2c_states_t {
@@ -681,12 +694,12 @@ enum i2c_reply_codes_t {
 
 # define I2C_MAX_PAYLOAD_SIZE 200 // maximum amount of data we are allowed to reply
 # define I2C_STATUS_PROCESSED_EVENTS (I2C_ISR_OVR \
-		| I2C_ISR_ARLO \
-		| I2C_ISR_BERR \
-		| I2C_ISR_NACKF \
-		| I2C_ISR_ADDR \
-		| I2C_ISR_RXNE \
-		| I2C_ISR_TXIS)
+				      | I2C_ISR_ARLO \
+				      | I2C_ISR_BERR \
+				      | I2C_ISR_NACKF \
+				      | I2C_ISR_ADDR \
+				      | I2C_ISR_RXNE \
+				      | I2C_ISR_TXIS)
 
 static volatile uint8_t program_multi_count;
 static volatile uint32_t full_app_crc = 0;
@@ -717,7 +730,7 @@ static volatile enum bootloader_status_t {
  * Reset can be moved to main thread.
  */
 void
-BOARD_I2C_IRQ_FUNCTION (void)
+BOARD_I2C_IRQ_FUNCTION(void)
 {
 	static uint8_t i2c_rx_tx_idx = I2C_MAX_PAYLOAD_SIZE + 1;
 	static enum i2c_states_t current_i2c_state = I2C_WAIT_FOR_REQUEST;
@@ -728,32 +741,37 @@ BOARD_I2C_IRQ_FUNCTION (void)
 
 
 	uint32_t i2c_irq_status = I2C_ISR(BOARD_I2C); // Get interrupt status
+
 	if (i2c_irq_status & I2C_ISR_ADDR) { // Matching address event
 		I2C_ICR(BOARD_I2C) |= I2C_ICR_ADDRCF; // Clear the address event
 		i2c_irq_status &= ~I2C_ISR_ADDR; // Mark address event as processed
+
 		// Outgoing transmission
 		if (i2c_irq_status & I2C_ISR_DIR) {
 			if (current_command == I2C_COMMAND_DEFAULT) {
 				current_command = I2C_COMMAND_GET_STATUS;
 			}
+
 			if (current_command >= I2C_READ_COMMAND_MAX) {
 				current_i2c_state = I2C_WAIT_FOR_STOP;
 				I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set next transmit byte
-			}
-			else if (main_bootloader_status == BOOT_STATUS_IN_PROGRESS) {
+
+			} else if (main_bootloader_status == BOOT_STATUS_IN_PROGRESS) {
 				current_i2c_state = I2C_WAIT_FOR_STOP;
 				I2C_TXDR(BOARD_I2C) = I2C_REPLY_BUSY; // Set next transmit byte
-			}
-			else {
+
+			} else {
 				// TODO: Mark if crc was calculated and reject operation if not
 				current_i2c_state = I2C_SENDING_DATA;
 				I2C_TXDR(BOARD_I2C) = I2C_REPLY_ACK; // Set next transmit byte
 				i2c_rx_tx_idx = 0;
 			}
+
 			I2C_CR1(BOARD_I2C) &= ~I2C_CR1_RXIE; // disable read interrupts
 			I2C_CR1(BOARD_I2C) |= I2C_CR1_TXIE | I2C_CR1_NACKIE; // enable transmit interrupts
 			I2C_UART_DEBUG("<", 1);
 		}
+
 		// Incoming transmission, first byte is the command itself
 		else {
 			current_i2c_state = I2C_GET_COMMAND;
@@ -767,61 +785,77 @@ BOARD_I2C_IRQ_FUNCTION (void)
 	case I2C_WAIT_FOR_REQUEST:
 		// Address event is processed in all states
 		break;
+
 	case I2C_GET_COMMAND:
 		if (i2c_irq_status & I2C_ISR_RXNE) { // Byte received event
 			i2c_irq_status &= ~I2C_ISR_RXNE; // Mark received event as processed
 			current_command = I2C_RXDR(BOARD_I2C); // Read the byte
-			if (current_command > I2C_WRITE_COMMAND_MIN && current_command < I2C_WRITE_COMMAND_MAX && main_bootloader_status == BOOT_STATUS_IDLE) {
+
+			if (current_command > I2C_WRITE_COMMAND_MIN && current_command < I2C_WRITE_COMMAND_MAX
+			    && main_bootloader_status == BOOT_STATUS_IDLE) {
 				current_i2c_state = I2C_WAIT_FOR_EOC;
 				// If anything happens to us, reply that it was a bad command
 				main_bootloader_status = BOOT_STATUS_BAD_COMMAND;
-			}
-			else { // either "read", unknown command or we're busy - just wait
+
+			} else { // either "read", unknown command or we're busy - just wait
 				current_i2c_state = I2C_WAIT_FOR_STOP;
 			}
+
 			I2C_UART_DEBUG("G", 1);
-			I2C_UART_DEBUG((char*)&current_command, sizeof(current_command));
+			I2C_UART_DEBUG((char *)&current_command, sizeof(current_command));
 		}
+
 		break;
+
 	case I2C_WAIT_FOR_EOC:
 		if (i2c_irq_status & I2C_ISR_RXNE) { // Byte received event
 			i2c_irq_status &= ~I2C_ISR_RXNE; // Mark received event as processed
+
 			if (I2C_RXDR(BOARD_I2C) == I2C_REPLY_ACK) { // Received ACK message -> valid command
 				switch (current_command) {
 				case I2C_TEST_PRINT_COMMAND:
 					current_i2c_state = I2C_WAIT_FOR_DATA;
 					main_bootloader_status = BOOT_STATUS_FINISHED_OK;
 					break;
+
 				case I2C_PERFORM_ERASE_COMMAND:
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 					new_bootloader_command = BOOT_COMMAND_ERASE;
 					break;
+
 				case I2C_PREPARE_APP_CRC:
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 					new_bootloader_command = BOOT_COMMAND_CALC_CRC;
 					break;
+
 				case I2C_FINISH_AND_BOOT:
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 					new_bootloader_command = BOOT_COMMAND_BOOT_APP;
 					break;
+
 				case I2C_PERFORM_WRITE_COMMAND:
 					current_i2c_state = I2C_WAIT_FOR_DATA;
 					i2c_rx_tx_idx = 0;
 					break;
+
 				default:
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 				} // switch (current_command)
+
 				I2C_UART_DEBUG("E", 1);
-			}
-			else {
+
+			} else {
 				I2C_UART_DEBUG("e", 1);
 				current_i2c_state = I2C_WAIT_FOR_STOP;
 			}
 		}
+
 		break;
+
 	case I2C_WAIT_FOR_DATA:
 		if (i2c_irq_status & I2C_ISR_RXNE) { // Byte received event
 			i2c_irq_status &= ~I2C_ISR_RXNE; // Mark received event as processed
+
 			// Get the bytes to buffer and set program_multi_count
 			// In case of an error - don't clear anything - there is no need
 			if (current_command == I2C_PERFORM_WRITE_COMMAND) {
@@ -829,18 +863,22 @@ BOARD_I2C_IRQ_FUNCTION (void)
 				if (i2c_rx_tx_idx == 0) {
 					program_multi_count = I2C_RXDR(BOARD_I2C); // Read the byte
 					I2C_UART_DEBUG("W", 1);
-					I2C_UART_DEBUG((char*) &program_multi_count, 1);
+					I2C_UART_DEBUG((char *) &program_multi_count, 1);
+
 					if (program_multi_count > I2C_MAX_PAYLOAD_SIZE - 7 || program_multi_count % 4 != 0) {
 						// "BAD_COMMAND" has already been set, so just abort
 						current_i2c_state = I2C_WAIT_FOR_STOP;
 					}
+
 					i2c_rx_tx_idx++;
 				}
+
 				// Get app and CRC bytes, CRC bytes just go straight after app
 				else if (i2c_rx_tx_idx < program_multi_count + 4) {
 					flash_buffer.c[i2c_rx_tx_idx - 1] = I2C_RXDR(BOARD_I2C); // Read the byte
 					i2c_rx_tx_idx++;
 				}
+
 				// The last CRC byte
 				else if (i2c_rx_tx_idx == program_multi_count + 4) {
 					flash_buffer.c[i2c_rx_tx_idx - 1] = I2C_RXDR(BOARD_I2C); // Read the byte
@@ -848,8 +886,9 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					// We're good to go
 					new_bootloader_command = BOOT_COMMAND_WRITE;
 					I2C_UART_DEBUG("C", 1);
-					I2C_UART_DEBUG((char*) &flash_buffer.c[i2c_rx_tx_idx - 2], 1);
+					I2C_UART_DEBUG((char *) &flash_buffer.c[i2c_rx_tx_idx - 2], 1);
 				}
+
 				// Too many bytes received, abort
 				else {
 					// "BAD_COMMAND" has already been set, so just abort
@@ -857,75 +896,88 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					I2C_UART_DEBUG("O", 1);
 					// If debug is disabled, we still need to read out the register
 					volatile char tmp = (char) I2C_RXDR(BOARD_I2C); // Read the byte
-					I2C_UART_DEBUG((char*)&tmp, 1);
+					I2C_UART_DEBUG((char *)&tmp, 1);
 					(void) tmp;
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 				}
-			}
-			else {
+
+			} else {
 				// If debug is disabled, we still need to read out the register
 				volatile char tmp = (char) I2C_RXDR(BOARD_I2C); // Read the byte
 				I2C_UART_DEBUG("R", 1);
-				I2C_UART_DEBUG((char*)&tmp, 1);
+				I2C_UART_DEBUG((char *)&tmp, 1);
 				(void) tmp;
 			}
 		}
+
 		break;
+
 	case I2C_SENDING_DATA:
+
 		// Previous byte was not sent correctly
 		if (i2c_irq_status & I2C_ISR_NACKF) {
 			i2c_irq_status &= ~I2C_ISR_NACKF; // Mark NACK as processed
+
 			if (i2c_rx_tx_idx > 0) {
 				i2c_rx_tx_idx--;
 			}
+
 			I2C_ICR(BOARD_I2C) |= I2C_ICR_NACKCF; // Clear the NACK event
 			I2C_UART_DEBUG("N", 1);
 		}
 
 		if (i2c_irq_status & I2C_ISR_TXIS) { // I2C is waiting for the next byte from us
 			i2c_irq_status &= ~I2C_ISR_TXIS; // Mark TX event as processed
+
 			// -1, because we've already sent ACK
 			if (i2c_rx_tx_idx < I2C_MAX_PAYLOAD_SIZE - 1) {
 				switch (current_command) {
 				case I2C_COMMAND_GET_STATUS:
 					if (i2c_rx_tx_idx < sizeof(i2c_status_reply)) {
 						// Set the next byte to be sent
-						I2C_TXDR(BOARD_I2C) = ((uint8_t*) &i2c_status_reply)[i2c_rx_tx_idx++];
-					}
-					else {
+						I2C_TXDR(BOARD_I2C) = ((uint8_t *) &i2c_status_reply)[i2c_rx_tx_idx++];
+
+					} else {
 						I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set the next byte to be sent
 						current_i2c_state = I2C_WAIT_FOR_STOP;
 					}
+
 					break;
+
 				case I2C_COMMAND_GET_PROGRESS:
 					I2C_TXDR(BOARD_I2C) = main_bootloader_status; // Set the next byte to be sent
 					main_bootloader_status = BOOT_STATUS_IDLE;
 					// stop state will repeat the last byte, so just pass control to it
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 					break;
+
 				case I2C_COMMAND_GET_ERASE_TIME:
 				case I2C_COMMAND_GET_WRITE_TIME:
 				case I2C_COMMAND_GET_CRC_TIME: {
-					uint16_t timeout = FLASH_ERASE_TIME;
-					if (current_command == I2C_COMMAND_GET_WRITE_TIME) {
-						timeout = FLASH_PROGRAM_BLOCK_TIME;
+						uint16_t timeout = FLASH_ERASE_TIME;
+
+						if (current_command == I2C_COMMAND_GET_WRITE_TIME) {
+							timeout = FLASH_PROGRAM_BLOCK_TIME;
+
+						} else if (current_command == I2C_COMMAND_GET_CRC_TIME) {
+							timeout = CHECK_CRC_TIME;
+						}
+
+						// Little-endian uint16_t
+						if (i2c_rx_tx_idx < 2) {
+							// Set the next byte to be sent
+							I2C_TXDR(BOARD_I2C) = BYTE_BY_INDEX(timeout, i2c_rx_tx_idx);
+							i2c_rx_tx_idx++;
+
+						} else {
+							// Set the next byte to be sent
+							I2C_TXDR(BOARD_I2C) = 0; // in little-endian this won't change the value
+							current_i2c_state = I2C_WAIT_FOR_STOP;
+						}
+
+						break;
 					}
-					else if (current_command == I2C_COMMAND_GET_CRC_TIME) {
-						timeout = CHECK_CRC_TIME;
-					}
-					// Little-endian uint16_t
-					if (i2c_rx_tx_idx < 2) {
-						// Set the next byte to be sent
-						I2C_TXDR(BOARD_I2C) = BYTE_BY_INDEX(timeout, i2c_rx_tx_idx);
-						i2c_rx_tx_idx++;
-					}
-					else {
-						// Set the next byte to be sent
-						I2C_TXDR(BOARD_I2C) = 0; // in little-endian this won't change the value
-						current_i2c_state = I2C_WAIT_FOR_STOP;
-					}
-					break;
-				}
+
 				case I2C_COMMAND_GET_WRITE_SIZE:
 					// Set the next byte to be sent
 					// Assume that I2C bus maximum packet limit is effective both ways
@@ -933,59 +985,70 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					I2C_TXDR(BOARD_I2C) = I2C_MAX_PAYLOAD_SIZE - 7 - (I2C_MAX_PAYLOAD_SIZE - 7) % 4;
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 					break;
+
 				case I2C_COMMAND_GET_APP_CRC:
 					if (i2c_rx_tx_idx < 4) {
 						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = BYTE_BY_INDEX(full_app_crc, i2c_rx_tx_idx);
 						i2c_rx_tx_idx++;
-					}
-					else {
+
+					} else {
 						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = 0; // in little-endian this won't change the value
 						current_i2c_state = I2C_WAIT_FOR_STOP;
 					}
+
 					break;
+
 				case I2C_COMMAND_CHECK_APP: {
-					const uint32_t *app_base = (const uint32_t *)APP_LOAD_ADDRESS;
-					uint8_t app_ready = 1;
-					/*
-					 * We refuse to program the first word of the app until the upload is marked
-					 * complete by the host.  So if it's not 0xffffffff, we should try booting it.
-					 */
-					if (app_base[0] == 0xffffffff) {
-						app_ready = 0;
+						const uint32_t *app_base = (const uint32_t *)APP_LOAD_ADDRESS;
+						uint8_t app_ready = 1;
+
+						/*
+						 * We refuse to program the first word of the app until the upload is marked
+						 * complete by the host.  So if it's not 0xffffffff, we should try booting it.
+						 */
+						if (app_base[0] == 0xffffffff) {
+							app_ready = 0;
+						}
+
+						/*
+						 * The second word of the app is the entrypoint; it must point within the
+						 * flash area (or we have a bad flash).
+						 */
+						else if (app_base[1] < APP_LOAD_ADDRESS) {
+							app_ready = 0;
+
+						} else if (app_base[1] >= (APP_LOAD_ADDRESS + board_info.fw_size)) {
+							app_ready = 0;
+						}
+
+						I2C_TXDR(BOARD_I2C) = app_ready; // Set the next byte to be sent
+						current_i2c_state = I2C_WAIT_FOR_STOP;
+						break;
 					}
-					/*
-					 * The second word of the app is the entrypoint; it must point within the
-					 * flash area (or we have a bad flash).
-					 */
-					else if (app_base[1] < APP_LOAD_ADDRESS) {
-						app_ready = 0;
-					}
-					else if (app_base[1] >= (APP_LOAD_ADDRESS + board_info.fw_size)) {
-						app_ready = 0;
-					}
-					I2C_TXDR(BOARD_I2C) = app_ready; // Set the next byte to be sent
-					current_i2c_state = I2C_WAIT_FOR_STOP;
-					break;
-				}
+
 				default: // No idea how we've got here
 					I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set the next byte to be sent
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 				} // switch (current_command)
-			}
-			else {
+
+			} else {
 				I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set the next byte to be sent
 				current_i2c_state = I2C_WAIT_FOR_STOP;
 			}
+
 			// If debug is disabled, we still need to read out the register
 			volatile char tmp = (char) I2C_TXDR(BOARD_I2C); // Read the byte
 			I2C_UART_DEBUG("T", 1);
-			I2C_UART_DEBUG((char*)&tmp, 1);
+			I2C_UART_DEBUG((char *)&tmp, 1);
 			(void) tmp;
 		}
+
 		break;
+
 	case I2C_WAIT_FOR_STOP:
+
 		// We've got a NACK event
 		if (i2c_irq_status & I2C_ISR_NACKF) {
 			// Repeat the last byte to be sent again
@@ -993,6 +1056,7 @@ BOARD_I2C_IRQ_FUNCTION (void)
 			I2C_ICR(BOARD_I2C) |= I2C_ICR_NACKCF; // Clear the NACK event
 			I2C_UART_DEBUG("n", 1);
 		}
+
 		// I2C is waiting for another byte from us
 		else if (i2c_irq_status & I2C_ISR_TXIS) {
 			// Transmit state is responsible for setting NAK if needed,
@@ -1006,9 +1070,10 @@ BOARD_I2C_IRQ_FUNCTION (void)
 			// If debug is disabled, we still need to read out the register
 			volatile char tmp = (char) I2C_RXDR(BOARD_I2C); // Read the byte
 			I2C_UART_DEBUG("n", 1);
-			I2C_UART_DEBUG((char*)&tmp, 1);
+			I2C_UART_DEBUG((char *)&tmp, 1);
 			(void) tmp;
 		}
+
 		// All 3 interrupts are tended to in this state
 		i2c_irq_status &= ~(I2C_ISR_NACKF | I2C_ISR_TXIS | I2C_ISR_RXNE);
 
@@ -1052,8 +1117,9 @@ i2c_main_loop(unsigned timeout)
 	i2c_status_reply.board_type = board_info.board_type;
 	i2c_status_reply.board_rev = board_info.board_rev;
 	i2c_status_reply.fw_size = board_info.fw_size;
+
 	for (unsigned i = 0; i < sizeof(i2c_status_reply.vec_area) / sizeof(i2c_status_reply.vec_area[0]); i++) {
-		 i2c_status_reply.vec_area[i] = flash_func_read_word((i + 7) * 4);
+		i2c_status_reply.vec_area[i] = flash_func_read_word((i + 7) * 4);
 	}
 
 	// A little hardcoded hack, if we're here and last status was OK,
@@ -1066,6 +1132,7 @@ i2c_main_loop(unsigned timeout)
 	uint32_t	first_word = 0xffffffff;
 
 	i2c_enable(); // Enable I2C only after all the answers have been initialized
+
 	while (true) {
 
 		// Timer is set outside of our loop function
@@ -1074,117 +1141,131 @@ i2c_main_loop(unsigned timeout)
 		}
 
 # ifdef I2C_DEBUG_ENABLE
+
 		if (i2c_debug_start != i2c_debug_end) {
 			uint8_t saved_end = i2c_debug_end;
+
 			// overlap
 			if (i2c_debug_start > saved_end) {
 				DIRECT_UART_DEBUG((uint8_t *) &i2c_debug_buffer[i2c_debug_start], sizeof(i2c_debug_buffer) - i2c_debug_start);
 				i2c_debug_start = 0;
 			}
+
 			DIRECT_UART_DEBUG((uint8_t *) &i2c_debug_buffer[i2c_debug_start], saved_end - i2c_debug_start);
 			i2c_debug_start = saved_end;
 		}
+
 		if (i2c_debug_buffer_overflow) {
 			DIRECT_UART_DEBUG((uint8_t *) "\n\rDebug buffer overflow!\n\r", 26);
 			i2c_debug_buffer_overflow = false;
 		}
+
 # endif
 
 		switch (main_bootloader_status) {
 		case BOOT_COMMAND_ERASE: {
-			main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
-			DIRECT_UART_DEBUG((uint8_t*) "\n\rErasing!\n\r", 12);
-			int res = perform_chip_erase(&address);
-			DIRECT_UART_DEBUG((uint8_t*) "\n\rFinished\n\r", 12);
-			if (res == FLASH_COMMAND_OK) {
-				main_bootloader_status = BOOT_STATUS_FINISHED_OK;
+				main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
+				DIRECT_UART_DEBUG((uint8_t *) "\n\rErasing!\n\r", 12);
+				int res = perform_chip_erase(&address);
+				DIRECT_UART_DEBUG((uint8_t *) "\n\rFinished\n\r", 12);
+
+				if (res == FLASH_COMMAND_OK) {
+					main_bootloader_status = BOOT_STATUS_FINISHED_OK;
+
+				} else if (res == FLASH_COMMAND_BAD_SILICON) {
+					main_bootloader_status = BOOT_STATUS_BAD_SILICON;
+
+				} else {
+					main_bootloader_status = BOOT_STATUS_FAILURE;
+				}
+
+				// We could have overwritten the area, refresh the data to avoid doing so during interrupt
+				for (unsigned i = 0; i < sizeof(i2c_status_reply.vec_area) / sizeof(i2c_status_reply.vec_area[0]); i++) {
+					i2c_status_reply.vec_area[i] = flash_func_read_word((i + 7) * 4);
+				}
+
+				break;
 			}
-			else if (res == FLASH_COMMAND_BAD_SILICON) {
-				main_bootloader_status = BOOT_STATUS_BAD_SILICON;
-			}
-			else {
-				main_bootloader_status = BOOT_STATUS_FAILURE;
-			}
-			// We could have overwritten the area, refresh the data to avoid doing so during interrupt
-			for (unsigned i = 0; i < sizeof(i2c_status_reply.vec_area) / sizeof(i2c_status_reply.vec_area[0]); i++) {
-				 i2c_status_reply.vec_area[i] = flash_func_read_word((i + 7) * 4);
-			}
-			break;
-		}
+
 		case BOOT_COMMAND_WRITE: {
-			main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
-			DIRECT_UART_DEBUG((uint8_t*) "\n\rProgramming!\n\r", 16);
+				main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
+				DIRECT_UART_DEBUG((uint8_t *) "\n\rProgramming!\n\r", 16);
 # ifdef I2C_DEBUG_ENABLE
-			uint32_t program_time_ms = current_time_ms;
+				uint32_t program_time_ms = current_time_ms;
 # endif
 
-			if ((address + program_multi_count) > board_info.fw_size) {
-				DIRECT_UART_DEBUG((uint8_t*) "\n\rOut of bounds\n\r", 17);
-				DIRECT_UART_DEBUG((uint8_t*) "Address: ", 9);
-				DIRECT_UART_DEBUG((uint8_t*) address, sizeof(address));
-				DIRECT_UART_DEBUG((uint8_t*) " size: ",7);
-				DIRECT_UART_DEBUG((uint8_t*) board_info.fw_size, sizeof(board_info.fw_size));
-				DIRECT_UART_DEBUG((uint8_t*) "\n\r", 2);
-				main_bootloader_status = BOOT_STATUS_BAD_COMMAND;
+				if ((address + program_multi_count) > board_info.fw_size) {
+					DIRECT_UART_DEBUG((uint8_t *) "\n\rOut of bounds\n\r", 17);
+					DIRECT_UART_DEBUG((uint8_t *) "Address: ", 9);
+					DIRECT_UART_DEBUG((uint8_t *) address, sizeof(address));
+					DIRECT_UART_DEBUG((uint8_t *) " size: ", 7);
+					DIRECT_UART_DEBUG((uint8_t *) board_info.fw_size, sizeof(board_info.fw_size));
+					DIRECT_UART_DEBUG((uint8_t *) "\n\r", 2);
+					main_bootloader_status = BOOT_STATUS_BAD_COMMAND;
+					break;
+				}
+
+
+				// it's ok to ignore "volatile" nature of flash_buffer here
+				if (flash_buffer.w[program_multi_count / 4] != crc32((uint8_t *) flash_buffer.c, program_multi_count, 0)) {
+					DIRECT_UART_DEBUG((uint8_t *) "\n\rBad CRC: ", 11);
+					DIRECT_UART_DEBUG((uint8_t *)&flash_buffer.w[program_multi_count / 4], sizeof(flash_buffer.w[0]));
+					DIRECT_UART_DEBUG((uint8_t *) "\n\r", 2);
+# ifdef I2C_DEBUG_ENABLE
+					uint32_t correct_crc = crc32((uint8_t *) flash_buffer.c, program_multi_count, 0);
+# endif
+					DIRECT_UART_DEBUG((uint8_t *) "Correct CRC: ", 13);
+					DIRECT_UART_DEBUG((uint8_t *) &correct_crc, sizeof(correct_crc));
+					DIRECT_UART_DEBUG((uint8_t *) "\n\r", 2);
+					main_bootloader_status = BOOT_STATUS_BAD_COMMAND;
+					break;
+				}
+
+				enum flash_command_result_t res = perform_flash_write(program_multi_count / 4, &address, &first_word);
+# ifdef I2C_DEBUG_ENABLE
+				program_time_ms = current_time_ms - program_time_ms;
+# endif
+				DIRECT_UART_DEBUG((uint8_t *) "\n\rFinished in ", 14);
+				DIRECT_UART_DEBUG((uint8_t *) &program_time_ms, sizeof(program_time_ms));
+				DIRECT_UART_DEBUG((uint8_t *) "!\n\r", 3);
+
+				if (res == FLASH_COMMAND_OK) {
+					main_bootloader_status = BOOT_STATUS_FINISHED_OK;
+
+				} else if (res == FLASH_COMMAND_BAD_SILICON) {
+					main_bootloader_status = BOOT_STATUS_BAD_SILICON;
+
+				} else {
+					main_bootloader_status = BOOT_STATUS_FAILURE;
+				}
+
+				// We could have overwritten the area, refresh the data to avoid doing so during interrupt
+				for (unsigned i = 0; i < sizeof(i2c_status_reply.vec_area) / sizeof(i2c_status_reply.vec_area[0]); i++) {
+					i2c_status_reply.vec_area[i] = flash_func_read_word((i + 7) * 4);
+				}
+
 				break;
 			}
 
-
-			// it's ok to ignore "volatile" nature of flash_buffer here
-			if (flash_buffer.w[program_multi_count / 4] != crc32((uint8_t*) flash_buffer.c, program_multi_count, 0)) {
-				DIRECT_UART_DEBUG((uint8_t*) "\n\rBad CRC: ", 11);
-				DIRECT_UART_DEBUG((uint8_t*)&flash_buffer.w[program_multi_count / 4], sizeof(flash_buffer.w[0]));
-				DIRECT_UART_DEBUG((uint8_t*) "\n\r", 2);
-# ifdef I2C_DEBUG_ENABLE
-				uint32_t correct_crc = crc32((uint8_t*) flash_buffer.c, program_multi_count, 0);
-# endif
-				DIRECT_UART_DEBUG((uint8_t*) "Correct CRC: ", 13);
-				DIRECT_UART_DEBUG((uint8_t*) &correct_crc, sizeof(correct_crc));
-				DIRECT_UART_DEBUG((uint8_t*) "\n\r", 2);
-				main_bootloader_status = BOOT_STATUS_BAD_COMMAND;
-				break;
-			}
-
-			enum flash_command_result_t res = perform_flash_write(program_multi_count / 4, &address, &first_word);
-# ifdef I2C_DEBUG_ENABLE
-			program_time_ms = current_time_ms - program_time_ms;
-# endif
-			DIRECT_UART_DEBUG((uint8_t*) "\n\rFinished in ", 14);
-			DIRECT_UART_DEBUG((uint8_t*) &program_time_ms, sizeof(program_time_ms));
-			DIRECT_UART_DEBUG((uint8_t*) "!\n\r", 3);
-			if (res == FLASH_COMMAND_OK) {
-				main_bootloader_status = BOOT_STATUS_FINISHED_OK;
-			}
-			else if (res == FLASH_COMMAND_BAD_SILICON) {
-				main_bootloader_status = BOOT_STATUS_BAD_SILICON;
-			}
-			else {
-				main_bootloader_status = BOOT_STATUS_FAILURE;
-			}
-			// We could have overwritten the area, refresh the data to avoid doing so during interrupt
-			for (unsigned i = 0; i < sizeof(i2c_status_reply.vec_area) / sizeof(i2c_status_reply.vec_area[0]); i++) {
-				 i2c_status_reply.vec_area[i] = flash_func_read_word((i + 7) * 4);
-			}
-
-			break;
-		}
 		case BOOT_COMMAND_CALC_CRC: {
-			main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
+				main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
 # ifdef I2C_DEBUG_ENABLE
-			uint32_t crc_time_ms = current_time_ms;
+				uint32_t crc_time_ms = current_time_ms;
 # endif
-			full_app_crc = calc_app_crc(first_word);
+				full_app_crc = calc_app_crc(first_word);
 # ifdef I2C_DEBUG_ENABLE
-			crc_time_ms = current_time_ms - crc_time_ms;
+				crc_time_ms = current_time_ms - crc_time_ms;
 # endif
-			DIRECT_UART_DEBUG((uint8_t*) "\n\rFinished in ", 14);
-			DIRECT_UART_DEBUG((uint8_t*) &crc_time_ms, sizeof(crc_time_ms));
-			DIRECT_UART_DEBUG((uint8_t*) "!\n\r", 3);
-			main_bootloader_status = BOOT_STATUS_FINISHED_OK;
-			break;
-		}
+				DIRECT_UART_DEBUG((uint8_t *) "\n\rFinished in ", 14);
+				DIRECT_UART_DEBUG((uint8_t *) &crc_time_ms, sizeof(crc_time_ms));
+				DIRECT_UART_DEBUG((uint8_t *) "!\n\r", 3);
+				main_bootloader_status = BOOT_STATUS_FINISHED_OK;
+				break;
+			}
+
 		case BOOT_COMMAND_BOOT_APP:
 			main_bootloader_status = BOOT_STATUS_IN_PROGRESS;
+
 			// program the deferred first word
 			if (first_word != 0xffffffff) {
 				flash_func_write_word(0, first_word);
@@ -1202,6 +1283,7 @@ i2c_main_loop(unsigned timeout)
 
 			delay(500); // Allow for the caller to check on us
 			return;
+
 		default:
 			// nop
 			break;
@@ -1346,6 +1428,7 @@ bootloader(unsigned timeout)
 
 	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
+
 	while (true) {
 		volatile int c;
 		int arg;
@@ -1445,20 +1528,22 @@ bootloader(unsigned timeout)
 		//
 		case PROTO_CHIP_ERASE: {
 
-			/* expect EOC */
-			if (!wait_for_eoc(2)) {
-				goto cmd_bad;
-			}
+				/* expect EOC */
+				if (!wait_for_eoc(2)) {
+					goto cmd_bad;
+				}
 
-			enum flash_command_result_t res = perform_chip_erase(&address);
-			if (res == FLASH_COMMAND_BAD_SILICON) {
-				goto bad_silicon;
+				enum flash_command_result_t res = perform_chip_erase(&address);
+
+				if (res == FLASH_COMMAND_BAD_SILICON) {
+					goto bad_silicon;
+
+				} else if (res != FLASH_COMMAND_OK) {
+					goto cmd_fail;
+				}
+
+				break;
 			}
-			else if (res != FLASH_COMMAND_OK) {
-				goto cmd_fail;
-			}
-			break;
-		}
 
 		// program bytes at current address
 		//
@@ -1468,49 +1553,51 @@ bootloader(unsigned timeout)
 		// readback failure:	INSYNC/FAILURE
 		//
 		case PROTO_PROG_MULTI: {		// program bytes
-			// expect count
-			arg = cin_wait(50);
+				// expect count
+				arg = cin_wait(50);
 
-			if (arg < 0) {
-				goto cmd_bad;
-			}
-
-			// sanity-check arguments
-			if (arg % 4) {
-				goto cmd_bad;
-			}
-
-			if ((address + arg) > board_info.fw_size) {
-				goto cmd_bad;
-			}
-
-			if (arg > sizeof(flash_buffer.c)) {
-				goto cmd_bad;
-			}
-
-			for (int i = 0; i < arg; i++) {
-				c = cin_wait(1000);
-
-				if (c < 0) {
+				if (arg < 0) {
 					goto cmd_bad;
 				}
 
-				flash_buffer.c[i] = c;
-			}
+				// sanity-check arguments
+				if (arg % 4) {
+					goto cmd_bad;
+				}
 
-			if (!wait_for_eoc(200)) {
-				goto cmd_bad;
-			}
+				if ((address + arg) > board_info.fw_size) {
+					goto cmd_bad;
+				}
 
-			enum flash_command_result_t res = perform_flash_write(arg / 4, &address, &first_word);
-			if (res == FLASH_COMMAND_BAD_SILICON) {
-				goto bad_silicon;
+				if (arg > sizeof(flash_buffer.c)) {
+					goto cmd_bad;
+				}
+
+				for (int i = 0; i < arg; i++) {
+					c = cin_wait(1000);
+
+					if (c < 0) {
+						goto cmd_bad;
+					}
+
+					flash_buffer.c[i] = c;
+				}
+
+				if (!wait_for_eoc(200)) {
+					goto cmd_bad;
+				}
+
+				enum flash_command_result_t res = perform_flash_write(arg / 4, &address, &first_word);
+
+				if (res == FLASH_COMMAND_BAD_SILICON) {
+					goto bad_silicon;
+
+				} else if (res != FLASH_COMMAND_OK) {
+					goto cmd_fail;
+				}
+
+				break;
 			}
-			else if (res != FLASH_COMMAND_OK) {
-				goto cmd_fail;
-			}
-			break;
-		}
 
 		// fetch CRC of the entire flash area
 		//
@@ -1722,5 +1809,6 @@ bad_silicon:
 		bad_silicon_response();
 		continue;
 	}
+
 #endif // if defined(INTERFACE_I2C) && INTERFACE_I2C
 }
