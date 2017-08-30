@@ -212,17 +212,18 @@ i2c_enable(void)
 {
 	// Configure I2C timings
 	I2C_TIMINGR(BOARD_I2C) = 0x50420F13; // Set from "Table 76. Examples of timings settings" from reference to 100Hz mode, scaled to 24MHz instead of 48MHz
-	// Enable interface and interrupts
+	// Enable interface and address, error and stop interrupts
 	nvic_enable_irq(BOARD_I2C_IRQ_NUMBER);
 	I2C_CR1(BOARD_I2C) = I2C_CR1_PE | I2C_CR1_ADDRIE | I2C_CR1_ERRIE | I2C_CR1_STOPIE;
 	// Set own address for slave comms
 	I2C_OAR1(BOARD_I2C) |= I2C_OAR1_OA1_VAL(I2C_OWN_ADDRESS << 1); // 7-bit addressing shifts by 1 bit
-	I2C_OAR1(BOARD_I2C) |= I2C_OAR1_OA1EN;
+	I2C_OAR1(BOARD_I2C) |= I2C_OAR1_OA1EN; // enable the address
 }
 
 void
 i2c_perform_reset(void)
 {
+	// Disable I2C interface
 	I2C_CR1(BOARD_I2C) &= ~I2C_CR1_PE;
 	/* Reference states that PE must be kept low for at least 3 cycles
 	 * And suggests to do it by writing 0, checking 0 and then writing 1

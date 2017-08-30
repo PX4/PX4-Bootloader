@@ -727,11 +727,10 @@ BOARD_I2C_IRQ_FUNCTION (void)
 	I2C_UART_DEBUG(".", 1);
 
 
-	// TODO! In case of any unprocessed interrupts - reset
 	uint32_t i2c_irq_status = I2C_ISR(BOARD_I2C); // Get interrupt status
 	if (i2c_irq_status & I2C_ISR_ADDR) { // Matching address event
-		I2C_ICR(BOARD_I2C) |= I2C_ICR_ADDRCF; // Clear the event
-		i2c_irq_status &= ~I2C_ISR_ADDR;
+		I2C_ICR(BOARD_I2C) |= I2C_ICR_ADDRCF; // Clear the address event
+		i2c_irq_status &= ~I2C_ISR_ADDR; // Mark address event as processed
 		// Outgoing transmission
 		if (i2c_irq_status & I2C_ISR_DIR) {
 			if (current_command == I2C_COMMAND_DEFAULT) {
@@ -739,26 +738,26 @@ BOARD_I2C_IRQ_FUNCTION (void)
 			}
 			if (current_command >= I2C_READ_COMMAND_MAX) {
 				current_i2c_state = I2C_WAIT_FOR_STOP;
-				I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK;
+				I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set next transmit byte
 			}
 			else if (main_bootloader_status == BOOT_STATUS_IN_PROGRESS) {
 				current_i2c_state = I2C_WAIT_FOR_STOP;
-				I2C_TXDR(BOARD_I2C) = I2C_REPLY_BUSY;
+				I2C_TXDR(BOARD_I2C) = I2C_REPLY_BUSY; // Set next transmit byte
 			}
 			else {
 				// TODO: Mark if crc was calculated and reject operation if not
 				current_i2c_state = I2C_SENDING_DATA;
-				I2C_TXDR(BOARD_I2C) = I2C_REPLY_ACK;
+				I2C_TXDR(BOARD_I2C) = I2C_REPLY_ACK; // Set next transmit byte
 				i2c_rx_tx_idx = 0;
 			}
-			I2C_CR1(BOARD_I2C) &= ~I2C_CR1_RXIE;
+			I2C_CR1(BOARD_I2C) &= ~I2C_CR1_RXIE; // disable read interrupts
 			I2C_CR1(BOARD_I2C) |= I2C_CR1_TXIE | I2C_CR1_NACKIE; // enable transmit interrupts
 			I2C_UART_DEBUG("<", 1);
 		}
 		// Incoming transmission, first byte is the command itself
 		else {
 			current_i2c_state = I2C_GET_COMMAND;
-			I2C_CR1(BOARD_I2C) &= ~I2C_CR1_TXIE | I2C_CR1_NACKIE;
+			I2C_CR1(BOARD_I2C) &= ~I2C_CR1_TXIE | I2C_CR1_NACKIE; // disable transmit interrupts
 			I2C_CR1(BOARD_I2C) |= I2C_CR1_RXIE; // enable receive interrupts
 			I2C_UART_DEBUG(">", 1);
 		}
@@ -769,9 +768,9 @@ BOARD_I2C_IRQ_FUNCTION (void)
 		// Address event is processed in all states
 		break;
 	case I2C_GET_COMMAND:
-		if (i2c_irq_status & I2C_ISR_RXNE) {
-			i2c_irq_status &= ~I2C_ISR_RXNE;
-			current_command = I2C_RXDR(BOARD_I2C);
+		if (i2c_irq_status & I2C_ISR_RXNE) { // Byte received event
+			i2c_irq_status &= ~I2C_ISR_RXNE; // Mark received event as processed
+			current_command = I2C_RXDR(BOARD_I2C); // Read the byte
 			if (current_command > I2C_WRITE_COMMAND_MIN && current_command < I2C_WRITE_COMMAND_MAX && main_bootloader_status == BOOT_STATUS_IDLE) {
 				current_i2c_state = I2C_WAIT_FOR_EOC;
 				// If anything happens to us, reply that it was a bad command
@@ -785,9 +784,9 @@ BOARD_I2C_IRQ_FUNCTION (void)
 		}
 		break;
 	case I2C_WAIT_FOR_EOC:
-		if (i2c_irq_status & I2C_ISR_RXNE) {
-			i2c_irq_status &= ~I2C_ISR_RXNE;
-			if (I2C_RXDR(BOARD_I2C) == I2C_REPLY_ACK) {
+		if (i2c_irq_status & I2C_ISR_RXNE) { // Byte received event
+			i2c_irq_status &= ~I2C_ISR_RXNE; // Mark received event as processed
+			if (I2C_RXDR(BOARD_I2C) == I2C_REPLY_ACK) { // Received ACK message -> valid command
 				switch (current_command) {
 				case I2C_TEST_PRINT_COMMAND:
 					current_i2c_state = I2C_WAIT_FOR_DATA;
@@ -821,14 +820,14 @@ BOARD_I2C_IRQ_FUNCTION (void)
 		}
 		break;
 	case I2C_WAIT_FOR_DATA:
-		if (i2c_irq_status & I2C_ISR_RXNE) {
-			i2c_irq_status &= ~I2C_ISR_RXNE;
+		if (i2c_irq_status & I2C_ISR_RXNE) { // Byte received event
+			i2c_irq_status &= ~I2C_ISR_RXNE; // Mark received event as processed
 			// Get the bytes to buffer and set program_multi_count
 			// In case of an error - don't clear anything - there is no need
 			if (current_command == I2C_PERFORM_WRITE_COMMAND) {
 				// Get number of bytes
 				if (i2c_rx_tx_idx == 0) {
-					program_multi_count = I2C_RXDR(BOARD_I2C);
+					program_multi_count = I2C_RXDR(BOARD_I2C); // Read the byte
 					I2C_UART_DEBUG("W", 1);
 					I2C_UART_DEBUG((char*) &program_multi_count, 1);
 					if (program_multi_count > I2C_MAX_PAYLOAD_SIZE - 7 || program_multi_count % 4 != 0) {
@@ -839,12 +838,12 @@ BOARD_I2C_IRQ_FUNCTION (void)
 				}
 				// Get app and CRC bytes, CRC bytes just go straight after app
 				else if (i2c_rx_tx_idx < program_multi_count + 4) {
-					flash_buffer.c[i2c_rx_tx_idx - 1] = I2C_RXDR(BOARD_I2C);
+					flash_buffer.c[i2c_rx_tx_idx - 1] = I2C_RXDR(BOARD_I2C); // Read the byte
 					i2c_rx_tx_idx++;
 				}
 				// The last CRC byte
 				else if (i2c_rx_tx_idx == program_multi_count + 4) {
-					flash_buffer.c[i2c_rx_tx_idx - 1] = I2C_RXDR(BOARD_I2C);
+					flash_buffer.c[i2c_rx_tx_idx - 1] = I2C_RXDR(BOARD_I2C); // Read the byte
 					i2c_rx_tx_idx++;
 					// We're good to go
 					new_bootloader_command = BOOT_COMMAND_WRITE;
@@ -857,7 +856,7 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					new_bootloader_command = BOOT_STATUS_FAILURE;
 					I2C_UART_DEBUG("O", 1);
 					// If debug is disabled, we still need to read out the register
-					volatile char tmp = (char) I2C_RXDR(BOARD_I2C);
+					volatile char tmp = (char) I2C_RXDR(BOARD_I2C); // Read the byte
 					I2C_UART_DEBUG((char*)&tmp, 1);
 					(void) tmp;
 					current_i2c_state = I2C_WAIT_FOR_STOP;
@@ -865,7 +864,7 @@ BOARD_I2C_IRQ_FUNCTION (void)
 			}
 			else {
 				// If debug is disabled, we still need to read out the register
-				volatile char tmp = (char) I2C_RXDR(BOARD_I2C);
+				volatile char tmp = (char) I2C_RXDR(BOARD_I2C); // Read the byte
 				I2C_UART_DEBUG("R", 1);
 				I2C_UART_DEBUG((char*)&tmp, 1);
 				(void) tmp;
@@ -875,30 +874,31 @@ BOARD_I2C_IRQ_FUNCTION (void)
 	case I2C_SENDING_DATA:
 		// Previous byte was not sent correctly
 		if (i2c_irq_status & I2C_ISR_NACKF) {
-			i2c_irq_status &= ~I2C_ISR_NACKF;
+			i2c_irq_status &= ~I2C_ISR_NACKF; // Mark NACK as processed
 			if (i2c_rx_tx_idx > 0) {
 				i2c_rx_tx_idx--;
 			}
-			I2C_ICR(BOARD_I2C) |= I2C_ICR_NACKCF;
+			I2C_ICR(BOARD_I2C) |= I2C_ICR_NACKCF; // Clear the NACK event
 			I2C_UART_DEBUG("N", 1);
 		}
 
-		if (i2c_irq_status & I2C_ISR_TXIS) {
-			i2c_irq_status &= ~I2C_ISR_TXIS;
+		if (i2c_irq_status & I2C_ISR_TXIS) { // I2C is waiting for the next byte from us
+			i2c_irq_status &= ~I2C_ISR_TXIS; // Mark TX event as processed
 			// -1, because we've already sent ACK
 			if (i2c_rx_tx_idx < I2C_MAX_PAYLOAD_SIZE - 1) {
 				switch (current_command) {
 				case I2C_COMMAND_GET_STATUS:
 					if (i2c_rx_tx_idx < sizeof(i2c_status_reply)) {
+						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = ((uint8_t*) &i2c_status_reply)[i2c_rx_tx_idx++];
 					}
 					else {
-						I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK;
+						I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set the next byte to be sent
 						current_i2c_state = I2C_WAIT_FOR_STOP;
 					}
 					break;
 				case I2C_COMMAND_GET_PROGRESS:
-					I2C_TXDR(BOARD_I2C) = main_bootloader_status;
+					I2C_TXDR(BOARD_I2C) = main_bootloader_status; // Set the next byte to be sent
 					main_bootloader_status = BOOT_STATUS_IDLE;
 					// stop state will repeat the last byte, so just pass control to it
 					current_i2c_state = I2C_WAIT_FOR_STOP;
@@ -915,16 +915,19 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					}
 					// Little-endian uint16_t
 					if (i2c_rx_tx_idx < 2) {
+						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = BYTE_BY_INDEX(timeout, i2c_rx_tx_idx);
 						i2c_rx_tx_idx++;
 					}
 					else {
+						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = 0; // in little-endian this won't change the value
 						current_i2c_state = I2C_WAIT_FOR_STOP;
 					}
 					break;
 				}
 				case I2C_COMMAND_GET_WRITE_SIZE:
+					// Set the next byte to be sent
 					// Assume that I2C bus maximum packet limit is effective both ways
 					// Reserve bytes for command, EOC, size and CRC32
 					I2C_TXDR(BOARD_I2C) = I2C_MAX_PAYLOAD_SIZE - 7 - (I2C_MAX_PAYLOAD_SIZE - 7) % 4;
@@ -932,10 +935,12 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					break;
 				case I2C_COMMAND_GET_APP_CRC:
 					if (i2c_rx_tx_idx < 4) {
+						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = BYTE_BY_INDEX(full_app_crc, i2c_rx_tx_idx);
 						i2c_rx_tx_idx++;
 					}
 					else {
+						// Set the next byte to be sent
 						I2C_TXDR(BOARD_I2C) = 0; // in little-endian this won't change the value
 						current_i2c_state = I2C_WAIT_FOR_STOP;
 					}
@@ -960,41 +965,46 @@ BOARD_I2C_IRQ_FUNCTION (void)
 					else if (app_base[1] >= (APP_LOAD_ADDRESS + board_info.fw_size)) {
 						app_ready = 0;
 					}
-					I2C_TXDR(BOARD_I2C) = app_ready;
+					I2C_TXDR(BOARD_I2C) = app_ready; // Set the next byte to be sent
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 					break;
 				}
 				default: // No idea how we've got here
-					I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK;
+					I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set the next byte to be sent
 					current_i2c_state = I2C_WAIT_FOR_STOP;
 				} // switch (current_command)
 			}
 			else {
-				I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK;
+				I2C_TXDR(BOARD_I2C) = I2C_REPLY_NAK; // Set the next byte to be sent
 				current_i2c_state = I2C_WAIT_FOR_STOP;
 			}
 			// If debug is disabled, we still need to read out the register
-			volatile char tmp = (char) I2C_TXDR(BOARD_I2C);
+			volatile char tmp = (char) I2C_TXDR(BOARD_I2C); // Read the byte
 			I2C_UART_DEBUG("T", 1);
 			I2C_UART_DEBUG((char*)&tmp, 1);
 			(void) tmp;
 		}
 		break;
 	case I2C_WAIT_FOR_STOP:
+		// We've got a NACK event
 		if (i2c_irq_status & I2C_ISR_NACKF) {
+			// Repeat the last byte to be sent again
 			I2C_TXDR(BOARD_I2C) = I2C_TXDR(BOARD_I2C);
-			I2C_ICR(BOARD_I2C) |= I2C_ICR_NACKCF;
+			I2C_ICR(BOARD_I2C) |= I2C_ICR_NACKCF; // Clear the NACK event
 			I2C_UART_DEBUG("n", 1);
 		}
+		// I2C is waiting for another byte from us
 		else if (i2c_irq_status & I2C_ISR_TXIS) {
-			// Transmit state is responsible for setting NAK if needed
+			// Transmit state is responsible for setting NAK if needed,
+			// We just repeat the last byte to be sent again
 			I2C_TXDR(BOARD_I2C) = I2C_TXDR(BOARD_I2C);
 			I2C_UART_DEBUG("t", 1);
 		}
 
+		// Received an unexpected byte, can't do much about it
 		if (i2c_irq_status & I2C_ISR_RXNE) {
 			// If debug is disabled, we still need to read out the register
-			volatile char tmp = (char) I2C_RXDR(BOARD_I2C);
+			volatile char tmp = (char) I2C_RXDR(BOARD_I2C); // Read the byte
 			I2C_UART_DEBUG("n", 1);
 			I2C_UART_DEBUG((char*)&tmp, 1);
 			(void) tmp;
@@ -1008,10 +1018,12 @@ BOARD_I2C_IRQ_FUNCTION (void)
 	// Check if any of interrupt events was left unprocessed by our state-machine
 	bool bus_reset_needed = i2c_irq_status & I2C_STATUS_PROCESSED_EVENTS;
 
+	// Received a STOP event, reset the state machine
 	if (i2c_irq_status & I2C_ISR_STOPF || bus_reset_needed) {
+		// Disable all custom interrupts - we will be waiting for a new communication
 		I2C_CR1(BOARD_I2C) &= ~(I2C_CR1_RXIE | I2C_CR1_TXIE | I2C_CR1_NACKIE);
 		I2C_ISR(BOARD_I2C) |= I2C_ISR_TXE; // flush any data we might have prepared
-		I2C_ICR(BOARD_I2C) |= I2C_ICR_STOPCF;
+		I2C_ICR(BOARD_I2C) |= I2C_ICR_STOPCF; // clear the STOP event
 		i2c_rx_tx_idx = I2C_MAX_PAYLOAD_SIZE + 1;
 		current_i2c_state = I2C_WAIT_FOR_REQUEST;
 		current_command = I2C_COMMAND_DEFAULT;
