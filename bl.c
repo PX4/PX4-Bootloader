@@ -560,7 +560,7 @@ calc_app_crc(uint32_t first_word)
 	return sum;
 }
 
-#ifdef INTERFACE_I2C
+#if defined(INTERFACE_I2C) && INTERFACE_I2C
 
 # ifdef I2C_DEBUG_ENABLE
 #  if !defined(INTERFACE_USART) || !INTERFACE_USART
@@ -1210,7 +1210,7 @@ i2c_main_loop(unsigned timeout)
 
 }
 
-#else // ifdef INTERFACE_I2C
+#else // if defined(INTERFACE_I2C) && INTERFACE_I2C
 
 static void
 sync_response(void)
@@ -1321,7 +1321,7 @@ cin_word(uint32_t *wp, unsigned timeout)
 	return 0;
 }
 
-#endif // ifdef INTERFACE_I2C
+#endif // if defined(INTERFACE_I2C) && INTERFACE_I2C
 
 void
 bootloader(unsigned timeout)
@@ -1340,7 +1340,7 @@ bootloader(unsigned timeout)
 	/* make the LED blink while we are idle */
 	led_set(LED_BLINK);
 
-#ifdef INTERFACE_I2C
+#if defined(INTERFACE_I2C) && INTERFACE_I2C
 	bl_type = I2C;
 	i2c_main_loop(timeout);
 #else
@@ -1726,5 +1726,5 @@ bad_silicon:
 		continue;
 # endif
 	}
-#endif // ifdef INTERFACE_I2C
+#endif // if defined(INTERFACE_I2C) && INTERFACE_I2C
 }

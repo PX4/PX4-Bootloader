@@ -85,7 +85,7 @@ board_init(void)
 	/* configure USART clock */
 	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
 #endif
-#if defined(INTERFACE_I2C) && INTERFACE_I2C != 0
+#if defined(INTERFACE_I2C) && INTERFACE_I2C
 	/* configure I2C pins */
 	rcc_peripheral_enable_clock(&BOARD_I2C_PIN_CLOCK_REGISTER, BOARD_I2C_PIN_CLOCK_BIT);
 
@@ -129,7 +129,7 @@ board_deinit(void)
 	/* disable USART peripheral clock */
 	rcc_peripheral_disable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
 #endif
-#if defined(INTERFACE_I2C) && INTERFACE_I2C != 0
+#if defined(INTERFACE_I2C) && INTERFACE_I2C
 	// Disable all the triggers we might have enabled
 	I2C_CR1(BOARD_I2C) &= ~(I2C_CR1_PE | I2C_CR1_ADDRIE | I2C_CR1_ERRIE
 			| I2C_CR1_STOPIE | I2C_CR1_RXIE | I2C_CR1_TXIE | I2C_CR1_NACKIE);
@@ -207,6 +207,7 @@ clock_deinit(void)
 	RCC_CIR = 0x000000;
 }
 
+#if defined(INTERFACE_I2C) && INTERFACE_I2C
 void
 i2c_enable(void)
 {
@@ -232,6 +233,7 @@ i2c_perform_reset(void)
 		I2C_CR1(BOARD_I2C) |= I2C_CR1_PE;
 	}
 }
+#endif
 
 /* Bootloader API uses "sector", whereas F0 reference manual refers to the same thing as
  * "pages" and refers to bigger units as "sectors".
@@ -362,7 +364,7 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#if (defined(INTERFACE_I2C) || defined(INTERFACE_USART) || defined (INTERFACE_USB) && INTERFACE_USB != 0) && !defined(START_APP_ONLY_ON_COMMAND)
+#if (defined(INTERFACE_I2C) && INTERFACE_I2C || defined(INTERFACE_USART) && INTERFACE_USART || defined (INTERFACE_USB) && INTERFACE_USB) && !defined(START_APP_ONLY_ON_COMMAND)
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
 #endif
