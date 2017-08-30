@@ -46,7 +46,9 @@
 # include <libopencm3/stm32/rcc.h>
 # include <libopencm3/stm32/gpio.h>
 # include <libopencm3/stm32/flash.h>
+#if defined(USE_SYSCFG_CFGR1_MEM_MODE_SRAM)
 # include <libopencm3/stm32/syscfg.h>
+#endif
 # include <libopencm3/stm32/i2c.h>
 
 #include <libopencm3/cm3/scb.h>
