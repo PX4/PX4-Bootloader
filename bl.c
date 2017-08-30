@@ -1223,7 +1223,6 @@ sync_response(void)
 	cout(data, sizeof(data));
 }
 
-# if defined(TARGET_HW_PX4_FMU_V4)
 static void
 bad_silicon_response(void)
 {
@@ -1234,7 +1233,6 @@ bad_silicon_response(void)
 
 	cout(data, sizeof(data));
 }
-# endif
 
 static void
 invalid_response(void)
@@ -1719,12 +1717,10 @@ cmd_fail:
 		failure_response();
 		continue;
 
-# if defined(TARGET_HW_PX4_FMU_V4)
 bad_silicon:
 		// send the bad silicon response but don't kill the timeout - could be garbage
 		bad_silicon_response();
 		continue;
-# endif
 	}
 #endif // if defined(INTERFACE_I2C) && INTERFACE_I2C
 }
