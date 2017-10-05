@@ -51,7 +51,9 @@ TARGETS	= \
 	px4fmuv5_bl \
 	px4io_bl \
 	px4iov3_bl \
-	tapv1_bl
+	tapv1_bl \
+	cube_f4_bl \
+	cube_f7_bl
 
 all:	$(TARGETS) sizes
 
@@ -96,6 +98,12 @@ px4aerocore_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 crazyflie_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=CRAZYFLIE LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+cube_f4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=CUBE_F4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+cube_f7_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=CUBE_F7 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
 # Default bootloader delay is *very* short, just long enough to catch
 # the board for recovery but not so long as to make restarting after a
