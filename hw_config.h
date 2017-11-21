@@ -56,7 +56,7 @@
  * * Other defines are somewhat self explanatory.
  */
 
- /* Boot device selection list*/
+/* Boot device selection list*/
 #define USB0_DEV	0x01
 #define SERIAL0_DEV	0x02
 #define SERIAL1_DEV	0x04
@@ -992,6 +992,17 @@
 #  define USART_BAUDRATE OVERRIDE_USART_BAUDRATE
 #else
 #  define USART_BAUDRATE 115200
+#endif
+
+#if INTERFACE_USART
+#  if !defined(BOARD_PORT_USART_TX)
+#    define BOARD_PORT_USART_TX BOARD_PORT_USART
+#    define BOARD_PORT_USART_RX BOARD_PORT_USART
+#  endif
+#  if !defined(BOARD_USART_PIN_CLOCK_BIT_TX)
+#    define BOARD_USART_PIN_CLOCK_BIT_TX BOARD_USART_PIN_CLOCK_BIT
+#    define BOARD_USART_PIN_CLOCK_BIT_RX BOARD_USART_PIN_CLOCK_BIT
+#  endif
 #endif
 
 #if !defined(USB_DATA_ALIGN)
