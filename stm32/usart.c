@@ -89,7 +89,7 @@ uart_cin(void)
 {
 	int c = -1;
 
-	if (USART_SR(usart) & USART_SR_RXNE) {
+	if (USART_SR(usart) & USART_FLAG_RXNE) {
 		c = usart_recv(usart);
 	}
 
