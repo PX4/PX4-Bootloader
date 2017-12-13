@@ -145,7 +145,7 @@ static const struct rcc_clock_scale clock_setup = {
 	.ppre1 = RCC_CFGR_PPRE_DIV_4,
 	.ppre2 = RCC_CFGR_PPRE_DIV_2,
 	.power_save = 0,
-	.flash_config = FLASH_ACR_ICE | FLASH_ACR_DCE | FLASH_ACR_LATENCY_5WS,
+	.flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_5WS,
 	.apb1_frequency = 54000000,
 	.apb2_frequency = 108000000,
 };
