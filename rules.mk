@@ -2,7 +2,7 @@
 # Common rules for makefiles for the PX4 bootloaders
 #
 
-BUILD_DIR	 = build/$(TARGET_FILE_NAME)
+BUILD_DIR	 = $(BUILD_DIR_ROOT)/$(TARGET_FILE_NAME)
 
 COBJS		:= $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(SRCS)))
 AOBJS		:= $(addprefix $(BUILD_DIR)/, $(patsubst %.S,%.o,$(ASRCS)))
@@ -16,17 +16,17 @@ BINARY		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).bin
 all:	debug $(BUILD_DIR) $(ELF) $(BINARY)
 
 debug:
-	@echo SRCS=$(SRCS)
-	@echo COBJS=$(COBJS)
-	@echo ASRCS=$(ASRCS)
-	@echo AOBJS=$(AOBJS)
-	@echo SUBDIRS=$(SUBDIRS)
+#	@echo SRCS=$(SRCS)
+#	@echo COBJS=$(COBJS)
+#	@echo ASRCS=$(ASRCS)
+#	@echo AOBJS=$(AOBJS)
+#	@echo SUBDIRS=$(SUBDIRS)
 
 
 # Compile and generate dependency files
 $(BUILD_DIR)/%.o:	%.c
 	@echo Generating object $@
-	$(CC) -c -MMD $(FLAGS) -o $@ $*.c
+	$(CC) -c -MMD $(FLAGS) -o $@ $<
 
 $(BUILD_DIR)/%.o:	%.S
 	@echo Generating object $@

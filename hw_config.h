@@ -30,8 +30,7 @@
  * USBPRODUCTID         0x0011                - PID Should match defconfig
  * BOOT_DELAY_ADDRESS   0x000001a0            - (Optional) From the linker script from Linker Script to get a custom
  *                                               delay provided by an APP FW
-
-*  BOARD_TYPE           9                     - Must match .prototype boad_id
+ * BOARD_TYPE           9                     - Must match .prototype boad_id
  * _FLASH_KBYTES        (*(uint16_t *)0x1fff7a22) - Run time flash size detection
  * BOARD_FLASH_SECTORS  ((_FLASH_KBYTES == 0x400) ? 11 : 23) - Run time determine the physical last sector
  * BOARD_FLASH_SECTORS   11                   - Hard coded zero based last sector
@@ -349,7 +348,7 @@
 # define BOARD_PIN_LED_ACTIVITY         GPIO7 // BLUE
 # define BOARD_PIN_LED_BOOTLOADER       GPIO6 // GREEN
 # define BOARD_PORT_LEDS                GPIOC
-# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPCEN
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOCEN
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
@@ -362,7 +361,7 @@
 # define BOARD_PIN_TX     				GPIO5
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -853,7 +852,7 @@
 # define FLASH_SECTOR_SIZE              4096
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
 # define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- \
-                                         (BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
+		(BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
 
 # define OSC_FREQ                       16
 
@@ -958,7 +957,7 @@
 # define BOARD_PIN_LED_ACTIVITY         GPIO7 // BLUE
 # define BOARD_PIN_LED_BOOTLOADER       GPIO6 // GREEN
 # define BOARD_PORT_LEDS                GPIOC
-# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPCEN
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOCEN
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
@@ -971,7 +970,7 @@
 # define BOARD_PIN_TX     				GPIO5
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
