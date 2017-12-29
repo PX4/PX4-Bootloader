@@ -6,13 +6,13 @@
 #include "hw_config.h"
 
 #include <stdlib.h>
+
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/stm32/pwr.h>
-# include <libopencm3/stm32/timer.h>
 
 #include "bl.h"
 #include "uart.h"
@@ -134,18 +134,24 @@ static void board_init(void);
 #define POWER_DOWN_RTC_SIGNATURE    0xdeaddead // Written by app fw to not re-power on.
 #define BOOT_RTC_REG                MMIO32(RTC_BASE + 0x50)
 
-/* standard clocking for all F7 boards */
+/* standard clocking for all F7 boards: 216MHz w/ overdrive
+ *
+ * f_voc = f_osc * (PLLN / PLLM) = OSC_FREQ * PLLN / OSC_FREQ = PLLN = 432
+ * f_pll = f_voc / PLLP = PLLN / PLLP = 216
+ * f_usb_sdmmc = f_voc / PLLQ = 48
+ */
 static const struct rcc_clock_scale clock_setup = {
-	.pllm = 8,
-	.plln = 216,
+	/* 216MHz */
+	.pllm = OSC_FREQ,
+	.plln = 432,
 	.pllp = 2,
 	.pllq = 9,
-	.pllr = 2,
+	.flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_7WS,
 	.hpre = RCC_CFGR_HPRE_DIV_NONE,
 	.ppre1 = RCC_CFGR_PPRE_DIV_4,
 	.ppre2 = RCC_CFGR_PPRE_DIV_2,
-	.power_save = 0,
-	.flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_5WS,
+	.vos_scale = PWR_SCALE1, /** <= 180MHz w/o overdrive, <= 216MHz w/ overdrive */
+	.overdrive = 1,
 	.apb1_frequency = 54000000,
 	.apb2_frequency = 108000000,
 };
@@ -154,14 +160,14 @@ static uint32_t
 board_get_rtc_signature()
 {
 	/* enable the backup registers */
-	PWR_CR |= PWR_CR_DBP;
+	PWR_CR1 |= PWR_CR1_DBP;
 	RCC_BDCR |= RCC_BDCR_RTCEN;
 
 	uint32_t result = BOOT_RTC_REG;
 
 	/* disable the backup registers */
 	RCC_BDCR &= RCC_BDCR_RTCEN;
-	PWR_CR &= ~PWR_CR_DBP;
+	PWR_CR1 &= ~PWR_CR1_DBP;
 
 	return result;
 }
@@ -170,14 +176,14 @@ static void
 board_set_rtc_signature(uint32_t sig)
 {
 	/* enable the backup registers */
-	PWR_CR |= PWR_CR_DBP;
+	PWR_CR1 |= PWR_CR1_DBP;
 	RCC_BDCR |= RCC_BDCR_RTCEN;
 
 	BOOT_RTC_REG = sig;
 
 	/* disable the backup registers */
 	RCC_BDCR &= RCC_BDCR_RTCEN;
-	PWR_CR &= ~PWR_CR_DBP;
+	PWR_CR1 &= ~PWR_CR1_DBP;
 }
 
 static bool
@@ -315,9 +321,11 @@ board_init(void)
 #endif
 
 #if INTERFACE_USB
-
 	/* enable Port A GPIO9 to sample VBUS */
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_GPIOAEN);
+#  if defined(USE_VBUS_PULL_DOWN)
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
+#  endif
 #endif
 
 #if INTERFACE_USART

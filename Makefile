@@ -5,6 +5,7 @@
 #
 # Paths to common dependencies
 #
+export BUILD_DIR_ROOT ?= build
 export BL_BASE		?= $(wildcard .)
 export LIBOPENCM3	?= $(wildcard libopencm3)
 export LIBKINETIS  	?= $(wildcard lib/kinetis/NXP_Kinetis_Bootloader_2_0_0)

@@ -20,6 +20,10 @@ FLAGS 		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
 		   -lopencm3_stm32f3 \
         $(EXTRAFLAGS)
 
+# libopencm3 doesn't have USB driver in stm32f3 library, tell it to use the one from stm32f4
+# for the cdcacm
+$(BUILD_DIR_ROOT)/$(TARGET_FILE_NAME)/stm32/cdcacm.o : FLAGS+=-DSTM32F4
+
 #
 # General rules for making dependency and object files
 # This is where the compiler is called
