@@ -266,6 +266,8 @@ board_test_force_pin()
 static bool
 board_test_usart_receiving_break()
 {
+	bool returnValue = false;
+	
 #if !defined(SERIAL_BREAK_DETECT_DISABLED)
 	/* (re)start the SysTick timer system */
 	systick_interrupt_disable(); // Kill the interrupt if it is still active
@@ -283,6 +285,7 @@ board_test_usart_receiving_break()
 
 	uint8_t cnt_consecutive_low = 0;
 	uint8_t cnt = 0;
+	
 
 	/* Loop for 3 transmission byte cycles and count the low and high bits. Sampled at a rate to be able to count each bit twice.
 	 *
@@ -290,39 +293,29 @@ board_test_usart_receiving_break()
 	 * We sample at every half bit time, therefore 20 samples per transmission byte,
 	 * therefore 60 samples for 3 transmission bytes
 	 */
+
 	while (cnt < 60) {
 		// Only read pin when SysTick timer is true
 		if (systick_get_countflag() == 1) {
 			if (gpio_get(BOARD_PORT_USART, BOARD_PIN_RX) == 0) {
 				cnt_consecutive_low++;	// Increment the consecutive low counter
-
 			} else {
+				// If 9 consecutive low bits were received set return value and break out of the loop
+				if (cnt_consecutive_low >= 18) {
+					returnValue = true;
+					break;
+				}
 				cnt_consecutive_low = 0; // Reset the consecutive low counter
 			}
-
 			cnt++;
 		}
-
-		// If 9 consecutive low bits were received break out of the loop
-		if (cnt_consecutive_low >= 18) {
-			break;
-		}
-
 	}
 
 	systick_counter_disable(); // Stop the timer
 
-	/*
-	 * If a break is detected, return true, else false
-	 *
-	 * Break is detected if line was low for 9 consecutive bits.
-	 */
-	if (cnt_consecutive_low >= 18) {
-		return true;
-	}
 #endif // !defined(SERIAL_BREAK_DETECT_DISABLED)
 
-	return false;
+	return returnValue;
 }
 #endif
 
