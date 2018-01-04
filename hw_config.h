@@ -90,6 +90,7 @@
 # define BOARD_PIN_RX		     		GPIO7
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
+# define  SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -144,6 +145,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -198,6 +200,7 @@
 # define BOARD_PIN_RX		     		GPIO7
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -251,6 +254,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -304,6 +308,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -358,6 +363,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -675,6 +681,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -781,6 +788,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -836,6 +844,7 @@
 # define BOARD_PIN_RX		     		GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
  * Uncommenting this allows to force the bootloader through
