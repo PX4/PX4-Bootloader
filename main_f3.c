@@ -383,7 +383,7 @@ main(void)
 	/* do board-specific initialisation */
 	board_init();
 
-#if defined(INTERFACE_USART) | defined (INTERFACE_USB)
+#if defined(INTERFACE_USART)
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
 	timeout = BOOTLOADER_DELAY;
 #endif
