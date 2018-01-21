@@ -262,6 +262,35 @@ board_test_force_pin()
 	return false;
 }
 
+#if INTERFACE_USB
+#if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
+static bool
+board_test_usb_vbus()
+{
+	bool ret = false;
+
+	/* initialise Port A GPIO9 to sample VBUS 
+	 * This is usually PA9, but could be configured on another port
+	 */
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_VBUS);
+	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, BOARD_PIN_VBUS);
+
+	/* check for USB VBUS present */
+	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
+		ret = true;
+	}
+
+	/* deinitialise pin used to sniff VBUS
+	 * Note: the PA9 needs to be in its default state (floating input) if
+	 * VBUS sensing is enabled when the USB is initialised.
+	 */
+	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_VBUS);
+
+	return ret;
+}
+#endif // #if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
+#endif
+
 #if INTERFACE_USART
 static bool
 board_test_usart_receiving_break()
@@ -345,11 +374,6 @@ board_init(void)
 	gpio_mode_setup(BOARD_POWER_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, BOARD_POWER_PIN_OUT);
 	gpio_set_output_options(BOARD_POWER_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, BOARD_POWER_PIN_OUT);
 	BOARD_POWER_ON(BOARD_POWER_PORT, BOARD_POWER_PIN_OUT);
-#endif
-
-#if INTERFACE_USB
-
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_VBUS);
 #endif
 
 #if INTERFACE_USART
@@ -780,12 +804,12 @@ main(void)
 #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	try_boot = false;
 #else
-	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
-
+	if (board_test_usb_vbus())
+	{
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
-#endif
+#endif // #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
 #endif
 
 #if INTERFACE_USART
