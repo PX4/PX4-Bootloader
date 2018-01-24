@@ -263,21 +263,22 @@ board_test_force_pin()
 }
 
 #if INTERFACE_USB
-#if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
 static bool
 board_test_usb_vbus()
 {
-	bool ret = false;
+	bool ret = true;
 
+/* only perform the USB VBUS check if VBUS_SENSE is not diasbled - if it is disabled, always return true */
+#if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	/* initialise Port A GPIO9 to sample VBUS 
 	 * This is usually PA9, but could be configured on another port
 	 */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_VBUS);
 	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, BOARD_PIN_VBUS);
 
-	/* check for USB VBUS present */
-	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
-		ret = true;
+	/* check if USB VBUS is not present */
+	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) == 0) {
+		ret = false;
 	}
 
 	/* deinitialise pin used to sniff VBUS
@@ -286,9 +287,10 @@ board_test_usb_vbus()
 	 */
 	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_VBUS);
 
+#endif // !defined(BOARD_USB_VBUS_SENSE_DISABLED)
+
 	return ret;
 }
-#endif // #if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
 #endif
 
 #if INTERFACE_USART
@@ -801,15 +803,11 @@ main(void)
 	 * If the force-bootloader pins are tied, we will stay here until they are removed and
 	 * we then time out.
 	 */
-#if defined(BOARD_USB_VBUS_SENSE_DISABLED)
-	try_boot = false;
-#else
 	if (board_test_usb_vbus())
 	{
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
-#endif // #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
 #endif
 
 #if INTERFACE_USART
