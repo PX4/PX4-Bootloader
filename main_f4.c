@@ -81,6 +81,12 @@ static struct {
 #define REVID_MASK	0xFFFF0000
 #define DEVID_MASK	0xFFF
 
+#ifndef BOARD_PIN_VBUS
+# define BOARD_PIN_VBUS                 GPIO9
+# define BOARD_PORT_VBUS                GPIOA
+# define BOARD_CLOCK_VBUS               RCC_AHB1ENR_IOPAEN
+#endif
+
 /* magic numbers from reference manual */
 
 typedef enum mcu_rev_e {
@@ -349,8 +355,7 @@ board_init(void)
 
 #if INTERFACE_USB
 
-	/* enable Port A GPIO9 to sample VBUS */
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_VBUS);
 #endif
 
 #if INTERFACE_USART
@@ -781,7 +786,7 @@ main(void)
 #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	try_boot = false;
 #else
-	if (gpio_get(GPIOA, GPIO9) != 0) {
+	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
 
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
