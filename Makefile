@@ -41,6 +41,7 @@ TARGETS	= \
 	auavx2v1_bl \
 	crazyflie_bl \
 	mindpxv2_bl \
+	omnibusf4sd_bl \
 	px4aerocore_bl \
 	px4discovery_bl \
 	px4flow_bl \
@@ -98,6 +99,9 @@ px4aerocore_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 crazyflie_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=CRAZYFLIE LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+omnibusf4sd_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=OMNIBUSF4SD LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 cube_f4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=CUBE_F4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
