@@ -60,7 +60,7 @@ all:	$(TARGETS) sizes
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
 	rm -f *.elf *.bin # Remove any elf or bin files contained directly in the Bootloader directory
-	rm -rf build_* # Remove build directories
+	rm -rf build # Remove build directories
 
 #
 # Specific bootloader targets.
@@ -126,14 +126,14 @@ aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 #
 .PHONY: sizes
 sizes:
-	@-find build_* -name '*.elf' -type f | xargs size 2> /dev/null || :
+	@-find build/*/ -name '*.elf' -type f | xargs size 2> /dev/null || :
 
 #
 # Binary management
 #
 .PHONY: deploy
 deploy:
-	zip -j Bootloader.zip build_*/*.bin
+	zip -j Bootloader.zip build/*/*.bin
 
 #
 # Submodule management
