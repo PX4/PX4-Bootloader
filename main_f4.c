@@ -81,12 +81,6 @@ static struct {
 #define REVID_MASK	0xFFFF0000
 #define DEVID_MASK	0xFFF
 
-#ifndef BOARD_PIN_VBUS
-# define BOARD_PIN_VBUS                 GPIO9
-# define BOARD_PORT_VBUS                GPIOA
-# define BOARD_CLOCK_VBUS               RCC_AHB1ENR_IOPAEN
-#endif
-
 /* magic numbers from reference manual */
 
 typedef enum mcu_rev_e {

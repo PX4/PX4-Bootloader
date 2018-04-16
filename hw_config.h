@@ -897,6 +897,12 @@
 # error Undefined Target Hardware
 #endif
 
+#if !defined(BOARD_PIN_VBUS)
+# define BOARD_PIN_VBUS                 GPIO9
+# define BOARD_PORT_VBUS                GPIOA
+# define BOARD_CLOCK_VBUS               RCC_AHB1ENR_IOPAEN
+#endif
+
 #if !defined(USBMFGSTRING)
 # define USBMFGSTRING "3D Robotics"
 #endif
