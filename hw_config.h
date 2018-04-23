@@ -653,7 +653,7 @@
 # define BOARD_OMNIBUSF4SD
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                0
-# define USBDEVICESTRING                "OmnibusF4SD"
+# define USBDEVICESTRING                "PX4 OmnibusF4SD"
 # define USBPRODUCTID                   0x0016
 
 # define BOARD_TYPE                     42
