@@ -47,6 +47,7 @@ TARGETS	= \
 	px4flow_bl \
 	px4fmu_bl \
 	px4fmuv2_bl \
+	px4fmuv3_bl \
 	px4fmuv4_bl \
 	px4fmuv4pro_bl \
 	px4fmuv5_bl \
@@ -75,6 +76,9 @@ px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 px4fmuv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V2  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+px4fmuv3_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V3  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
