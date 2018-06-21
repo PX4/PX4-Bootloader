@@ -31,3 +31,5 @@ AP_HW_KAKUTEF7                        123
 AP_HW_REVOLUTION                      124
 AP_HW_MATEKF405                       125
 AP_HW_NUCLEOF767ZI                    126
+AP_HW_MATEKF405_WING                  127
+
