@@ -60,7 +60,6 @@ TARGETS	= \
 	px4iov3_bl \
 	tapv1_bl \
 	cube_f4_bl \
-	cube_f7_bl \
 	avx_v1_bl
 
 all:	$(TARGETS) sizes
