@@ -26,6 +26,9 @@ TARGET_HW_CUBE_F7                      50
 EXT_HW_RADIOLINK_MINI_PIX               3
 
 # values starting with AP_ are implemented in the ArduPilot bootloader
+# https://github.com/ArduPilot/ardupilot/tree/master/Tools/AP_Bootloader
+# the values come from the APJ_BOARD_ID in the hwdef files here:
+# https://github.com/ArduPilot/ardupilot/tree/master/libraries/AP_HAL_ChibiOS/hwdef
 AP_HW_CUBE_ORANGE                     120
 AP_HW_OMNIBUSF7V2                     121
 AP_HW_KAKUTEF4                        122
