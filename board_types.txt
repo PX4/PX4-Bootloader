@@ -20,7 +20,6 @@ TARGET_HW_OMNIBUSF4SD                  42
 TARGET_HW_AUAV_X2V1                    33
 TARGET_HW_AEROFC_V1                    65
 TARGET_HW_CUBE_F4                       9
-TARGET_HW_CUBE_F7                      50
 
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
