@@ -1,0 +1,64 @@
+#
+# PX4 bootloader build rules for K66 targets.
+
+# 5 seconds / 5000 ms default delay
+PX4_BOOTLOADER_DELAY	?= 5000
+
+#src/startup/crt0_gcc.S
+KINETIS_ASRCS= targets/MK66F18/src/startup/gcc/startup_MK66F18.S \
+
+KINETIS_CSRCS= targets/MK66F18/src/startup/system_MK66F18.c \
+               src/platform/devices/MK66F18/fsl_clock.c \
+               src/drivers/smc/smc.c \
+               src/drivers/gpio/fsl_gpio.c \
+               src/drivers/flash/fsl_flash.c \
+               src/startup/startup.c
+
+KINETIS_INCS=  src/platform/devices/MK66F18 \
+               targets/MK66F18/src \
+               src/autobaud \
+               src/usb/include \
+               src/usb/osa \
+               src/usb/device \
+               src/usb/device/class \
+               src/bm_usb \
+               src/include \
+               src/platform \
+               src/platform/devices \
+               src/platform/CMSIS/Include \
+               src \
+               src/drivers \
+               src/startup \
+               src/drivers/common \
+
+
+ASRCS = $(addprefix $(LIBKINETIS)/, $(KINETIS_ASRCS))
+CSRCS = $(addprefix $(LIBKINETIS)/, $(KINETIS_CSRCS))
+INCS   = $(addprefix -I $(LIBKINETIS)/, $(KINETIS_INCS))
+
+SRCS		 = $(filter-out cdcacm.c, $(COMMON_SRCS)) $(CSRCS) main_k66.c kinetis.c \
+
+# Keep the build happy
+LIB_WORK_AROUNDS=   -DSTM32F4 \
+                    -DTOWER=0 \
+                    -DFREEDOM=0 \
+
+FLAGS += $(LIB_WORK_AROUNDS) \
+       -g -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
+       -specs=nano.specs -specs=nosys.specs \
+       -fno-inline-small-functions \
+       $(INCS) \
+       -DTARGET_HW_$(TARGET_HW) \
+       -DDEBUG \
+       -DUSB_STACK_BM \
+       -DCPU_MK66FN2M0VMD18 \
+       -DCPU_IS_ARM_CORTEX_M4=1 \
+       -DBL_TARGET_FLASH \
+       -T$(LINKER_FILE) \
+        $(EXTRAFLAGS)
+
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk

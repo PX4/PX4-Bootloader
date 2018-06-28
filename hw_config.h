@@ -836,6 +836,45 @@
 # define BOARD_FORCE_BL_STATE			1
 
 /****************************************************************************
+ * TARGET_HW_NXPHLITE_V3
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_NXPHLITE_V3)
+# define APP_LOAD_ADDRESS               0x00008000  // Reserve 32K for BL
+# define BOOTLOADER_DELAY               5000
+# define BOARD_NXPHLITEV3
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                1
+# define USBDEVICESTRING                "PX4 BL NXPHlite v3.x"
+# define USBPRODUCTID                   0x0011
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     28
+# define _FLASH_KBYTES                  2048
+# define FLASH_SECTOR_SIZE              4096
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+# define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- 8)
+
+# define OSC_FREQ                       16
+
+# define BOARD_PIN_LED_ACTIVITY         14                   // green LED
+# define BOARD_PIN_LED_BOOTLOADER       13                   // Amber LED
+# define BOARD_PORT_LEDS                D
+# define BOARD_LED_ON                   GPIO_ClearPinsOutput
+# define BOARD_LED_OFF                  GPIO_SetPinsOutput
+
+# define BOARD_USART                    4
+# define BOARD_PORT_USART               C
+# define BOARD_PORT_USART_AF            kPORT_MuxAlt3
+# define BOARD_PIN_TX                   15
+# define BOARD_PIN_RX                   14
+
+# define BOARD_PORT_VBUS                E
+# define BOARD_PIN_VBUS                 8
+
+# define SERIAL_BREAK_DETECT_DISABLED   1
+
+/****************************************************************************
  * TARGET_HW_CUBE_F4
  ****************************************************************************/
 
