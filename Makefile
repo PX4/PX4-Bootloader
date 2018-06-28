@@ -7,6 +7,7 @@
 #
 export BL_BASE		?= $(wildcard .)
 export LIBOPENCM3	?= $(wildcard libopencm3)
+export LIBKINETIS  	?= $(wildcard lib/kinetis/NXP_Kinetis_Bootloader_2_0_0)
 MKFLAGS=--no-print-directory
 #
 # Tools
@@ -37,6 +38,7 @@ export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 # Bootloaders to build
 #
 TARGETS	= \
+	nxphlitev3_bl \
 	aerofcv1_bl \
 	auavx2v1_bl \
 	crazyflie_bl \
@@ -67,6 +69,9 @@ clean:
 #
 # Specific bootloader targets.
 #
+
+nxphlitev3_bl: $(MAKEFILE_LIST) $(LIBKINETIS)
+	${MAKE} ${MKFLAGS} -f  Makefile.k66 TARGET_HW=NXPHLITE_V3  LINKER_FILE=kinetisk66.ld TARGET_FILE_NAME=$@
 
 auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AUAV_X2V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
