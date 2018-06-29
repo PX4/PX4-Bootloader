@@ -873,6 +873,7 @@
 # define BOARD_PIN_VBUS                 8
 
 # define SERIAL_BREAK_DETECT_DISABLED   1
+# define USB_DATA_ALIGN __attribute__((aligned(2)))
 
 /****************************************************************************
  * TARGET_HW_CUBE_F4
@@ -1013,4 +1014,7 @@
 #  define USART_BAUDRATE 115200
 #endif
 
+#if !defined(USB_DATA_ALIGN)
+# define USB_DATA_ALIGN
+#endif
 #endif /* HW_CONFIG_H_ */
