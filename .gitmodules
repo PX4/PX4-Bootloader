@@ -1,3 +1,6 @@
 [submodule "libopencm3"]
 	path = libopencm3
 	url = https://github.com/libopencm3/libopencm3.git
+[submodule "lib/kinetis/NXP_Kinetis_Bootloader_2_0_0"]
+	path = lib/kinetis/NXP_Kinetis_Bootloader_2_0_0
+	url = https://github.com/PX4-Works/NXP_Kinetis_Bootloader_2_0_0.git
