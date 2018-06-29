@@ -156,10 +156,5 @@ $(LIBOPENCM3): checksubmodules
 	${MAKE} -C $(LIBOPENCM3) lib
 
 .PHONY: checksubmodules
-checksubmodules: updatesubmodules
+checksubmodules:
 	$(Q) ($(BL_BASE)/Tools/check_submodules.sh)
-
-.PHONY: updatesubmodules
-updatesubmodules:
-	$(Q) (git submodule init)
-	$(Q) (git submodule update)
