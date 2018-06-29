@@ -597,7 +597,7 @@ int
 main(void)
 {
 
-  // Start up cod has initalised Clocks and MPU, FPU
+	// Start up code has initalised Clocks and MPU, FPU
 	bool try_boot = true;			/* try booting before we drop to the bootloader */
 	unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
 
@@ -780,4 +780,9 @@ void _start()
 void SysTick_Handler()
 {
 	sys_tick_handler();
+}
+
+int DbgConsole_Printf(char *fmt_s, ...)
+{
+	return 0;
 }
