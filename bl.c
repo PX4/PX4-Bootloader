@@ -197,7 +197,7 @@ inline void cout(uint8_t *buf, unsigned len)
 static const uint32_t	bl_proto_rev = BL_PROTOCOL_VERSION;	// value returned by PROTO_DEVICE_BL_REV
 
 static unsigned head, tail;
-static uint8_t rx_buf[256];
+static uint8_t rx_buf[256] USB_DATA_ALIGN;
 
 static enum led_state {LED_BLINK, LED_ON, LED_OFF} _led_state;
 
