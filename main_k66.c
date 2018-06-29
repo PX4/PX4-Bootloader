@@ -21,7 +21,6 @@
 #define BOOTLOADER_RESERVATION_SIZE	(32 * 1024)
 #define FIRST_FLASH_SECTOR_TO_ERASE  (BOARD_FIRST_FLASH_SECTOR_TO_ERASE + (BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
 
-#define BOARD_BOOTCLOCKRUN_CORE_CLOCK              96000000U  /*!< Core clock frequency: 96000000Hz */
 #define BOARD_RESETCLOCKRUN_CORE_CLOCK             20971520U  /*!< Core clock frequency: 20971520Hz */
 
 #define MCG_IRCLK_DISABLE                                 0U  /*!< MCGIRCLK disabled */
@@ -70,7 +69,7 @@ struct boardinfo board_info = {
 	.board_type	= BOARD_TYPE,
 	.board_rev	= 0,
 	.fw_size	= 0,
-	.systick_mhz	= 48,
+	.systick_mhz	= 120,
 };
 
 static void board_init(void);
@@ -366,55 +365,6 @@ board_deinit(void)
 	PORT_SetMultiplePinsConfig(KINETIS_PORT(BOARD_PORT_LEDS), leds, &unconfigure_port_config);
 }
 
-/**
-  * @brief  Initializes the clock configuration.
-  *
-  * @param  clock_setup : The clock configuration to set
-  */
-static inline void
-clock_init(void)
-{
-	const mcg_config_t mcgConfig_BOARD_BootClockRUN = {
-		.mcgMode = kMCG_ModePEE,                  /* PEE - PLL Engaged External */
-		.irclkEnableMode = MCG_IRCLK_DISABLE,     /* MCGIRCLK disabled */
-		.ircs = kMCG_IrcSlow,                     /* Slow internal reference clock selected */
-		.fcrdiv = 0x1U,                           /* Fast IRC divider: divided by 2 */
-		.frdiv = 0x0U,                            /* FLL reference clock divider: divided by 1 */
-		.drs = kMCG_DrsLow,                       /* Low frequency range */
-		.dmx32 = kMCG_Dmx32Default,               /* DCO has a default range of 25% */
-		.oscsel = kMCG_OscselIrc,                 /* Selects 48 MHz IRC Oscillator */
-		.pll0Config =
-		{
-			.enableMode = MCG_PLL_DISABLE,    /* MCGPLLCLK disabled */
-			.prdiv = 0x3U,                    /* PLL Reference divider: divided by 4 */
-			.vdiv = 0x0U,                     /* VCO divider: multiplied by 16 */
-		},
-		.pllcs = kMCG_PllClkSelPll0,              /* PLL0 output clock is selected */
-	};
-	const sim_clock_config_t simConfig_BOARD_BootClockRUN = {
-		.pllFllSel = SIM_PLLFLLSEL_MCGFLLCLK_CLK, /* PLLFLL select: MCGFLLCLK clock */
-		.pllFllDiv = 0,                           /* PLLFLLSEL clock divider divisor: divided by 1 */
-		.pllFllFrac = 0,                          /* PLLFLLSEL clock divider fraction: multiplied by 1 */
-		.er32kSrc = SIM_OSC32KSEL_OSC32KCLK_CLK,  /* OSC32KSEL select: OSC32KCLK clock */
-		.clkdiv1 = 0x1130000U,                    /* SIM_CLKDIV1 - OUTDIV1: /1, OUTDIV2: /2, OUTDIV3: /2, OUTDIV4: /4 */
-	};
-
-	/* Set the system clock dividers in SIM to safe value. */
-	CLOCK_SetSimSafeDivs();
-	/* Configure FLL external reference divider (FRDIV). */
-
-	MCG->C1 = ((MCG->C1 & ~MCG_C1_FRDIV_MASK) | MCG_C1_FRDIV(mcgConfig_BOARD_BootClockRUN.frdiv));
-
-	/* Set MCG to PEE mode. */
-	CLOCK_BootToPeeMode(mcgConfig_BOARD_BootClockRUN.oscsel,
-			    mcgConfig_BOARD_BootClockRUN.pllcs,
-			    &mcgConfig_BOARD_BootClockRUN.pll0Config);
-	/* Set the clock configuration in SIM module. */
-	CLOCK_SetSimConfig(&simConfig_BOARD_BootClockRUN);
-	/* Set SystemCoreClock variable. */
-	SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;
-
-}
 
 static void CLOCK_CONFIG_FllStableDelay(void)
 {
@@ -646,6 +596,8 @@ led_toggle(unsigned led)
 int
 main(void)
 {
+
+  // Start up cod has initalised Clocks and MPU, FPU
 	bool try_boot = true;			/* try booting before we drop to the bootloader */
 	unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
 
@@ -664,9 +616,6 @@ main(void)
 
 	/* do board-specific initialisation */
 	board_init();
-
-	/* configure the clock for bootloader activity */
-	clock_init();
 
 	/*
 	 * Check the force-bootloader register; if we find the signature there, don't
