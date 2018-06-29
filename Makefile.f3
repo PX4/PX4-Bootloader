@@ -1,7 +1,7 @@
 #
 # PX4 bootloader build rules for STM32F3 targets.
 #
-
+ARCH=stm32
 OPENOCD		?= openocd
 
 JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
@@ -10,7 +10,7 @@ JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 # 5 seconds / 5000 ms default delay
 PX4_BOOTLOADER_DELAY	?= 5000
 
-SRCS		 = $(COMMON_SRCS) main_f3.c
+SRCS		 = $(COMMON_SRCS) $(addprefix $(ARCH)/,$(ARCH_SRCS)) main_f3.c
 
 FLAGS 		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
        -DTARGET_HW_$(TARGET_HW) \

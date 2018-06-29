@@ -3,6 +3,7 @@
 
 # 5 seconds / 5000 ms default delay
 PX4_BOOTLOADER_DELAY	?= 5000
+ARCH=kinetis
 
 #src/startup/crt0_gcc.S
 KINETIS_ASRCS= targets/MK66F18/src/startup/gcc/startup_MK66F18.S \
@@ -36,12 +37,13 @@ ASRCS = $(addprefix $(LIBKINETIS)/, $(KINETIS_ASRCS))
 CSRCS = $(addprefix $(LIBKINETIS)/, $(KINETIS_CSRCS))
 INCS   = $(addprefix -I $(LIBKINETIS)/, $(KINETIS_INCS))
 
-SRCS		 = $(filter-out cdcacm.c, $(COMMON_SRCS)) $(CSRCS) main_k66.c kinetis.c \
+SRCS		 = $(COMMON_SRCS) $(addprefix $(ARCH)/,$(ARCH_SRCS)) $(CSRCS) main_k66.c kinetis.c \
 
 # Keep the build happy
 LIB_WORK_AROUNDS=   -DSTM32F4 \
                     -DTOWER=0 \
                     -DFREEDOM=0 \
+
 
 FLAGS += $(LIB_WORK_AROUNDS) \
        -g -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
@@ -49,11 +51,14 @@ FLAGS += $(LIB_WORK_AROUNDS) \
        -fno-inline-small-functions \
        $(INCS) \
        -DTARGET_HW_$(TARGET_HW) \
+       -DBL_CONFIG_USB_CDC=1 \
+       -DBL_CONFIG_HS_USB_HID=0 \
+       -DBL_CONFIG_HS_USB_MSC=0 \
+       -DBL_TARGET_FLASH \
        -DDEBUG \
        -DUSB_STACK_BM \
-       -DCPU_MK66FN2M0VMD18 \
+       -DCPU_MK66FN2M0VMD18=1 \
        -DCPU_IS_ARM_CORTEX_M4=1 \
-       -DBL_TARGET_FLASH \
        -T$(LINKER_FILE) \
         $(EXTRAFLAGS)
 
