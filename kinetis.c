@@ -79,25 +79,6 @@ void flash_unlock(void)
 {
 }
 
-void usb_cinit(void)
-{
-}
-
-void
-usb_cfini(void)
-{
-}
-
-int usb_cin(void)
-{
-	return 0;
-}
-
-void
-usb_cout(uint8_t *buf, unsigned count)
-{
-}
-
 
 void usart_set_baudrate(uint32_t usart, uint32_t baud) {};
 void usart_set_databits(uint32_t usart, int bits) {};
