@@ -3,7 +3,7 @@
 # Since the STM32F7 is not supported fully in libopencm3 at this time,
 # this build is a bit of a hack to use the similar IP blocks of the F469
 # for RCC and USB by telling libopencm3 it is an STM32F4
-
+ARCH=stm32
 OPENOCD		?= openocd
 
 JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
@@ -12,7 +12,7 @@ JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 # 5 seconds / 5000 ms default delay
 PX4_BOOTLOADER_DELAY	?= 5000
 
-SRCS		 = $(COMMON_SRCS) main_f7.c
+SRCS		 = $(COMMON_SRCS) $(addprefix $(ARCH)/,$(ARCH_SRCS)) main_f7.c
 
 FLAGS		+= -g -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 \
        -DTARGET_HW_$(TARGET_HW) \

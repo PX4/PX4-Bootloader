@@ -24,7 +24,8 @@ export FLAGS		 = -std=gnu99 \
 			   -Wundef \
 			   -Wall \
 			   -fno-builtin \
-			   -I$(LIBOPENCM3)/include \
+			   -I$(BL_BASE)/$(LIBOPENCM3)/include \
+			   -I$(BL_BASE)/. \
 			   -ffunction-sections \
 			   -nostartfiles \
 			   -lnosys \
@@ -32,7 +33,8 @@ export FLAGS		 = -std=gnu99 \
 			   -Wl,-g \
 			   -Werror
 
-export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
+export COMMON_SRCS	 = bl.c
+export ARCH_SRCS	 = cdcacm.c  usart.c
 
 #
 # Bootloaders to build
