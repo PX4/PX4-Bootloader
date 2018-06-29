@@ -13,6 +13,12 @@ KINETIS_CSRCS= targets/MK66F18/src/startup/system_MK66F18.c \
                src/drivers/smc/smc.c \
                src/drivers/gpio/fsl_gpio.c \
                src/drivers/flash/fsl_flash.c \
+               src/usb/device/class/usb_device_cdc_acm.c \
+               src/usb/device/usb_device_khci.c \
+               src/usb/device/usb_device_dci.c \
+               src/usb/device/usb_device_ch9.c \
+               src/usb/device/class/usb_device_class.c \
+               src/usb/osa/usb_osa_bm.c \
                src/startup/startup.c
 
 KINETIS_INCS=  src/platform/devices/MK66F18 \
@@ -32,7 +38,6 @@ KINETIS_INCS=  src/platform/devices/MK66F18 \
                src/startup \
                src/drivers/common \
 
-
 ASRCS = $(addprefix $(LIBKINETIS)/, $(KINETIS_ASRCS))
 CSRCS = $(addprefix $(LIBKINETIS)/, $(KINETIS_CSRCS))
 INCS   = $(addprefix -I $(LIBKINETIS)/, $(KINETIS_INCS))
@@ -48,14 +53,14 @@ LIB_WORK_AROUNDS=   -DSTM32F4 \
 FLAGS += $(LIB_WORK_AROUNDS) \
        -g -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
        -specs=nano.specs -specs=nosys.specs \
-       -fno-inline-small-functions \
        $(INCS) \
        -DTARGET_HW_$(TARGET_HW) \
        -DBL_CONFIG_USB_CDC=1 \
        -DBL_CONFIG_HS_USB_HID=0 \
        -DBL_CONFIG_HS_USB_MSC=0 \
        -DBL_TARGET_FLASH \
-       -DDEBUG \
+       -DDEBUG=0 \
+       -DNDEBUG=1 \
        -DUSB_STACK_BM \
        -DCPU_MK66FN2M0VMD18=1 \
        -DCPU_IS_ARM_CORTEX_M4=1 \
