@@ -840,20 +840,20 @@
  ****************************************************************************/
 
 #elif  defined(TARGET_HW_NXPHLITE_V3)
-# define APP_LOAD_ADDRESS               0x00008000  // Reserve 32K for BL
+# define APP_LOAD_ADDRESS               0x00006000  // Reserve 24K for BL
 # define BOOTLOADER_DELAY               5000
 # define BOARD_NXPHLITEV3
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL NXPHlite v3.x"
 # define USBPRODUCTID                   0x0011
-# define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     28
 # define _FLASH_KBYTES                  2048
 # define FLASH_SECTOR_SIZE              4096
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
-# define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- 8)
+# define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- \
+                                         (BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
 
 # define OSC_FREQ                       16
 
