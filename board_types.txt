@@ -40,4 +40,5 @@ AP_HW_AIRBOTF4                        128
 AP_HW_F4BY                            129
 AP_HW_SPARKYV2                        130
 AP_HW_OMNIBUSF4PRO                    131
+AP_HW_ANYFCF7                         132
 
