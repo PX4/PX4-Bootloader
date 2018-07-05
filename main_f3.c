@@ -29,13 +29,13 @@
 # define BOARD_INTERFACE_CONFIG		NULL
 #endif
 const struct rcc_clock_scale _rcc_hsi_8mhz = {
-
-	.pll = RCC_CFGR_PLLMUL_PLL_IN_CLK_X16,
 	.pllsrc = RCC_CFGR_PLLSRC_HSI_DIV2,
+	.pllmul = RCC_CFGR_PLLMUL_MUL16,
+	.plldiv = RCC_CFGR2_PREDIV_NODIV,
 	.hpre = RCC_CFGR_HPRE_DIV_NONE,
 	.ppre1 = RCC_CFGR_PPRE1_DIV_2,
 	.ppre2 = RCC_CFGR_PPRE2_DIV_NONE,
-	.flash_config = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY_2WS,
+	.flash_waitstates = 2,
 	.ahb_frequency	= 64000000,
 	.apb1_frequency = 32000000,
 	.apb2_frequency = 64000000,
