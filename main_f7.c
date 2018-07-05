@@ -142,11 +142,10 @@ static void board_init(void);
  */
 static const struct rcc_clock_scale clock_setup = {
 	/* 216MHz */
-	.pllm = OSC_FREQ,
 	.plln = 432,
 	.pllp = 2,
 	.pllq = 9,
-	.flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_7WS,
+	.flash_waitstates = 7,
 	.hpre = RCC_CFGR_HPRE_DIV_NONE,
 	.ppre1 = RCC_CFGR_PPRE_DIV_4,
 	.ppre2 = RCC_CFGR_PPRE_DIV_2,
@@ -300,6 +299,7 @@ board_test_usart_receiving_break()
 	if (cnt_consecutive_low >= 18) {
 		return true;
 	}
+
 #endif // !defined(SERIAL_BREAK_DETECT_DISABLED)
 
 	return false;
@@ -429,7 +429,7 @@ board_deinit(void)
 static inline void
 clock_init(void)
 {
-	rcc_clock_setup_hse_3v3(&clock_setup);
+	rcc_clock_setup_hse(&clock_setup, OSC_FREQ);
 }
 
 /**
