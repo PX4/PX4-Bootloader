@@ -36,7 +36,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/flash.h>
-#include <libopencm3/stm32/otg_fs.h>
+#include <libopencm3/usb/dwc/otg_fs.h>
 
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
@@ -218,9 +218,9 @@ static const struct usb_cdc_line_coding line_coding = {
 	.bParityType = USB_CDC_NO_PARITY,
 	.bDataBits = 0x08
 };
-
-static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
-				  uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
+static enum usbd_request_return_codes cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *req,
+		uint8_t **buf,
+		uint16_t *len, usbd_control_complete_callback *complete)
 {
 	(void)complete;
 	(void)buf;
