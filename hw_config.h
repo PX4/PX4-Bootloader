@@ -987,6 +987,37 @@
  * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
 */
 
+/****************************************************************************
+ * TARGET_HW_AV_V1
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_AV_X_V1)
+
+# define APP_LOAD_ADDRESS               0x08008000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  0
+# define INTERFACE_USART                1
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     29
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
+# define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+
+# define OSC_FREQ                       16
+
+# define BOARD_USART  			UART8
+# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_UART8EN
+
+# define BOARD_PORT_USART   		GPIOE
+# define BOARD_PORT_USART_AF 		GPIO_AF7
+# define BOARD_PIN_TX     		GPIO1
+# define BOARD_PIN_RX		     	GPIO0
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
+
 #else
 # error Undefined Target Hardware
 #endif
