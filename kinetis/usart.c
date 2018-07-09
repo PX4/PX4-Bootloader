@@ -35,6 +35,9 @@
 #include "uart.h"
 
 uint32_t usart;
+#if defined(INTERFACE_USART) && INTERFACE_USART > 0
+# error "UART driver for K66 is incomplete - please add it if needed!"
+#endif
 
 void
 uart_cinit(void *config)
