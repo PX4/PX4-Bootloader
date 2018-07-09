@@ -17,6 +17,16 @@
 #include "bl.h"
 #include "uart.h"
 
+#if !defined(USART6)
+#  define USART6    USART6_BASE
+#endif
+#if !defined(UART6)
+#  define UART7    UART7_BASE
+#endif
+#if !defined(USART8)
+#  define UART8    UART8_BASE
+#endif
+
 /* flash parameters that we should not really know */
 static struct {
 	uint32_t	sector_number;
