@@ -844,7 +844,7 @@
 # define BOOTLOADER_DELAY               5000
 # define BOARD_NXPHLITEV3
 # define INTERFACE_USB                  1
-# define INTERFACE_USART                1
+# define INTERFACE_USART                0
 # define USBDEVICESTRING                "PX4 BL NXPHlite v3.x"
 # define USBPRODUCTID                   0x0011
 
