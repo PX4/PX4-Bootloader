@@ -366,6 +366,7 @@ board_init(void)
 	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, BOARD_FORCE_BL_PULL, BOARD_FORCE_BL_PIN);
 #endif
 
+#if defined(BOARD_CLOCK_LEDS)
 	/* initialise LEDs */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_LEDS);
 	gpio_mode_setup(
@@ -381,7 +382,7 @@ board_init(void)
 	BOARD_LED_ON(
 		BOARD_PORT_LEDS,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
-
+#endif
 	/* enable the power controller clock */
 	rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 }
@@ -417,12 +418,14 @@ board_deinit(void)
 	gpio_mode_setup(BOARD_POWER_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_POWER_PIN);
 #endif
 
+#if defined(BOARD_CLOCK_LEDS)
 	/* deinitialise LEDs */
 	gpio_mode_setup(
 		BOARD_PORT_LEDS,
 		GPIO_MODE_INPUT,
 		GPIO_PUPD_NONE,
 		BOARD_PIN_LED_BOOTLOADER | BOARD_PIN_LED_ACTIVITY);
+#endif
 
 	/* disable the power controller clock */
 	rcc_peripheral_disable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
@@ -642,11 +645,15 @@ led_on(unsigned led)
 {
 	switch (led) {
 	case LED_ACTIVITY:
+#if defined(BOARD_PIN_LED_ACTIVITY)
 		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+#endif
 		break;
 
 	case LED_BOOTLOADER:
+#if defined(BOARD_PIN_LED_BOOTLOADER)
 		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+#endif
 		break;
 	}
 }
@@ -656,11 +663,15 @@ led_off(unsigned led)
 {
 	switch (led) {
 	case LED_ACTIVITY:
+#if defined(BOARD_PIN_LED_ACTIVITY)
 		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+#endif
 		break;
 
 	case LED_BOOTLOADER:
+#if defined(BOARD_PIN_LED_BOOTLOADER)
 		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+#endif
 		break;
 	}
 }
@@ -670,11 +681,15 @@ led_toggle(unsigned led)
 {
 	switch (led) {
 	case LED_ACTIVITY:
+#if defined(BOARD_PIN_LED_ACTIVITY)
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+#endif
 		break;
 
 	case LED_BOOTLOADER:
+#if defined(BOARD_PIN_LED_BOOTLOADER)
 		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_BOOTLOADER);
+#endif
 		break;
 	}
 }
