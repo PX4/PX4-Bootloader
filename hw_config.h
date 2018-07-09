@@ -1006,16 +1006,16 @@
 
 # define OSC_FREQ                       16
 
-# define BOARD_USART  			UART8
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_UART8EN
+# define BOARD_USART                    UART8
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_UART8EN
 
-# define BOARD_PORT_USART   		GPIOE
-# define BOARD_PORT_USART_AF 		GPIO_AF7
-# define BOARD_PIN_TX     		GPIO1
-# define BOARD_PIN_RX		     	GPIO0
+# define BOARD_PORT_USART               GPIOE
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO1
+# define BOARD_PIN_RX                   GPIO0
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 #else
