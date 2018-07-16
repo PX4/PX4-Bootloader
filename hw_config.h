@@ -363,6 +363,7 @@
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
 # define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
+# define OVERRIDE_USART_BAUDRATE        2000000
 
 /*
  * Uncommenting this allows to force the bootloader through
