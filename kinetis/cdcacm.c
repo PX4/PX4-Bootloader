@@ -75,6 +75,7 @@ usb_status_t USB_DeviceCallback(usb_device_handle handle, uint32_t event, void *
 /*******************************************************************************
 * Variables
 ******************************************************************************/
+static bool g_usb_initalized = false;
 volatile bool g_usb_tx_done = true;
 extern usb_device_endpoint_struct_t g_UsbDeviceCdcVcomDicEndpoints[];
 extern usb_device_class_struct_t g_UsbDeviceCdcVcomConfig;
@@ -513,24 +514,27 @@ void usb_cinit(void)
 	NVIC_EnableIRQ((IRQn_Type)irqNo);
 
 	USB_DeviceRun(s_cdcVcom.deviceHandle);
+	g_usb_initalized = true;
 }
 
 void
 usb_cfini(void)
 {
-	uint8_t irqNo;
-	uint8_t khciIrq[] = USB_IRQS;
-	irqNo = khciIrq[CONTROLLER_ID - kUSB_ControllerKhci0];
 
-	SIM->SOPT2 &= ~SIM_SOPT2_USBSRC_MASK;
-	USB0->CLK_RECOVER_IRC_EN = 0x01U;
-	USB0->CLK_RECOVER_CTRL = 0;
+	if (g_usb_initalized) {
+		uint8_t irqNo;
+		uint8_t khciIrq[] = USB_IRQS;
+		irqNo = khciIrq[CONTROLLER_ID - kUSB_ControllerKhci0];
 
-	USB_DeviceClassDeinit(CONTROLLER_ID);
-	NVIC_DisableIRQ((IRQn_Type)irqNo);
+		SIM->SOPT2 &= ~SIM_SOPT2_USBSRC_MASK;
+		USB0->CLK_RECOVER_IRC_EN = 0x01U;
+		USB0->CLK_RECOVER_CTRL = 0;
 
-	CLOCK_DisableClock(kCLOCK_Usbfs0);
+		USB_DeviceClassDeinit(CONTROLLER_ID);
+		NVIC_DisableIRQ((IRQn_Type)irqNo);
 
+		CLOCK_DisableClock(kCLOCK_Usbfs0);
+	}
 }
 
 int usb_cin(void)
