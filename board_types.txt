@@ -20,6 +20,7 @@ TARGET_HW_OMNIBUSF4SD                  42
 TARGET_HW_AUAV_X2V1                    33
 TARGET_HW_AEROFC_V1                    65
 TARGET_HW_CUBE_F4                       9
+TARGET_HW_AV_V1                        29
 
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
@@ -37,8 +38,7 @@ AP_HW_MATEKF405                       125
 AP_HW_NUCLEOF767ZI                    126
 AP_HW_MATEKF405_WING                  127
 AP_HW_AIRBOTF4                        128
-AP_HW_F4BY                            129
 AP_HW_SPARKYV2                        130
 AP_HW_OMNIBUSF4PRO                    131
 AP_HW_ANYFCF7                         132
-
+AP_HW_F4BY                             20 # value due to previous release by vendor
