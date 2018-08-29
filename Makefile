@@ -36,7 +36,7 @@ export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 #
 # Bootloaders to build
 #
-TARGETS	= \
+#TARGETS	= \
 	aerofcv1_bl \
 	auavx2v1_bl \
 	crazyflie_bl \
@@ -54,6 +54,14 @@ TARGETS	= \
 	tapv1_bl \
 	cube_f4_bl \
 	cube_f7_bl
+
+TARGETS	= \
+	crazyflie_bl \
+	px4fmu_bl \
+	px4fmuv2_bl \
+	px4fmuv4_bl \
+	px4io_bl 
+
 
 all:	$(TARGETS) sizes
 
