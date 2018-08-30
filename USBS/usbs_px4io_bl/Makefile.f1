@@ -1,0 +1,32 @@
+#
+# PX4 bootloader build rules for STM32F1 targets.
+#
+
+OPENOCD		?= ../../sat/bin/openocd
+
+JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
+#JTAGCONFIG ?= interface/jtagkey-tiny.cfg
+
+# 3 seconds / 3000 ms default delay
+PX4_BOOTLOADER_DELAY	?= 3000
+
+SRCS		 = $(COMMON_SRCS) main_f1.c
+
+FLAGS		+= -mthumb -mcpu=cortex-m3\
+       -DTARGET_HW_$(TARGET_HW) \
+       -DSTM32F1 \
+		   -T$(LINKER_FILE) \
+		   -L$(LIBOPENCM3)/lib \
+		   -lopencm3_stm32f1
+
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk
+
+#upload: all flash flash-bootloader
+upload: all flash-bootloader
+
+flash-bootloader:
+	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f1.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY)" -c "reset run" -c shutdown

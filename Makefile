@@ -60,8 +60,11 @@ TARGETS	= \
 	px4fmu_bl \
 	px4fmuv2_bl \
 	px4fmuv4_bl \
+	usbs_px4fmuv4_bl \
+	usbs_px4io_bl \
 	px4io_bl 
 
+USBS_SRC=usbs_src
 
 all:	$(TARGETS) sizes
 
@@ -69,6 +72,8 @@ clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
 	rm -f *.elf *.bin # Remove any elf or bin files contained directly in the Bootloader directory
 	rm -rf build_* # Remove build directories
+	rm -rf build*  # Remove build directories
+	rm -rf code    # Remove build directories
 
 #
 # Specific bootloader targets.
@@ -85,6 +90,15 @@ px4fmuv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+usbs_px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+#	@mkdir -p build/$@
+#	@mkdir -p build/$@/USBS/$@
+	@mkdir -p build/$@/$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+	@cp -a USBS/$@ $(USBS_SRC)
+	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
 
 px4fmuv4pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4_PRO LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@ EXTRAFLAGS=-DSTM32F469
@@ -120,6 +134,14 @@ cube_f7_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f1 TARGET_HW=PX4_PIO_V1 LINKER_FILE=stm32f1.ld TARGET_FILE_NAME=$@
 
+usbs_px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	@mkdir -p build/$@/$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+	@cp -a USBS/$@ $(USBS_SRC)
+#	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f1 TARGET_HW=PX4_PIO_V1 LINKER_FILE=$(USBS_SRC)/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+
 px4iov3_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f3 TARGET_HW=PX4_PIO_V3 LINKER_FILE=stm32f3.ld TARGET_FILE_NAME=$@
 
@@ -134,7 +156,8 @@ aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 #
 .PHONY: sizes
 sizes:
-	@-find build_* -name '*.elf' -type f | xargs size 2> /dev/null || :
+#	@-find build_* -name '*.elf' -type f | xargs size 2> /dev/null || :
+	@-find build/*/ -name '*.elf' -type f | xargs size 2> /dev/null || :
 
 #
 # Binary management
