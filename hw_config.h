@@ -8,6 +8,8 @@
 #ifndef HW_CONFIG_H_
 #define HW_CONFIG_H_
 
+#include "USBS/core/hw_revision.h"
+
 /****************************************************************************
  * 10-8--2016:
  *  To simplify the ripple effect on the tools, we will be using
@@ -227,6 +229,12 @@
 # define USBDEVICESTRING                "PX4 BL FMU v4.x"
 # define USBPRODUCTID                   0x0012
 # define BOOT_DELAY_ADDRESS             0x000001a0
+
+#define HW_BOARD_REV					HW_BOARD_DEFAULT
+#define BL_REVR							_BL_REVR
+#define BL_REVX							_BL_REVX
+#define BL_REVY							_BL_REVY
+#define HW_NAME							HW_NAME_DEFAULT
 
 # define BOARD_TYPE                     11
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)

@@ -51,6 +51,7 @@ enum {
 };
 
 /* board info forwarded from board-specific code to booloader */
+#if 0
 struct boardinfo {
 	uint32_t	board_type;
 	uint32_t	board_rev;
@@ -58,6 +59,24 @@ struct boardinfo {
 	uint32_t	systick_mhz;		/* systick input clock */
 
 } __attribute__((packed));
+#else
+struct boardinfo {
+	uint32_t	board_type;
+	uint32_t	board_rev;
+	uint32_t	fw_size;
+	uint32_t	systick_mhz;		/* systick input clock */
+	// board | bl_revr | bl_revx | bl_revy |
+	/**
+	 * 版本号 bl_rev 定义同 linux 版本号: 主版本号|次版本号|修订次数|
+	 * 每一个版本号占一个字节, 其中 board 表示板子版本号,占一个字节
+	 * 版本号 bl_rev 的前三个字节中 0保留不使用
+	 */
+	//uint32_t	bl_rev;   
+	uint32_t	hw_bl_rev;   
+	const uint8_t     hw_name[16];
+
+} __attribute__((packed));
+#endif
 
 extern struct boardinfo board_info;
 

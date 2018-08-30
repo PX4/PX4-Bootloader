@@ -123,8 +123,9 @@
 #define PROTO_DEVICE_BOARD_REV	3	// board revision
 #define PROTO_DEVICE_FW_SIZE	4	// size of flashable area
 #define PROTO_DEVICE_VEC_AREA	5	// contents of reserved vectors 7-10
+#define PROTO_DEVICE_HW_BL_REV 	15	// hw bootloader revision
 
-static uint8_t bl_type;
+static uint8_t bl_type=NONE;
 static uint8_t last_input;
 
 inline void cinit(void *config, uint8_t interface)
@@ -597,6 +598,9 @@ bootloader(unsigned timeout)
 					cout((uint8_t *)&bytes, sizeof(bytes));
 				}
 
+				break;
+			case PROTO_DEVICE_HW_BL_REV:
+				cout((uint8_t *)&board_info.hw_bl_rev, sizeof(board_info.hw_bl_rev));
 				break;
 
 			default:

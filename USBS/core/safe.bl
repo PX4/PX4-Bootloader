@@ -1,0 +1,204 @@
+
+通讯协议：
+/**
+  safe:
+  count: [1-255]
+  crc16: D:2B, (D<<8)|0xFF
+  len;
+  _len=len&0xFE;
+  uint16_t crc16;
+  sum=0;
+  for(i=0; i<_len; i++)
+  {
+        crc16 = D[i];
+        crc16 = crc16<<8 + D[i+1];
+        sum += crc16;
+   }
+   if(len&0x1)
+   {
+        crc16 = D[i];
+        crc16 = crc16<<8 + 0xFF;
+        sum += crc16;
+    }
+
+  send:
+   | 1B | 1B|  1B | xB | 2B |
+   |0x7E|len|count|DATA|crc|
+eg:|0x7E|
+  ack:
+   | 1B | 1B|  1B |  1B  |  1B  | xB |crc|
+   |0x7E|len|count| last |status|DATA|crc|
+ */
+以上 send 为上位机,即电脑或手机端数据包格式.
+
+
+关键代码：
+int uploader_safe::decode(struct pack *_p, const char _buf[], const uint16_t lenght)  // 解码
+{
+#define DECODE_HEAD_LEN    5
+    /**
+  ack:
+   | 1B | 1B|  1B |  1B  |  1B  | xB |crc|
+   |0x7E|len|count| last |status|DATA|crc|
+     */
+    uint16_t i=0;
+    uint16_t crc=0;
+    const char *_data=NULL;
+    for(i=0; i<lenght; i++)
+    {
+        if(PACK_HEAD == _buf[i])
+        {
+            //qDebug("decode [%d]: %02X", i, _buf[i]);
+            _data = &_buf[i];
+            _p->head = _data[0];
+            _p->len  = _data[1];
+            _p->count = _data[2];
+            _p->last = _data[3];
+            _p->status = _data[4];
+            if((_p->len+i+DECODE_HEAD_LEN+2) > lenght) return -1;
+            memcpy(_p->data, &_data[DECODE_HEAD_LEN], _p->len);
+            crc = _data[DECODE_HEAD_LEN+_p->len]&0xFF;
+            //qDebug("decode crc: %04X", crc);
+            crc = (crc << 8) | _data[DECODE_HEAD_LEN+_p->len+1]&0xFF;
+            //qDebug("decode crc: %04X", crc);
+            _p->crc16 = crc;
+            crc = crc16((const uint8_t*)&_data[0], DECODE_HEAD_LEN+_p->len);
+            //qDebug("decode crc[%04X]: %04X", crc, _p->crc16);
+            if(crc != _p->crc16) return -2;
+            _p->recv = 1;
+            return 0;
+        }
+    }
+    return -3;
+}
+
+int uploader_safe::encode(const uint8_t _data[], const uint8_t lenght)  // 编码
+{
+#define ENCODE_HEAD_LEN    3
+    /**
+   | 1B | 1B|  1B | xB | 2B |
+   |0x7E|len|count|DATA|crc|
+     */
+    uint16_t crc = 0;
+    memset(pack_en, 0, sizeof(pack_en));
+    pack_en[0] = PACK_HEAD;
+    pack_en[1] = lenght;
+    pack_en[2] = send_count;
+    memcpy(&pack_en[ENCODE_HEAD_LEN], _data, lenght);
+    crc = crc16(pack_en, lenght+ENCODE_HEAD_LEN);
+    pack_en[ENCODE_HEAD_LEN+lenght] = (crc>>8)&0xFF;
+    pack_en[ENCODE_HEAD_LEN+lenght+1] = (crc)&0xFF;
+    return (lenght+ENCODE_HEAD_LEN+2);
+}
+/*
+ * lenght:从包头到包尾不包括crc字节
+ */
+uint16_t uploader_safe::crc16(const uint8_t pack[], const uint16_t lenght)
+{
+    uint16_t crc=0;
+    uint16_t sum=0;
+    uint16_t _len=0;
+    uint16_t i=0;
+    //qDebug() << "uploader_safe crc16";
+    //qDebug("pack[%d] ", lenght);
+    _len=lenght - (lenght&0x1); // 2字节对对齐
+    sum = 0;
+    for(i=0; i<_len; i+=2)
+    {
+        crc = pack[i];
+        crc = (crc<<8) + pack[i+1];
+        sum += crc;
+        //qDebug(" %04X ", crc);
+    }
+    if(lenght&0x1)
+    {
+        crc = pack[i];
+        crc = (crc<<8) + 0xFF;
+        sum += crc;
+        //qDebug(" %04X ", crc);
+    }
+    //qDebug("\n");
+    return sum;
+}
+
+丢包与重发:
+bl(bootloader以下简称bl)
+|0x7E|len|count| last |status|DATA|crc|
+当 bl 接收到数据会立即返回一个 ACK,上位机可通过 ACK判断数据是否正确接收到.需要说明的是 ACK数据包的 len为0,即 ACK不携带数据.
+在返回的 ACK中 count为 bl正确接收到的最后一个包的包序号, last 为 count的前一个包, status值为 0x01, 0x02, 0x10.
+其中 0x01表示数据正常接收,0x02表示接收到重复包,考虑到网络通讯可能丢包,接收到重复数据包时 bl发出的数据会在 ACK之后再发送一次.
+0x10表示其他错误。
+status还有一个值为 0, bl返回的数据 status值为 0.
+
+上位机发送数据:
+上位机发送数据需要等待 ACK包以判断数据是否重发:
+void uploader_safe::__send(const uint8_t buf[], const uint32_t len)
+{
+#if 0
+    my_port->write((const char *)buf, len);
+#else
+    int _size = encode(buf, len);
+    int i=0;
+    uint16_t count=0;
+    my_port->clear();
+    my_port->write((const char *)pack_en, _size);
+    uint time_end =QDateTime::currentDateTime().toTime_t()+1;
+    while((QDateTime::currentDateTime().toTime_t())<time_end)
+    {
+        if(0!=wait_pack(100)) continue;
+        if(0 == _pack.status) continue; // bl
+        if(((0x01) == _pack.status) || ((0x02) == _pack.status)) // 接收成功或收到重复数据包
+        {
+            send_last = send_count;
+            count = send_count;
+            count++;
+            if(count>255) send_count=1;
+            else send_count=count;
+            break;
+        }
+        qDebug("_pack L[%d] C[%d] [%02X] send[%d] %d ", _pack.last, _pack.count, _pack.status, send_last, send_count);
+        if(_pack.count == send_last) // 重发
+        {
+            this->clear();
+            my_port->write((const char *)pack_en, _size);
+            continue;
+        }
+        qDebug("_pack reset send ");
+        send_count = 0;
+        send_last = 0;
+        _size = encode(buf, len);
+        this->clear();
+        my_port->write((const char *)pack_en, _size);
+    }
+#endif
+}
+
+发送处理完 ACK以后就正常接收数据:
+uint8_t uploader_safe::__recv()
+{
+    int uart_in=0;
+    //if(my_port->waitForReadyRead(1)) recSerialData();
+    while(0==wait_pack(1))
+    {
+        uint16_t i=0;
+        for(i=0; i<_pack.len; i++)
+        {
+            safe_buf_put(_pack.data[i]);
+        }
+    }
+    uart_in = safe_buf_get();
+    if(uart_in>=0)
+    {
+        return (uint8_t)uart_in;
+    }
+    return 0x01;
+}
+接收数据可以不必考虑 ACK包, ACK数据长度为 0不携带数据.
+接收完了应用层直接从 safe_buf中取数据进行相应的处理即可.
+
+
+
+
+
+
+

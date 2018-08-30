@@ -143,7 +143,7 @@ const mcu_rev_t silicon_revs[] = {
 #if INTERFACE_USB
 # define BOARD_INTERFACE_CONFIG_USB  	NULL
 #endif
-
+#ifndef  HW_BOARD_REV
 /* board definition */
 struct boardinfo board_info = {
 	.board_type	= BOARD_TYPE,
@@ -152,6 +152,26 @@ struct boardinfo board_info = {
 
 	.systick_mhz	= 168,
 };
+#else
+#if 0
+#define HW_BOARD_REV  0x01
+#define BL_REVR    0x01
+#define BL_REVX    0x04
+#define BL_REVY    0x00
+#endif
+
+/* board definition */
+struct boardinfo board_info = {
+	.board_type	= BOARD_TYPE,
+	.board_rev	= 0,
+	.fw_size	= 0,
+
+	.systick_mhz	= 48, // 168
+	//.hw_bl_rev     = 0x01010400
+	.hw_bl_rev     = (HW_BOARD_REV & 0xFF000000) | (BL_REVR & 0x00FF0000) | (BL_REVX & 0x0000FF00) | (BL_REVY & 0x000000FF),
+	.hw_name    = HW_NAME,
+};
+#endif
 
 void board_init(void);
 
