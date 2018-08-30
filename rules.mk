@@ -9,6 +9,7 @@ OBJS		:= $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(SRCS)))
 DEPS		:= $(OBJS:.o=.d)
 
 ELF		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).elf
+MAP		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).map
 BINARY		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).bin
 
 all:		$(BUILD_DIR) $(ELF) $(BINARY)
@@ -26,7 +27,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(ELF):		$(OBJS) $(MAKEFILE_LIST)
-	$(CC) -o $@ $(OBJS) $(FLAGS)
+	$(CC) -o $@ $(OBJS) $(FLAGS) -Wl,-Map,$(MAP)
 
 $(BINARY):	$(ELF)
 	$(OBJCOPY) -O binary $(ELF) $(BINARY)

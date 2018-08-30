@@ -35,6 +35,7 @@ export FLAGS		 = -std=gnu99 \
 export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 export COMMON_SRCS_USBS	 = $(USBS_SRC)/bl.c $(USBS_SRC)/cdcacm.c  $(USBS_SRC)/usart.c $(USBS_SRC)/safe.c
 export USBS_BL_DIR=$(shell pwd)
+px4_dir=$(shell pwd)
 
 #
 # Bootloaders to build
@@ -63,6 +64,8 @@ TARGETS	= \
 	px4fmuv2_bl \
 	px4fmuv4_bl \
 	usbs_px4fmuv4_bl \
+	usbs_px4fmuv4_bl_update \
+	update_flash_f4 \
 	usbs_px4io_bl \
 	px4io_bl 
 
@@ -93,14 +96,36 @@ px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 usbs_px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-#	@mkdir -p build/$@
-#	@mkdir -p build/$@/USBS/$@
+	@mkdir -p build/bl
 	@mkdir -p build/$@/$(USBS_SRC)
 	@rm -rf $(USBS_SRC)
 	@cp -a USBS/$@ $(USBS_SRC)
 	@cp -a USBS/core/* $(USBS_SRC)/
 	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	@cp build/$@/$@.bin build/bl/$@_08000000.bin
 	@rm -rf $(USBS_SRC)
+usbs_px4fmuv4_bl_update: usbs_px4fmuv4_bl $(MAKEFILE_LIST) $(LIBOPENCM3)
+	@mkdir -p build/bl
+	@rm -rf build/bl/*.data
+	@cp build/usbs_px4fmuv4_bl/usbs_px4fmuv4_bl.bin build/bl/usbs_bl.data
+	@mkdir -p build/$@/$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+	@cp -a USBS/$@ $(USBS_SRC)
+	@cp -a USBS/core/* $(USBS_SRC)/
+	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	$(px4_dir)//Tools/px_mkfw.py --prototype $(px4_dir)/Images//px4fmu-v4.prototype --git_identity $(px4_dir)/ --image build/$@/$@.bin > build/bl/$@.px4
+	@cp build/$@/$@.bin build/bl/$@_08004000.bin
+	@rm -rf $(USBS_SRC)
+	@rm -rf build/bl/*.data
+
+update_flash_f4: usbs_px4fmuv4_bl $(MAKEFILE_LIST) $(LIBOPENCM3)
+	@mkdir -p build/bl
+	@rm -rf build/bl/*.data
+	@cp build/usbs_px4fmuv4_bl/usbs_px4fmuv4_bl.bin build/bl/bl.data
+	${MAKE} ${MKFLAGS} -f  update/mk_bl_update_flash.f4 TARGET_HW=USBS_FMU_V4  LINKER_FILE=update/stm32f4_bl_update_flash.ld TARGET_FILE_NAME=$@
+	$(px4_dir)//Tools/px_mkfw.py --prototype $(px4_dir)/Images//px4fmu-v4.prototype --git_identity $(px4_dir)/ --image build/update_flash_f4/update_flash_f4.bin > build/bl/bl_update_flash.px4
+	cp build/update_flash_f4/update_flash_f4.bin build/bl/update_flash_f4_08004000.bin
+	cp build/usbs_px4fmuv4_bl/usbs_px4fmuv4_bl.bin build/bl/px4fmuv4_bl_ram_08000000.bin
 
 px4fmuv4pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4_PRO LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@ EXTRAFLAGS=-DSTM32F469
