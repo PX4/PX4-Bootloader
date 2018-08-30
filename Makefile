@@ -33,6 +33,8 @@ export FLAGS		 = -std=gnu99 \
 			   -Werror
 
 export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
+export COMMON_SRCS_USBS	 = $(USBS_SRC)/bl.c $(USBS_SRC)/cdcacm.c  $(USBS_SRC)/usart.c $(USBS_SRC)/safe.c
+export USBS_BL_DIR=$(shell pwd)
 
 #
 # Bootloaders to build
