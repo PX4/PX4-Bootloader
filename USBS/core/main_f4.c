@@ -184,7 +184,7 @@ void board_init(void);
 #define BOOT_RTC_SIGNATURE          0xb007b007
 #define POWER_DOWN_RTC_SIGNATURE    0xdeaddead // Written by app fw to not re-power on.
 #define BOOT_RTC_REG                MMIO32(RTC_BASE + 0x50)
-
+#if 0
 /* standard clocking for all F4 boards */
 static const struct rcc_clock_scale clock_setup = {
 	.pllm = OSC_FREQ,
@@ -202,7 +202,23 @@ static const struct rcc_clock_scale clock_setup = {
 	.apb1_frequency = 42000000,
 	.apb2_frequency = 84000000,
 };
-
+#endif
+static const struct rcc_clock_scale clock_setup = {
+	.pllm = OSC_FREQ,
+	.plln = 192,
+	.pllp = 4,
+	.pllq = 4,
+#if defined(STM32F446) || defined(STM32F469)
+	.pllr = 2,
+#endif
+	.hpre = RCC_CFGR_HPRE_DIV_NONE,
+	.ppre1 = RCC_CFGR_PPRE_DIV_2,
+	.ppre2 = RCC_CFGR_PPRE_DIV_NONE,
+	.power_save = 0,
+	.flash_config = FLASH_ACR_ICE | FLASH_ACR_DCE | FLASH_ACR_LATENCY_5WS,
+	.apb1_frequency = 24000000,
+	.apb2_frequency = 48000000,
+};
 static uint32_t
 board_get_rtc_signature()
 {
