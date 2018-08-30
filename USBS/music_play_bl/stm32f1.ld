@@ -50,7 +50,9 @@ SECTIONS
 
         .text : {
                 *(.vectors)     /* Vector table */
-                *(.text*)       /* Program code */
+                *(.vectors_m)     /* Vector table */
+                *(.reset_m)     
+                /* *(.text*) */      /* Program code */
                 . = ALIGN(4);
                 *(.rodata*)     /* Read-only data */
                 . = ALIGN(4);
@@ -84,6 +86,7 @@ SECTIONS
 
         .data : AT(_etext) {
                 _data = .;
+				*(.text*)       /* Program code */
                 *(.data*)       /* Read-write initialized data */
                 . = ALIGN(4);
                 _edata = .;
