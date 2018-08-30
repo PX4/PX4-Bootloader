@@ -126,12 +126,26 @@ void __attribute__ ((section(".reset_rb3"))) reset_handler_rb3(void)
 		(*fp)();
 	}
 }
+extern void main_rb2_init(void);
+extern void bootloader_b2(unsigned timeout);
 void __attribute__ ((section(".reset_rb2"))) reset_handler_rb2(void)
 {
 	funcp_t *fp;
+	unsigned timeout = 10000;
 	reset_handler_init();
+
 	/* Call the application's entry point. */
-	main();
+	//main();
+	main_rb2_init();
+	while (1) {
+		//uart_cout((uint8_t *)"Hello\r\n", 7);
+		/* run the bootloader, come back after an app is uploaded or we time out */
+		bootloader_b2(timeout); // 10s
+		/* look to see if we can boot the app */
+		jump_to_app();
+		/* launching the app failed - stay in the bootloader forever */
+		timeout = 0;
+	}
 	/* Destructors. */
 	for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
 		(*fp)();
@@ -148,6 +162,8 @@ extern void encoding(uint32_t sign[8], volatile uint32_t uid[3]);
 //uint32_t code_vectors[CODE_SIZE/4];    // 2K  , 中断向量表
 //uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
 #define FLASH_START_ADDRESS    0x08000000
+const uint16_t enc_offsetB= 0x3800;
+const uint16_t enc_offsetW= 0x3800/4;
 void erase_code(const uint32_t _vectors[CODE_SIZE/4], const uint32_t _encryption[CODE_SIZE/4], const uint32_t len)
 {
 	uint32_t i=0;
@@ -223,18 +239,21 @@ void __attribute__ ((section(".reset_rb1"))) UserLicense(uint8_t flash[], volati
 		//match_flag = 1;
 		//match_flag.skip1 = BOOT_COERCE_SKIP;
 }
-#if 0
+uint32_t code_vectors[CODE_SIZE/4];    // 2K  , 中断向量表
+uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
+
+extern void read_uid(uint32_t uid[3]);
 void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 {
-	uint32_t	address = board_info.fw_size;
+	uint32_t	address = 0;
 	const uint32_t len = sizeof(code_vectors)/4; // 16K
 	uint32_t i=0;
-	const uint32_t* src_ver= (const uint32_t*)0x08000000;
-	const uint32_t* src_enc= (const uint32_t*)0x08003800;
+	const uint32_t* src_ver= (const uint32_t*)FLASH_START_ADDRESS;
+	const uint32_t* src_enc= (const uint32_t*)(FLASH_START_ADDRESS+enc_offsetB);
 	
-	volatile uint32_t* _mtext=NULL;
-	uint32_t uid[3]={0};
-	main();
+	//volatile uint32_t* _mtext=NULL;
+	uint32_t uid[4]={0};
+	
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
 
@@ -242,6 +261,65 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	board_init();
 	/* configure the clock for bootloader activity */
 	clock_init();
+	
+	// copy code
+	for(i=0; i<(sizeof(code_vectors)/4); i++)
+	{
+		code_vectors[i] = src_ver[i];
+	}
+	//code_vectors[1] = (uint32_t)reset_handler_rb2; // 更改中断向量,下一次上电不再执行这部分代码
+	code_vectors[1] = (uint32_t)reset_handler_rb2;
+	
+	for(i=0; i<len; i++)
+	{
+		code_encryption[i] = src_enc[i];
+	}
+	//check
+	read_uid(uid);  // 读取产品 ID号
+	// erase code
+	i = 0; // [0x3800-0x3C00] 没有代码
+	address = (uid[0]+uid[1]+uid[2])%0x400+0x400;
+	
+	for(; i<len; i++)
+	{
+		code_encryption[i] = src_ver[address++]^0x68fe2433U; // 覆盖原有代码
+	}
+	// copy code
+	i = (uint32_t)&reset_handler_rb2;
+	//i=0x08003d00;
+#if 0
+	i = (i&0x0000FFFC)-enc_offsetB;
+	i = (i)>>2 ; // 拷贝 B2阶段代码
+#else
+	i = ((i&0x0000FFFC)-enc_offsetB)>>2 ; // 拷贝 B2阶段代码
+#endif
+	for(; i<len; i++)
+	{
+		code_encryption[i] = src_enc[i];
+	}
+	i = 1024/4; // 15K, erase code
+	code_encryption[i+0]=0x000001FF;
+	code_encryption[i+1]=0x000001FF;
+	encoding(&code_encryption[i+2], uid);      // bootloader 加密
+	UserLicense((uint8_t*)&code_encryption[i+2+8], uid);  // user 加密
+	memcpy(&code_encryption[i+2+8+8], &board_info, sizeof(board_info));  // bootloader 版本
+	erase_code(code_vectors, code_encryption, CODE_SIZE/4); // 写入操作,擦除原有代码
+
+	// 执行系统复位
+	scb_reset_system(); 
+	
+}
+
+void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[], const uint8_t encrypt_len)
+{
+	/*uint32_t	address = 0;
+	const uint32_t len = sizeof(code_vectors)/4; // 16K
+	uint32_t i=0;
+	const uint32_t* src_ver= (const uint32_t*)0x08000000;
+	const uint32_t* src_enc= (const uint32_t*)0x08003800;
+	
+	volatile uint32_t* _mtext=NULL;
+	uint32_t uid[3]={0};
 	
 	// copy code
 	for(i=0; i<len; i++)
@@ -259,106 +337,27 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	uid[1] = _mtext[1];
 	uid[2] = _mtext[2];
 	// erase code
-	i = 0; // [0x3800-0x3C00] 没有代码
-	address = (uid[0]+uid[1]+uid[2])%0x400+0x400;
-	for(; i<len; i++)
-	{
-		code_encryption[i] = src_ver[address++]^0x68fe2433U; // 覆盖原有代码
-	}
-	// copy code
 	address = (uint32_t)reset_handler_rb2;
 	//i = (uint32_t)main_e2;
 	//if(i>address) i=address;
-	i = (i&0x0000FFFC)>>2 ; // 拷贝 B2阶段代码
-	for(; i<len; i++)
-	{
-		code_encryption[i] = src_ver[i];
-	}
-	i = 1024/4; // 15K, erase code
-	code_encryption[i+0]=0x000001FF;
-	code_encryption[i+1]=0x000001FF;
-	encoding(&code_encryption[i+2], uid);      // bootloader 加密
-	UserLicense((uint8_t*)&code_encryption[i+2+8], uid);  // user 加密
-	memcpy(&code_encryption[i+2+8+8], &board_info, sizeof(board_info));  // bootloader 版本
-	//code[1] = (uint32_t)(&reset_handler_e)|0x1;
-	//code[1] = (uint32_t)reset_h2;
-	//code_vectors[1] = (uint32_t)reset_handler_rb2; // 更改中断向量,下一次上电不再执行这部分代码
-	code_vectors[1] = (uint32_t)reset_handler_rb3;
-	main();
-	erase_code(); // 写入操作,擦除原有代码
-
-	// 执行系统复位
-	scb_reset_system(); 
-}
-#endif
-uint32_t code_vectors[CODE_SIZE/4];    // 2K  , 中断向量表
-uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
-extern void read_uid(uint32_t uid[3]);
-void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
-{
-	uint32_t	address = 0;
-	const uint32_t len = sizeof(code_vectors)/4; // 16K
-	uint32_t i=0;
-	const uint32_t* src_ver= (const uint32_t*)0x08000000;
-	const uint32_t* src_enc= (const uint32_t*)0x08003800;
-	
-	//volatile uint32_t* _mtext=NULL;
-	uint32_t uid[4]={0};
-	
-	/* Enable the FPU before we hit any FP instructions */
-	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
-
-	/* do board-specific initialisation */
-	board_init();
-	/* configure the clock for bootloader activity */
-	clock_init();
-	
-	// copy code
-	for(i=0; i<len; i++)
-	{
-		code_vectors[i] = src_ver[i];
-	}
-	
-	for(i=0; i<len; i++)
-	{
-		code_encryption[i] = src_enc[i];
-	}
-	//check
-	read_uid(uid);  // 读取产品 ID号
-	// erase code
-	i = 0; // [0x3800-0x3C00] 没有代码
+	i = (i&0x0000FFFC)-0x3800;
+	i = (i)>>2 ; // 擦除 B2阶段代码
 	address = (uid[0]+uid[1]+uid[2])%0x400+0x400;
-	
 	for(; i<len; i++)
 	{
-		code_encryption[i] = src_ver[address++]^0x68fe2433U; // 覆盖原有代码
-	}
-	// copy code
-	address = (uint32_t)reset_handler_rb2;
-	//i = (uint32_t)main_e2;
-	//if(i>address) i=address;
-	i = (i&0x0000FFFC)>>2 ; // 拷贝 B2阶段代码
-	for(; i<len; i++)
-	{
-		code_encryption[i] = src_ver[i];
+		code_encryption[i] = src_ver[address++]^0x68fe2433U;
 	}
 	i = 1024/4; // 15K, erase code
-	code_encryption[i+0]=0x000001FF;
-	code_encryption[i+1]=0x000001FF;
-	encoding(&code_encryption[i+2], uid);      // bootloader 加密
-	UserLicense((uint8_t*)&code_encryption[i+2+8], uid);  // user 加密
-	memcpy(&code_encryption[i+2+8+8], &board_info, sizeof(board_info));  // bootloader 版本
-	//code[1] = (uint32_t)(&reset_handler_e)|0x1;
-	//code[1] = (uint32_t)reset_h2;
-	//code_vectors[1] = (uint32_t)reset_handler_rb2; // 更改中断向量,下一次上电不再执行这部分代码
+	code_encryption[i+0]=0x000004FF;
+	code_encryption[i+1]=0x000004FF;
+	memcpy(&code_encryption[i+2+8+64], encrypt, encrypt_len); // 保存加密信息
 	code_vectors[1] = (uint32_t)reset_handler_rb3;
-	//main();
 	erase_code(code_vectors, code_encryption, CODE_SIZE/4); // 写入操作,擦除原有代码
-
+	*/
 	// 执行系统复位
 	scb_reset_system(); 
-	
 }
+
 void __attribute__ ((section(".reset_rb1"))) reset_handler_rb1(void)
 {
 	funcp_t *fp;

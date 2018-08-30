@@ -524,50 +524,22 @@ main(void)
 	}
 }
 
-void __attribute__ ((section(".reset_eb2"))) main_e2_init(void)
+void __attribute__ ((section(".reset_eb2"))) main_rb2_init(void)
 {
-#if 0
 	volatile uint32_t* _mtext=NULL;
 	uint32_t passwd[8]={0};
 	uint32_t uid[3]={0};
 	int match=0;
 	unsigned int led=0;
-#if JUMP_TO_RAM
-	uint32_t len = 0x1000/4; // 4K
-	uint32_t i=0;
-	const uint32_t* src= (const uint32_t*)0x08003600;
-	uint32_t* dst= (uint32_t*)0x20000000;
-#endif
-	//bool try_boot = true;			/* try booting before we drop to the bootloader */
-	//unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
-
-	/* Enable the FPU before we hit any FP instructions */
-	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
-
-#if defined(BOARD_POWER_PIN_OUT)
-
-	/* Here we check for the app setting the POWER_DOWN_RTC_SIGNATURE
-	 * in this case, we reset the signature and wait to die
-	 */
-	if (board_get_rtc_signature() == POWER_DOWN_RTC_SIGNATURE) {
-		board_set_rtc_signature(0);
-
-		while (1);
-	}
-
-#endif
+	unsigned timeout = 0;
 
 	/* do board-specific initialisation */
 	board_init();
-
-	/* configure the clock for bootloader activity */
 	clock_init();
+	
 	//check
-	_mtext = (volatile uint32_t*)(0x1FFF0000);
-	_mtext += (0x7A10/4);
-	uid[0] = _mtext[0];
-	uid[1] = _mtext[1];
-	uid[2] = _mtext[2];
+	read_uid(uid);
+	//uid[0]++;
 	encoding(passwd, uid);
 
 	_mtext = (uint32_t*)(point_addr);
@@ -592,12 +564,46 @@ void __attribute__ ((section(".reset_eb2"))) main_e2_init(void)
 		}
 	}
 
-	/* start the interface */
-#if INTERFACE_USART
-	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#if defined(INTERFACE_USART) || defined (INTERFACE_USB)
+	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
+	timeout = BOOTLOADER_DELAY;
 #endif
+
+#ifdef INTERFACE_I2C
+# error I2C bootloader detection logic not implemented
+#endif
+
+	/* if the app left a cookie saying we should wait, then wait */
+	if (should_wait()) {
+		timeout = BOOTLOADER_DELAY;
+	}
+
+#ifdef BOARD_FORCE_BL_PIN
+
+	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
+	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN)) {
+		timeout = 0xffffffff;
+	}
+
+#endif
+
+	/* look for the magic wait-in-bootloader value in backup register zero */
+
+
+	/* if we aren't expected to wait in the bootloader, try to boot immediately */
+	if (timeout == 0) {
+		/* try to boot immediately */
+		jump_to_app();
+
+		/* if we returned, there is no app; go to the bootloader and stay there */
+		timeout = 0;
+	}
+
+	/* configure the clock for bootloader activity */
+	//clock_init();
 #if INTERFACE_USB
 	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
 #endif
-#endif
+	/* start the interface */
+	cinit(BOARD_INTERFACE_CONFIG, USART);
 }

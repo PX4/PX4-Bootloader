@@ -1085,6 +1085,7 @@ static const uint32_t _key[4] = {0xd4bb30e2U, 0xf9b9df6fU, 0x15da2d49U, 0xb10be9
 //static uint32_t connect_key[4];
 //static const uint32_t public_key[4] = { 0x5f058808U, 0x1adad47dU, 0x73dc1683U, 0x196c3671U};
 //static uint32_t private_key[4] = { 0x3c03e4d1U, 0x856530d8U, 0xe40ecf0bU, 0xbb0b4703U};
+extern void read_uid(uint32_t uid[3]);
 void bootloader_b2(unsigned timeout)
 {
 	bl_type = NONE; // The type of the bootloader, whether loading from USB or USART, will be determined by on what port the bootloader recevies its first valid command.
@@ -1093,15 +1094,18 @@ void bootloader_b2(unsigned timeout)
 	//uint32_t	first_word = 0xffffffff;
 	uint32_t uid[4]={0};
 	uint32_t text[4]={0};
-	volatile uint32_t* _mtext=NULL;
+	//volatile uint32_t* _mtext=NULL;
 	uint8_t led_count=0;
 	
 	//read id
+#if 0
 	_mtext = (volatile uint32_t*)(0x1FFF0000);
 	_mtext += (0x7A10/4);
 	uid[0] = _mtext[0];
 	uid[1] = _mtext[1];
 	uid[2] = _mtext[2];
+#endif
+	read_uid(uid);
 	uid[3] = uid[0]+uid[1]+uid[2];
 	/* (re)start the timer system */
 	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
