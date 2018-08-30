@@ -60,8 +60,7 @@ static const uint32_t reset_h3=(uint32_t)reset_handler_m;
 __attribute__ ((section(".vectors_m")))
 vector_table_t vector_table = {
 	.initial_sp_value = &_stack,
-	//.reset = reset_handler_e1,
-	.reset = reset_handler_m,
+	.reset = reset_handler_e1,
 	.nmi = nmi_handler,
 	.hard_fault = hard_fault_handler,
 
@@ -125,7 +124,7 @@ void __attribute__ ((section(".reset_m"))) reset_handler_m(void)
 	}
 
 }
-#if 0
+
 extern void board_init(void);
 extern void clock_init(void);
 extern void encoding(uint32_t sign[8], volatile uint32_t uid[3]);
@@ -261,6 +260,7 @@ void __attribute__ ((section(".reset_e"))) main_e(void)
 	{
 		code[i] = code[address++]^0x68fe2433U;
 	}
+#if 0
 	// copy code
 	address = (uint32_t)reset_handler_e2;
 	i = (uint32_t)main_e2;
@@ -272,6 +272,7 @@ void __attribute__ ((section(".reset_e"))) main_e(void)
 	{
 		code[i] = src[i];
 	}
+#endif
 	i = 15*1024/4; // 15K, erase code
 	//encoding(passwd, uid);
 	//encoding(&code[i], uid);
@@ -280,7 +281,8 @@ void __attribute__ ((section(".reset_e"))) main_e(void)
 	encoding(&code[i+2], uid);
 	memcpy(&code[i+2+8], &board_info, sizeof(board_info));
 	//code[1] = (uint32_t)(&reset_handler_e)|0x1;
-	code[1] = (uint32_t)reset_h2;
+	//code[1] = (uint32_t)reset_h2;
+	code[1] = (uint32_t)reset_h3;
 	i = 0x3200/4;
 	UserLicense((uint8_t*)&code[i], uid);
 	erase_code();
@@ -353,6 +355,7 @@ void __attribute__ ((section(".reset_e"))) reset_handler_e1(void)
 	}
 
 }
+#if 0
 void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[], const uint8_t encrypt_len)
 {
 	/* Call the application's entry point. */

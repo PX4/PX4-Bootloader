@@ -152,7 +152,7 @@ struct boardinfo board_info = {
 	.systick_mhz	= 168,
 };
 
-static void board_init(void);
+void board_init(void);
 
 #define BOOT_RTC_SIGNATURE          0xb007b007
 #define POWER_DOWN_RTC_SIGNATURE    0xdeaddead // Written by app fw to not re-power on.
@@ -326,8 +326,7 @@ board_test_usart_receiving_break()
 }
 #endif
 
-static void
-board_init(void)
+void board_init(void)
 {
 	/* fix up the max firmware size, we have to read memory to get this */
 	board_info.fw_size = APP_SIZE_MAX;
@@ -454,8 +453,7 @@ board_deinit(void)
   *
   * @param  clock_setup : The clock configuration to set
   */
-static inline void
-clock_init(void)
+void clock_init(void)
 {
 	rcc_clock_setup_hse_3v3(&clock_setup);
 }
@@ -685,7 +683,38 @@ led_toggle(unsigned led)
 #ifndef SCB_CPACR
 # define SCB_CPACR (*((volatile uint32_t *) (((0xE000E000UL) + 0x0D00UL) + 0x088)))
 #endif
+#define  point_base   0x08000000
+#define  point_offset   0x3C00  // 15K
+#define  point_save   8
+#define  point_addr   (point_base+point_offset+point_save)
 
+#define UID0    (0x37cc24eaU)
+#define UID1    (0x4fd83d68U)
+#define UID2    (0xe5345ed9U)
+int erase_flag=0; // 通过该变量检测是否强行跳过了加密校验代码
+void encoding(uint32_t sign[8], volatile uint32_t uid[3])
+{
+		uint32_t order = 0xb10be924; //(uint32_t)(&clock_setup.flash_config);
+    sign[0] = (order&uid[1])|     ((~uid[0])&UID2);
+    sign[1] = (order&uid[0])|     (uid[1]&(~UID2));
+#if 0
+    sign[2] = (uid[0]&UID1)  &     (uid[2]|order);
+		sign[3] = (uid[0]|(~UID2)) ^ (uid[1]+order);
+#else
+    sign[2] = uid[0]^UID1^order;
+		sign[3] = uid[1]^((order+uid[0])|(~UID2));
+		//printf("order0: %08X %08X %08X\r\n", (unsigned int)order, (unsigned int)uid[0], (unsigned int)uid[1]);
+		order = order + (uid[0]&uid[1]);
+		//printf("order1: %08X\r\n", (unsigned int)order);
+		order = ((order<<12)&0xFFFFF000) | ((order>>12)&0x000FFFFF);
+		//printf("order2: %08X\r\n", (unsigned int)order);
+#endif
+		sign[4] = (sign[0]^order)|     (uid[1]^(~sign[2]));
+		sign[5] = (sign[0]|UID2) &     (sign[2]+order);  // 
+		sign[6] = (~sign[0]|UID0)&     (sign[2]+order);   // 
+		sign[7] = (sign[1]|UID1) &     (~(sign[2]+order)); // 
+		erase_flag = 1;
+}
 int
 main(void)
 {

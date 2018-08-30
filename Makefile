@@ -56,7 +56,6 @@ export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
 	cube_f7_bl
 
 TARGETS	= \
-	crazyflie_bl \
 	px4fmu_bl \
 	px4fmuv2_bl \
 	px4fmuv4_bl \

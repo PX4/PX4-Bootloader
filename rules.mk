@@ -23,7 +23,7 @@ $(BUILD_DIR)/%.o:	%.c
 
 # Make the build directory
 $(BUILD_DIR):
-	mkdir $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)
 
 $(ELF):		$(OBJS) $(MAKEFILE_LIST)
 	$(CC) -o $@ $(OBJS) $(FLAGS)
