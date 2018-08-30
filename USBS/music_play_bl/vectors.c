@@ -309,39 +309,33 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	scb_reset_system(); 
 	
 }
-
 void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[], const uint8_t encrypt_len)
 {
-	/*uint32_t	address = 0;
+	uint32_t	address = 0;
 	const uint32_t len = sizeof(code_vectors)/4; // 16K
 	uint32_t i=0;
 	const uint32_t* src_ver= (const uint32_t*)0x08000000;
 	const uint32_t* src_enc= (const uint32_t*)0x08003800;
 	
-	volatile uint32_t* _mtext=NULL;
+	//volatile uint32_t* _mtext=NULL;
 	uint32_t uid[3]={0};
 	
 	// copy code
-	for(i=0; i<len; i++)
+	for(i=0; i<(sizeof(code_vectors)/4); i++)
 	{
 		code_vectors[i] = src_ver[i];
 	}
+	code_vectors[1] = (uint32_t)reset_handler_rb3;
+	
 	for(i=0; i<len; i++)
 	{
 		code_encryption[i] = src_enc[i];
 	}
 	//check
-	_mtext = (volatile uint32_t*)(0x1FFF0000);
-	_mtext += (0x7A10/4);
-	uid[0] = _mtext[0];
-	uid[1] = _mtext[1];
-	uid[2] = _mtext[2];
+	read_uid(uid);  // 读取产品 ID号
 	// erase code
-	address = (uint32_t)reset_handler_rb2;
-	//i = (uint32_t)main_e2;
-	//if(i>address) i=address;
-	i = (i&0x0000FFFC)-0x3800;
-	i = (i)>>2 ; // 擦除 B2阶段代码
+	i = (uint32_t)&reset_handler_rb2;
+	i = ((i&0x0000FFFC)-enc_offsetB)>>2 ;  // 擦除 B2阶段代码
 	address = (uid[0]+uid[1]+uid[2])%0x400+0x400;
 	for(; i<len; i++)
 	{
@@ -351,9 +345,9 @@ void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[],
 	code_encryption[i+0]=0x000004FF;
 	code_encryption[i+1]=0x000004FF;
 	memcpy(&code_encryption[i+2+8+64], encrypt, encrypt_len); // 保存加密信息
-	code_vectors[1] = (uint32_t)reset_handler_rb3;
+	
 	erase_code(code_vectors, code_encryption, CODE_SIZE/4); // 写入操作,擦除原有代码
-	*/
+	
 	// 执行系统复位
 	scb_reset_system(); 
 }
