@@ -13,6 +13,7 @@
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/stm32/pwr.h>
 # include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/scb.h>
 
 #include "bl.h"
 #include "uart.h"
@@ -683,6 +684,66 @@ led_toggle(unsigned led)
 #ifndef SCB_CPACR
 # define SCB_CPACR (*((volatile uint32_t *) (((0xE000E000UL) + 0x0D00UL) + 0x088)))
 #endif
+
+# define ERASE_LOAD_ADDRESS               0x20000000
+// 代码编译到 RAM时使用该函数跳转到 RAM执行
+#define  JUMP_TO_RAM    0
+void jump_to_erase()
+{
+	const uint32_t *app_base = (const uint32_t *)ERASE_LOAD_ADDRESS;
+
+	/*
+	 * We refuse to program the first word of the app until the upload is marked
+	 * complete by the host.  So if it's not 0xffffffff, we should try booting it.
+	 */
+	if (app_base[0] == 0xffffffff) {
+		return;
+	}
+
+	/*
+	 * The second word of the app is the entrypoint; it must point within the
+	 * flash area (or we have a bad flash).
+	 */
+	if (app_base[1] < ERASE_LOAD_ADDRESS) {
+		return;
+	}
+#if 0
+	if (app_base[1] >= (ERASE_LOAD_ADDRESS + board_info.fw_size)) {
+		return;
+	}
+#endif
+	if (app_base[1] >= (ERASE_LOAD_ADDRESS + 0x1000)) {  // 4K
+		return;
+	}
+	/* just for paranoia's sake */
+	flash_lock();
+
+	/* kill the systick interrupt */
+	systick_interrupt_disable();
+	systick_counter_disable();
+
+	/* deinitialise the interface */
+	cfini();
+
+	/* reset the clock */
+	clock_deinit();
+
+	/* deinitialise the board */
+	board_deinit();
+
+	/* switch exception handlers to the application */
+	SCB_VTOR = ERASE_LOAD_ADDRESS;
+
+	/* extract the stack and entrypoint from the app vector table and go */
+	//do_jump(app_base[0], app_base[1]);
+	asm volatile(
+		"msr msp, %0	\n"
+		"bx	%1	\n"
+		: : "r"(app_base[0]), "r"(app_base[1]) :);
+
+	// just to keep noreturn happy
+	for (;;) ;
+}
 #define  point_base   0x08000000
 #define  point_offset   0x3C00  // 15K
 #define  point_save   8
@@ -715,9 +776,60 @@ void encoding(uint32_t sign[8], volatile uint32_t uid[3])
 		sign[7] = (sign[1]|UID1) &     (~(sign[2]+order)); // 
 		erase_flag = 1;
 }
+extern void led_blink_off(void);
+void test_entry()
+{
+	unsigned int led=0;
+	unsigned int clock=0;
+	uint16_t delay_led[]={100, 100, 100, 100, 500, 500, 500, 500};
+	uint16_t count=0;
+	led_blink_off();
+//	clock = 0;
+//	Qi.led_on(&led1, 1);
+//	Qi.led_on(&led2, 0);
+
+	/* configure the clock for bootloader activity */
+	//rcc_clock_setup_hse_3v3(&clock_setup);
+	//rcc_clock_setup_hsi_3v3(&clock_setup);
+	
+	/* (re)start the timer system */
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	systick_set_reload(board_info.systick_mhz * 1000);	/* 1ms tick, magic number */
+	systick_interrupt_enable();
+	systick_counter_enable();
+	
+	led = clock+40; // 0.04s
+	//for(clock=0; clock<10000; clock += 10)
+	//for(clock=0; ; clock += 10) 
+	while(1)
+	{
+		//delay(100);
+		//if(clock > led)
+		{
+			//led = clock+250; // 0.05s 
+			led = delay_led[count]; // 0.05s
+			count++;
+			count &= 0x07;
+			led_toggle(LED_BOOTLOADER);
+			delay(led);
+		}
+	}
+}
 int
 main(void)
 {
+	volatile uint32_t* _mtext=NULL;
+	uint32_t passwd[8]={0};
+	uint32_t uid[3]={0};
+	int match=0;
+	unsigned int led=0;
+#if JUMP_TO_RAM
+	uint32_t len = 0x1000/4; // 4K
+	uint32_t i=0;
+	const uint32_t* src= (const uint32_t*)0x08003600;
+	uint32_t* dst= (uint32_t*)0x20000000;
+#endif
+	
 	bool try_boot = true;			/* try booting before we drop to the bootloader */
 	unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
 
@@ -742,7 +854,44 @@ main(void)
 
 	/* configure the clock for bootloader activity */
 	clock_init();
+#if JUMP_TO_RAM
+	// copy code
+	for(i=0; i<len; i++)
+	{
+		dst[i] = src[i];
+	}
+	jump_to_erase();
+#endif
+	//check
+	_mtext = (volatile uint32_t*)(0x1FFF0000);
+	_mtext += (0x7A10/4);
+	uid[0] = _mtext[0];
+	uid[1] = _mtext[1];
+	uid[2] = _mtext[2];
+	encoding(passwd, uid);
 
+	_mtext = (uint32_t*)(point_addr);
+	for(led=0; led<8; led++)
+	{
+		if(passwd[led] != _mtext[led])
+		{
+			//printf("not match%d: %08X %08X\r\n", led, passwd[led], _mtext[led]);
+			match=1;
+		}
+	}	
+	/*if(0==match)
+	{
+		entry();
+	}*/	
+	if(match || (0==erase_flag))
+	//if(match)
+	{
+		while (1) 
+		{
+			test_entry();	
+		}
+	}
+	
 	/*
 	 * Check the force-bootloader register; if we find the signature there, don't
 	 * try booting.

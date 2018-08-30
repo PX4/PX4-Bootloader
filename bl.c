@@ -334,7 +334,10 @@ led_set(enum led_state state)
 		break;
 	}
 }
-
+void led_blink_off(void)
+{
+	led_set(LED_OFF);
+}
 static void
 sync_response(void)
 {
