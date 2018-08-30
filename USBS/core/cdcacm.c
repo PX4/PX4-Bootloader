@@ -344,6 +344,8 @@ usb_cinit(void)
 	}
 
 	nvic_enable_irq(NVIC_OTG_FS_IRQ);
+#elif defined(STM32F1)
+	nvic_enable_irq(NVIC_OTG_FS_IRQ);
 #endif
 }
 
@@ -351,6 +353,8 @@ void
 usb_cfini(void)
 {
 #if defined(STM32F4)
+	nvic_disable_irq(NVIC_OTG_FS_IRQ);
+#elif defined(STM32F1)
 	nvic_disable_irq(NVIC_OTG_FS_IRQ);
 #endif
 
