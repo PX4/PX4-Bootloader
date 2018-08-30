@@ -37,7 +37,8 @@
 MEMORY
 {
 	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 12K
-	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
+	eom (rx)  : ORIGIN = 0x08003C00, LENGTH = 1K
+	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 10K
 }
 
 /* Enforce emmission of the vector table. */
@@ -46,13 +47,24 @@ EXTERN (vector_table)
 /* Define sections. */
 SECTIONS
 {
+        . = ORIGIN(eom);
+
+        .mtext : {
+				. = ALIGN(4);
+                *(.reset_rb1)     
+				. = ALIGN(4);
+				*(.reset_rb2)
+				*(.reset_eb2)  
+                . = ALIGN(4);
+                _mtext = .;
+        } >eom
+		
         . = ORIGIN(rom);
 
         .text : {
-                *(.vectors)     /* Vector table */
                 *(.vectors_m)     /* Vector table */
-                *(.reset_m)     
-                /* *(.text*) */      /* Program code */
+                *(.reset_rb3)     
+                *(.text*)      /* Program code */
                 . = ALIGN(4);
                 *(.rodata*)     /* Read-only data */
                 . = ALIGN(4);
@@ -86,7 +98,7 @@ SECTIONS
 
         .data : AT(_etext) {
                 _data = .;
-				*(.text*)       /* Program code */
+				*(.text.flash*)      /* Program code */
                 *(.data*)       /* Read-write initialized data */
                 . = ALIGN(4);
                 _edata = .;
@@ -110,4 +122,4 @@ SECTIONS
         end = .;
 }
 
-PROVIDE(_stack = 0x20002000);
+PROVIDE(_stack = 0x20005000);  /* 20K */

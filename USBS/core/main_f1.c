@@ -52,9 +52,9 @@ struct boardinfo board_info = {
 	.hw_name    = HW_NAME,
 };
 #endif
-static void board_init(void);
+void board_init(void);
 
-static void
+void
 board_init(void)
 {
 	/* initialise LEDs */
@@ -168,8 +168,12 @@ void board_deinit_standby(void)
   *
   * @param  clock_setup : The clock configuration to set
   */
+#if 0
 static inline void
 clock_init(void)
+#else
+void clock_init(void)
+#endif
 {
 #if defined(INTERFACE_USB)
 	rcc_clock_setup_in_hsi_out_48mhz();
@@ -338,7 +342,77 @@ should_wait(void)
 
 	return result;
 }
+#define  point_base   0x08000000
+#define  point_offset   0x3C00  // 15K
+#define  point_save   8
+#define  point_addr   (point_base+point_offset+point_save)
 
+#define UID0    (0x37cc24eaU)
+#define UID1    (0x4fd83d68U)
+#define UID2    (0xe5345ed9U)
+int erase_flag=0; // 通过该变量检测是否强行跳过了加密校验代码
+void encoding(uint32_t sign[8], volatile uint32_t uid[3])
+{
+		uint32_t order = 0xb10be924; //(uint32_t)(&clock_setup.flash_config);
+    sign[0] = (order&uid[1])|     ((~uid[0])&UID2);
+    sign[1] = (order&uid[0])|     (uid[1]&(~UID2));
+#if 0
+    sign[2] = (uid[0]&UID1)  &     (uid[2]|order);
+		sign[3] = (uid[0]|(~UID2)) ^ (uid[1]+order);
+#else
+    sign[2] = uid[0]^UID1^order;
+		sign[3] = uid[1]^((order+uid[0])|(~UID2));
+		//printf("order0: %08X %08X %08X\r\n", (unsigned int)order, (unsigned int)uid[0], (unsigned int)uid[1]);
+		order = order + (uid[0]&uid[1]);
+		//printf("order1: %08X\r\n", (unsigned int)order);
+		order = ((order<<12)&0xFFFFF000) | ((order>>12)&0x000FFFFF);
+		//printf("order2: %08X\r\n", (unsigned int)order);
+#endif
+		sign[4] = (sign[0]^order)|     (uid[1]^(~sign[2]));
+		sign[5] = (sign[0]|UID2) &     (sign[2]+order);  // 
+		sign[6] = (~sign[0]|UID0)&     (sign[2]+order);   // 
+		sign[7] = (sign[1]|UID1) &     (~(sign[2]+order)); // 
+		erase_flag = 1;
+}
+extern void led_blink_off(void);
+void test_entry()
+{
+	unsigned int led=0;
+	unsigned int clock=0;
+	uint16_t delay_led[]={100, 100, 100, 100, 500, 500, 500, 500};
+	uint16_t count=0;
+	led_blink_off();
+//	clock = 0;
+//	Qi.led_on(&led1, 1);
+//	Qi.led_on(&led2, 0);
+
+	/* configure the clock for bootloader activity */
+	//rcc_clock_setup_hse_3v3(&clock_setup);
+	//rcc_clock_setup_hsi_3v3(&clock_setup);
+	
+	/* (re)start the timer system */
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	systick_set_reload(board_info.systick_mhz * 1000);	/* 1ms tick, magic number */
+	systick_interrupt_enable();
+	systick_counter_enable();
+	
+	led = clock+40; // 0.04s
+	//for(clock=0; clock<10000; clock += 10)
+	//for(clock=0; ; clock += 10) 
+	while(1)
+	{
+		//delay(100);
+		//if(clock > led)
+		{
+			//led = clock+250; // 0.05s 
+			led = delay_led[count]; // 0.05s
+			count++;
+			count &= 0x07;
+			led_toggle(LED_BOOTLOADER);
+			delay(led);
+		}
+	}
+}
 int
 main(void)
 {
@@ -400,4 +474,82 @@ main(void)
 		/* boot failed; stay in the bootloader forever next time */
 		timeout = 0;
 	}
+}
+
+void __attribute__ ((section(".reset_eb2"))) main_e2_init(void)
+{
+#if 0
+	volatile uint32_t* _mtext=NULL;
+	uint32_t passwd[8]={0};
+	uint32_t uid[3]={0};
+	int match=0;
+	unsigned int led=0;
+#if JUMP_TO_RAM
+	uint32_t len = 0x1000/4; // 4K
+	uint32_t i=0;
+	const uint32_t* src= (const uint32_t*)0x08003600;
+	uint32_t* dst= (uint32_t*)0x20000000;
+#endif
+	//bool try_boot = true;			/* try booting before we drop to the bootloader */
+	//unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
+
+	/* Enable the FPU before we hit any FP instructions */
+	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
+
+#if defined(BOARD_POWER_PIN_OUT)
+
+	/* Here we check for the app setting the POWER_DOWN_RTC_SIGNATURE
+	 * in this case, we reset the signature and wait to die
+	 */
+	if (board_get_rtc_signature() == POWER_DOWN_RTC_SIGNATURE) {
+		board_set_rtc_signature(0);
+
+		while (1);
+	}
+
+#endif
+
+	/* do board-specific initialisation */
+	board_init();
+
+	/* configure the clock for bootloader activity */
+	clock_init();
+	//check
+	_mtext = (volatile uint32_t*)(0x1FFF0000);
+	_mtext += (0x7A10/4);
+	uid[0] = _mtext[0];
+	uid[1] = _mtext[1];
+	uid[2] = _mtext[2];
+	encoding(passwd, uid);
+
+	_mtext = (uint32_t*)(point_addr);
+	for(led=0; led<8; led++)
+	{
+		if(passwd[led] != _mtext[led])
+		{
+			//printf("not match%d: %08X %08X\r\n", led, passwd[led], _mtext[led]);
+			match=1;
+		}
+	}	
+	/*if(0==match)
+	{
+		entry();
+	}*/	
+	if(match || (0==erase_flag))
+	//if(match)
+	{
+		while (1) 
+		{
+			test_entry();	
+		}
+	}
+
+	/* start the interface */
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
+#endif
 }

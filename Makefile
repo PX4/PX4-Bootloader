@@ -33,7 +33,7 @@ export FLAGS		 = -std=gnu99 \
 			   -Werror
 
 export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
-export COMMON_SRCS_USBS	 = $(USBS_SRC)/bl.c $(USBS_SRC)/cdcacm.c  $(USBS_SRC)/usart.c $(USBS_SRC)/safe.c
+export COMMON_SRCS_USBS	 = $(USBS_SRC)/bl.c $(USBS_SRC)/cdcacm.c  $(USBS_SRC)/usart.c $(USBS_SRC)/safe.c $(USBS_SRC)/tea.c
 export USBS_BL_DIR=$(shell pwd)
 px4_dir=$(shell pwd)
 
@@ -179,7 +179,7 @@ music_play_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	@cp -a USBS/$@ $(USBS_SRC)
 	@cp -a USBS/core/* $(USBS_SRC)/
 #	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
-	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f1 TARGET_HW=MUSIC_PLAY LINKER_FILE=$(USBS_SRC)/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	${MAKE} ${MKFLAGS} -f  USBS/$@/Makefile.f1 TARGET_HW=MUSIC_PLAY LINKER_FILE=USBS/$@/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	@cp build/$@/$@.bin build/bl/$@_08000000.bin
 	@rm -rf $(USBS_SRC)
 

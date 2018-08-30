@@ -11,7 +11,7 @@ JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
 PX4_BOOTLOADER_DELAY	?= 3000
 SRCS_DIR     = $(USBS_SRC_DIR)
 #SRCS		 = $(COMMON_SRCS) main_f1.c
-SRCS		 = $(COMMON_SRCS_USBS) $(SRCS_DIR)/main_f1.c
+SRCS		 = $(COMMON_SRCS_USBS) $(SRCS_DIR)/main_f1.c $(SRCS_DIR)/vectors.c
 
 FLAGS		+= -mthumb -mcpu=cortex-m3\
        -DTARGET_HW_$(TARGET_HW) \
@@ -20,6 +20,7 @@ FLAGS		+= -mthumb -mcpu=cortex-m3\
 		   -L$(LIBOPENCM3)/lib \
 		   -lopencm3_stm32f1
 
+FLAGS		+= -I$(USBS_BL_DIR)/$(SRCS_DIR)
 #
 # General rules for making dependency and object files
 # This is where the compiler is called
