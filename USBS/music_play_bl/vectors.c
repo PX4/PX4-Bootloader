@@ -1,3 +1,13 @@
+/******************** (C) COPYRIGHT 2018 merafour ********************
+* Author             : 冷月追风@merafour.blog.163.com
+* Version            : V1.0.0
+* Date               : 30/8/2018
+* Description        : vectors.
+********************************************************************************
+* merafour.blog.163.com
+* merafour@163.com
+* github.com/Merafour
+*******************************************************************************/
 /*
  * This file is part of the libopencm3 project.
  *
@@ -283,17 +293,18 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 #endif
 uint32_t code_vectors[CODE_SIZE/4];    // 2K  , 中断向量表
 uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
+extern void read_uid(uint32_t uid[3]);
 void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 {
-	uint32_t	address = board_info.fw_size;
+	uint32_t	address = 0;
 	const uint32_t len = sizeof(code_vectors)/4; // 16K
 	uint32_t i=0;
 	const uint32_t* src_ver= (const uint32_t*)0x08000000;
 	const uint32_t* src_enc= (const uint32_t*)0x08003800;
 	
-	volatile uint32_t* _mtext=NULL;
-	uint32_t uid[3]={0};
-	main();
+	//volatile uint32_t* _mtext=NULL;
+	uint32_t uid[4]={0};
+	
 	/* Enable the FPU before we hit any FP instructions */
 	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
 
@@ -307,19 +318,17 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	{
 		code_vectors[i] = src_ver[i];
 	}
+	
 	for(i=0; i<len; i++)
 	{
 		code_encryption[i] = src_enc[i];
 	}
 	//check
-	_mtext = (volatile uint32_t*)(0x1FFF0000);
-	_mtext += (0x7A10/4);
-	uid[0] = _mtext[0];
-	uid[1] = _mtext[1];
-	uid[2] = _mtext[2];
+	read_uid(uid);  // 读取产品 ID号
 	// erase code
 	i = 0; // [0x3800-0x3C00] 没有代码
 	address = (uid[0]+uid[1]+uid[2])%0x400+0x400;
+	
 	for(; i<len; i++)
 	{
 		code_encryption[i] = src_ver[address++]^0x68fe2433U; // 覆盖原有代码
@@ -343,7 +352,7 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	//code[1] = (uint32_t)reset_h2;
 	//code_vectors[1] = (uint32_t)reset_handler_rb2; // 更改中断向量,下一次上电不再执行这部分代码
 	code_vectors[1] = (uint32_t)reset_handler_rb3;
-	main();
+	//main();
 	erase_code(code_vectors, code_encryption, CODE_SIZE/4); // 写入操作,擦除原有代码
 
 	// 执行系统复位

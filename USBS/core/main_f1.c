@@ -413,6 +413,18 @@ void test_entry()
 		}
 	}
 }
+
+void read_uid(uint32_t uid[3])
+{
+	volatile uint32_t* _mtext=NULL;
+	// 0x1FFF F7E8, 产品唯一身份标识寄存器(96位)
+	_mtext = (volatile uint32_t*)(0x1FFF0000);
+	_mtext += (0xF7E8/4);
+	uid[0] = _mtext[0];
+	uid[1] = _mtext[1];
+	uid[2] = _mtext[2];
+}
+
 int
 main(void)
 {
