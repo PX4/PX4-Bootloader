@@ -12,12 +12,15 @@
 #ifndef HW_REVISION_H_
 #define HW_REVISION_H_
 
-#define _BL_REVR							0x00010000
-#define _BL_REVX							0x00000400
-#define _BL_REVY							0x00000004
+#define _BL_REVR							0x00020000
+#define _BL_REVX							0x00000000
+#define _BL_REVY							0x00000001
 
 #define HW_BOARD_DEFAULT   0x01000000
 #define HW_NAME_DEFAULT    "board_default"
+
+#define HW_BOARD_MUSIC_PLAY   0x02000000
+#define HW_NAME_MUSIC_PLAY    "MusicPlay"
 
 
 #endif //HW_REVISION_H_

@@ -29,7 +29,7 @@
 #if INTERFACE_USB
 # define BOARD_INTERFACE_CONFIG_USB  	NULL
 #endif
-
+#if 0
 /* board definition */
 struct boardinfo board_info = {
 	.board_type	= BOARD_TYPE,
@@ -38,7 +38,20 @@ struct boardinfo board_info = {
 
 	.systick_mhz	= OSC_FREQ,
 };
-
+#else
+struct boardinfo board_info = {
+	.board_type	= BOARD_TYPE,
+	.board_rev	= 0,
+	.fw_size	= APP_SIZE_MAX,
+#if defined(INTERFACE_USB)
+	.systick_mhz	= 48,
+#else
+	.systick_mhz	= OSC_FREQ,
+#endif
+	.hw_bl_rev     = (HW_BOARD_REV & 0xFF000000) | (BL_REVR & 0x00FF0000) | (BL_REVX & 0x0000FF00) | (BL_REVY & 0x000000FF),
+	.hw_name    = HW_NAME,
+};
+#endif
 static void board_init(void);
 
 static void

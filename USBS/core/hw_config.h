@@ -553,6 +553,12 @@
 # define USBPRODUCTID                   0x5740
 # define USBVENDORID                    0x0483
 
+#define HW_BOARD_REV					HW_BOARD_MUSIC_PLAY
+#define BL_REVR							_BL_REVR
+#define BL_REVX							_BL_REVX
+#define BL_REVY							_BL_REVY
+#define HW_NAME							HW_NAME_MUSIC_PLAY
+
 # define OSC_FREQ                       24
 
 # define BOARD_PIN_LED_ACTIVITY         GPIO13
