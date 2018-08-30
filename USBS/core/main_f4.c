@@ -82,6 +82,12 @@ static struct {
 #define REVID_MASK	0xFFFF0000
 #define DEVID_MASK	0xFFF
 
+#ifndef BOARD_PIN_VBUS
+# define BOARD_PIN_VBUS                 GPIO9
+# define BOARD_PORT_VBUS                GPIOA
+# define BOARD_CLOCK_VBUS               RCC_AHB1ENR_IOPAEN
+#endif
+
 /* magic numbers from reference manual */
 
 typedef enum mcu_rev_e {
@@ -371,6 +377,8 @@ void board_init(void)
 
 	/* enable Port A GPIO9 to sample VBUS */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+	/* enable GPIO9 with a pulldown to sniff VBUS */
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
 #endif
 
 #if INTERFACE_USART
@@ -467,6 +475,41 @@ board_deinit(void)
 
 	/* disable the AHB peripheral clocks */
 	RCC_AHB1ENR = 0x00100000; // XXX Magic reset number from STM32F4x reference manual
+}
+void
+board_deinit_standby(void)
+{
+#if INTERFACE_USB
+	/* deinitialise GPIO9 (used to sniff VBUS) */
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9);
+#endif
+#if INTERFACE_USART
+	/* deinitialise GPIO pins for USART transmit. */
+	gpio_mode_setup(BOARD_PORT_USART_TX, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_TX);
+	gpio_mode_setup(BOARD_PORT_USART_RX, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_RX);
+
+	/* disable USART peripheral clock */
+	rcc_peripheral_disable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
+#endif
+
+#if defined(BOARD_FORCE_BL_PIN_IN) && defined(BOARD_FORCE_BL_PIN_OUT)
+	/* deinitialise the force BL pins */
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN_OUT);
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN_IN);
+#endif
+
+#if defined(BOARD_FORCE_BL_PIN)
+	/* deinitialise the force BL pin */
+	gpio_mode_setup(BOARD_FORCE_BL_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_FORCE_BL_PIN);
+#endif
+
+#if defined(BOARD_POWER_PIN_OUT) && defined(BOARD_POWER_PIN_RELEASE)
+	/* deinitialize the POWER pin - with the assumption the hold up time of
+	 * the voltage being bleed off by an inupt pin impedance will allow
+	 * enough time to boot the app
+	 */
+	gpio_mode_setup(BOARD_POWER_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_POWER_PIN);
+#endif
 }
 
 /**
@@ -1006,6 +1049,14 @@ main(void)
 	}
 
 #endif
+	/* start the interface */
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
+	bootloader(1500);
 
 	/* Try to boot the app if we think we should just go straight there */
 	if (try_boot) {
@@ -1025,7 +1076,7 @@ main(void)
 		timeout = 0;
 	}
 
-
+#if 0
 	/* start the interface */
 #if INTERFACE_USART
 	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
@@ -1033,7 +1084,7 @@ main(void)
 #if INTERFACE_USB
 	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
 #endif
-
+#endif
 
 #if 0
 	// MCO1/02

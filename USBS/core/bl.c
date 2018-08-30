@@ -1001,6 +1001,32 @@ bootloader(unsigned timeout)
 			// quiesce and jump to the app
 			return;
 
+		case PROTO_STANDBY:
+			if (!wait_for_eoc(1000)) {
+				goto cmd_bad;
+			}
+			// program the deferred first word
+			if (first_word != 0xffffffff) {
+				flash_func_write_word(0, first_word);
+
+				if (flash_func_read_word(0) != first_word) {
+					goto cmd_fail;
+				}
+
+				// revert in case the flash was bad...
+				first_word = 0xffffffff;
+			}
+
+			// send a sync and wait for it to be collected
+			sync_response();
+			led_set(LED_OFF);
+			extern void board_deinit_standby(void);
+			board_deinit_standby();
+			while(1)
+			{
+				led_toggle(LED_BOOTLOADER);
+				delay(500);
+			}
 		case PROTO_DEBUG:
 			// XXX reserved for ad-hoc debugging as required
 			break;
