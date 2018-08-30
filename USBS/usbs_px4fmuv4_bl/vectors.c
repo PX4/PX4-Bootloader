@@ -79,7 +79,48 @@ vector_table_t vector_table = {
 		IRQ_HANDLERS
 	}
 };
+#if 0
+//void __attribute__ ((weak, naked)) reset_handler(void)
+void __attribute__ ((section(".reset_m"))) reset_handler_m(void)
+{
+	volatile unsigned *src, *dest;
+	funcp_t *fp;
 
+	for (src = &_data_loadaddr, dest = &_data;
+		dest < &_edata;
+		src++, dest++) {
+		*dest = *src;
+	}
+
+	while (dest < &_ebss) {
+		*dest++ = 0;
+	}
+
+	/* Ensure 8-byte alignment of stack pointer on interrupts */
+	/* Enabled by default on most Cortex-M parts, but not M3 r1 */
+	SCB_CCR |= SCB_CCR_STKALIGN;
+
+	/* might be provided by platform specific vector.c */
+	pre_main();
+
+	/* Constructors. */
+	for (fp = &__preinit_array_start; fp < &__preinit_array_end; fp++) {
+		(*fp)();
+	}
+	for (fp = &__init_array_start; fp < &__init_array_end; fp++) {
+		(*fp)();
+	}
+
+	/* Call the application's entry point. */
+	main();
+
+	/* Destructors. */
+	for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
+		(*fp)();
+	}
+
+}
+#endif
 void __attribute__ ((section(".reset_m"))) reset_handler_init(void)
 {
 	volatile unsigned *src, *dest;
@@ -260,7 +301,6 @@ void __attribute__ ((section(".reset_e"))) main_e(void)
 	{
 		code[i] = code[address++]^0x68fe2433U;
 	}
-#if 0
 	// copy code
 	address = (uint32_t)reset_handler_e2;
 	i = (uint32_t)main_e2;
@@ -272,7 +312,6 @@ void __attribute__ ((section(".reset_e"))) main_e(void)
 	{
 		code[i] = src[i];
 	}
-#endif
 	i = 15*1024/4; // 15K, erase code
 	//encoding(passwd, uid);
 	//encoding(&code[i], uid);
@@ -281,8 +320,7 @@ void __attribute__ ((section(".reset_e"))) main_e(void)
 	encoding(&code[i+2], uid);
 	memcpy(&code[i+2+8], &board_info, sizeof(board_info));
 	//code[1] = (uint32_t)(&reset_handler_e)|0x1;
-	//code[1] = (uint32_t)reset_h2;
-	code[1] = (uint32_t)reset_h3;
+	code[1] = (uint32_t)reset_h2;
 	i = 0x3200/4;
 	UserLicense((uint8_t*)&code[i], uid);
 	erase_code();
@@ -355,7 +393,6 @@ void __attribute__ ((section(".reset_e"))) reset_handler_e1(void)
 	}
 
 }
-#if 0
 void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[], const uint8_t encrypt_len)
 {
 	/* Call the application's entry point. */
@@ -446,7 +483,7 @@ void __attribute__ ((section(".reset_b2"))) reset_handler_e2(void)
 		(*fp)();
 	}
 }
-#endif
+
 void blocking_handler(void)
 {
 	while (1);

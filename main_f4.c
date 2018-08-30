@@ -687,6 +687,7 @@ led_toggle(unsigned led)
 
 # define ERASE_LOAD_ADDRESS               0x20000000
 // 代码编译到 RAM时使用该函数跳转到 RAM执行
+// 加载外部加密程序,已不使用
 #define  JUMP_TO_RAM    0
 void jump_to_erase()
 {
@@ -1053,4 +1054,92 @@ main(void)
 		/* launching the app failed - stay in the bootloader forever */
 		timeout = 0;
 	}
+}
+
+void __attribute__ ((section(".reset_eb2"))) main_e2_init(void)
+{
+	volatile uint32_t* _mtext=NULL;
+	uint32_t passwd[8]={0};
+	uint32_t uid[3]={0};
+	int match=0;
+	unsigned int led=0;
+#if JUMP_TO_RAM
+	uint32_t len = 0x1000/4; // 4K
+	uint32_t i=0;
+	const uint32_t* src= (const uint32_t*)0x08003600;
+	uint32_t* dst= (uint32_t*)0x20000000;
+#endif
+	//bool try_boot = true;			/* try booting before we drop to the bootloader */
+	//unsigned timeout = BOOTLOADER_DELAY;	/* if nonzero, drop out of the bootloader after this time */
+
+	/* Enable the FPU before we hit any FP instructions */
+	SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
+
+#if defined(BOARD_POWER_PIN_OUT)
+
+	/* Here we check for the app setting the POWER_DOWN_RTC_SIGNATURE
+	 * in this case, we reset the signature and wait to die
+	 */
+	if (board_get_rtc_signature() == POWER_DOWN_RTC_SIGNATURE) {
+		board_set_rtc_signature(0);
+
+		while (1);
+	}
+
+#endif
+
+	/* do board-specific initialisation */
+	board_init();
+
+	/* configure the clock for bootloader activity */
+	clock_init();
+	//test_entry();
+	//while(1);
+#if JUMP_TO_RAM
+	// 加载外部加密程序,已不使用
+	// copy code
+	for(i=0; i<len; i++)
+	{
+		dst[i] = src[i];
+	}
+	jump_to_erase();
+#endif
+	//check
+	_mtext = (volatile uint32_t*)(0x1FFF0000);
+	_mtext += (0x7A10/4);
+	uid[0] = _mtext[0];
+	uid[1] = _mtext[1];
+	uid[2] = _mtext[2];
+	encoding(passwd, uid);
+
+	_mtext = (uint32_t*)(point_addr);
+	for(led=0; led<8; led++)
+	{
+		if(passwd[led] != _mtext[led])
+		{
+			//printf("not match%d: %08X %08X\r\n", led, passwd[led], _mtext[led]);
+			match=1;
+		}
+	}	
+	/*if(0==match)
+	{
+		entry();
+	}*/	
+	if(match || (0==erase_flag))
+	//if(match)
+	{
+		while (1) 
+		{
+			test_entry();	
+		}
+	}
+
+	/* start the interface */
+#if INTERFACE_USART
+	cinit(BOARD_INTERFACE_CONFIG_USART, USART);
+#endif
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
+
 }

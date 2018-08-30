@@ -42,6 +42,7 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
 
 # include <libopencm3/stm32/rcc.h>
 # include <libopencm3/stm32/gpio.h>
@@ -53,6 +54,7 @@
 #include "bl.h"
 #include "cdcacm.h"
 #include "uart.h"
+#include "USBS/core/tea.h"
 
 // bootloader flash update protocol.
 //
@@ -103,6 +105,14 @@
 #define PROTO_GET_CHIP_DES			0x2e    // read chip version In ASCII
 #define PROTO_BOOT					0x30    // boot the application
 #define PROTO_DEBUG					0x31    // emit debug information - format not defined
+#define PROTO_STANDBY				0x32    // 
+#define PROTO_GET_ID				0x33    // 
+#define PROTO_ENCRYPT				0x34    // encryption
+#define PROTO_B2_SYNC				0x35    // NOP for re-establishing sync
+#define PROTO_GET_ID_T				0x36    // 加密通信
+#define PROTO_ENCRYPT_T				0x37    // 加密通信
+#define PROTO_GET_KEY				0x38    // 交换密钥
+#define PROTO_GET_ID_TD				0x36    // 动态密钥
 
 #define PROTO_PROG_MULTI_MAX    64	// maximum PROG_MULTI size
 #define PROTO_READ_MULTI_MAX    255	// size of the size field
@@ -937,3 +947,307 @@ bad_silicon:
 #endif
 	}
 }
+
+extern void encrypt_b2(const uint8_t encrypt[], const uint8_t encrypt_len);
+static const uint32_t _key[4] = {0xd4bb30e2U, 0xf9b9df6fU, 0x15da2d49U, 0xb10be924U}; // 密钥, 128 bit
+//static uint32_t connect_key[4];
+//static const uint32_t public_key[4] = { 0x5f058808U, 0x1adad47dU, 0x73dc1683U, 0x196c3671U};
+//static uint32_t private_key[4] = { 0x3c03e4d1U, 0x856530d8U, 0xe40ecf0bU, 0xbb0b4703U};
+void bootloader_b2(unsigned timeout)
+{
+	bl_type = NONE; // The type of the bootloader, whether loading from USB or USART, will be determined by on what port the bootloader recevies its first valid command.
+
+	//uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
+	//uint32_t	first_word = 0xffffffff;
+	uint32_t uid[4]={0};
+	uint32_t text[4]={0};
+	volatile uint32_t* _mtext=NULL;
+	uint8_t led_count=0;
+	
+	//read id
+	_mtext = (volatile uint32_t*)(0x1FFF0000);
+	_mtext += (0x7A10/4);
+	uid[0] = _mtext[0];
+	uid[1] = _mtext[1];
+	uid[2] = _mtext[2];
+	uid[3] = uid[0]+uid[1]+uid[2];
+	/* (re)start the timer system */
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	systick_set_reload(board_info.systick_mhz * 1000);	/* 1ms tick, magic number */
+	systick_interrupt_enable();
+	systick_counter_enable();
+
+	/* if we are working with a timeout, start it running */
+	if (timeout) {
+		timer[TIMER_BL_WAIT] = timeout;
+	}
+
+	/* make the LED blink while we are idle */
+	//led_set(LED_BLINK);
+	led_set(LED_OFF);
+
+	while (true) {
+		volatile int c;
+		int arg;
+		static union {
+			uint8_t		c[128];
+			uint32_t	w[64];
+		} flash_buffer;
+
+		// Wait for a command byte
+		led_off(LED_ACTIVITY);
+
+		do {
+			/* if we have a timeout and the timer has expired, return now */
+			if (timeout && !timer[TIMER_BL_WAIT]) {
+				return;
+			}
+#if 0
+			/* try to get a byte from the host */
+			c = cin_wait(0);
+#else
+			c = cin_wait(500);
+			led_count++;
+			if(led_count&0x1) led_set(LED_ON);
+			else led_set(LED_OFF);
+#endif
+
+		} while (c < 0);
+
+		led_on(LED_ACTIVITY);
+
+		//if(bl_type == USART) usb_cout((uint8_t *)&c, 1);
+		// handle the command byte
+		switch (c) {
+
+		// sync
+		//
+		// command:		GET_SYNC/EOC
+		// reply:		INSYNC/OK
+		//
+		case PROTO_B2_SYNC:
+
+			/* expect EOC */
+			if (!wait_for_eoc(2)) {
+				goto cmd_bad;
+			}
+
+			break;
+
+		// get device info
+		//
+		// command:		PROTO_GET_ID//EOC
+		// reply	<uid[0],uid[1],uid[2]>/INSYNC/EOC
+		// bad arg reply:	INSYNC/INVALID
+		//
+		case PROTO_GET_ID:
+			/* expect arg then EOC */
+
+			if (!wait_for_eoc(2)) {
+				goto cmd_bad;
+			}
+
+			cout_word(uid[0]);
+			cout_word(uid[1]);
+			cout_word(uid[2]);
+			cout_word(uid[3]);
+
+			break;
+		case PROTO_GET_ID_T:
+			/* expect arg then EOC */
+
+			if (!wait_for_eoc(2)) {
+				goto cmd_bad;
+			}
+			memcpy(text, uid, sizeof(uid));
+			tea_encrypt(&text[0], _key);
+			tea_encrypt(&text[2], _key);
+			cout_word(text[0]);
+			cout_word(text[1]);
+			cout_word(text[2]);
+			cout_word(text[3]);
+			text[0] = ~uid[0];
+			text[1] = ~uid[1];
+			text[2] = ~uid[2];
+			text[3] = ~uid[3];
+			tea_encrypt(&text[0], _key);
+			tea_encrypt(&text[2], _key);
+			cout_word(text[0]);
+			cout_word(text[1]);
+			cout_word(text[2]);
+			cout_word(text[3]);
+			break;
+#if 0
+		case PROTO_GET_KEY: // 交换密钥
+			/* expect arg then EOC */
+			arg = cin_wait(50);
+			//c=0x01; if(bl_type == USART) usb_cout((uint8_t *)&c, 1);
+			if (arg < 0) {
+				goto cmd_bad;
+			}
+			//c=0x02; if(bl_type == USART) usb_cout((uint8_t *)&c, 1);
+			// sanity-check arguments
+			if (arg % 4) {
+				goto cmd_bad;
+			}
+			if (arg > sizeof(flash_buffer.c)) {
+				goto cmd_bad;
+			}
+			if (arg != sizeof(uint32_t)*4) { // key:16bit
+				goto cmd_bad;
+			}
+			for (int i = 0; i < arg; i++) {
+				c = cin_wait(1000);
+
+				if (c < 0) {
+					goto cmd_bad;
+				}
+
+				flash_buffer.c[i] = c;
+			}
+			if (!wait_for_eoc(200)) {
+				goto cmd_bad;
+			}
+			connect_key[0] = flash_buffer.w[0];
+			connect_key[1] = flash_buffer.w[1];
+			connect_key[2] = flash_buffer.w[2];
+			connect_key[3] = flash_buffer.w[3];
+			for(int i=0; i<4; i++) // 使用公钥解密私钥
+			{
+				tea_decrypt(&text[0], public_key);
+				tea_decrypt(&text[2], public_key);
+			}
+			memcpy(text, connect_key, sizeof(connect_key));
+			// 用私钥加密对方私钥并返回给对方用于验证通信正确性
+			//tea_encrypt(&text[0], private_key);
+			//tea_encrypt(&text[2], private_key);
+			cout_word(text[0]);
+			cout_word(text[1]);
+			cout_word(text[2]);
+			cout_word(text[3]);
+			cout_word(connect_key[0]);
+			cout_word(connect_key[1]);
+			cout_word(connect_key[2]);
+			cout_word(connect_key[3]);
+			// 用公钥加密私钥发送给对方
+			tea_encrypt(&text[0], public_key);
+			tea_encrypt(&text[2], public_key);
+			cout_word(text[0]);
+			cout_word(text[1]);
+			cout_word(text[2]);
+			cout_word(text[3]);
+			break;
+#endif
+		// program bytes at current address
+		//
+		// command:		PROTO_ENCRYPT/<len:1>/<data:len>/EOC
+		// success reply:	INSYNC/OK
+		// invalid reply:	INSYNC/INVALID
+		// readback failure:	INSYNC/FAILURE
+		//
+		case PROTO_ENCRYPT:		// program bytes
+			// expect count
+			arg = cin_wait(50);
+			//c=0x01; if(bl_type == USART) usb_cout((uint8_t *)&c, 1);
+			if (arg < 0) {
+				goto cmd_bad;
+			}
+			//c=0x02; if(bl_type == USART) usb_cout((uint8_t *)&c, 1);
+			// sanity-check arguments
+			if (arg % 8) {
+				goto cmd_bad;
+			}
+			if (arg > sizeof(flash_buffer.c)) {
+				goto cmd_bad;
+			}
+			for (int i = 0; i < arg; i++) {
+				c = cin_wait(1000);
+
+				if (c < 0) {
+					goto cmd_bad;
+				}
+
+				flash_buffer.c[i] = c;
+			}
+			//c=0x06; if(bl_type == USART) usb_cout((uint8_t *)&c, 1);
+			if (!wait_for_eoc(200)) {
+				goto cmd_bad;
+			}
+			sync_response();
+			delay(200);
+			/* kill the systick interrupt */
+			systick_interrupt_disable();
+			systick_counter_disable();
+
+			/* deinitialise the interface */
+			cfini();
+			/* reset the clock */
+			//clock_deinit();
+			/* deinitialise the board */
+			board_deinit();
+#if 1
+			encrypt_b2(flash_buffer.c, arg);
+#else
+			for(int j=0; j<(arg/4); j+=2)
+			{
+				for(int i=0; i<4; i++) // 解密
+				{
+					tea_decrypt(&flash_buffer.w[j], _key);
+					tea_decrypt(&flash_buffer.w[j+2], _key);
+				}
+			}
+			encrypt_b2(flash_buffer.c, arg);
+#endif
+			break;
+
+		// finalise programming and boot the system
+		//
+		// command:			BOOT/EOC
+		// reply:			INSYNC/OK
+		//
+		case PROTO_BOOT:
+
+			// expect EOC
+			if (!wait_for_eoc(1000)) {
+				goto cmd_bad;
+			}
+
+			// send a sync and wait for it to be collected
+			sync_response();
+			delay(100);
+
+			// quiesce and jump to the app
+			return;
+		case PROTO_DEBUG:
+			// XXX reserved for ad-hoc debugging as required
+			break;
+
+		default:
+			continue;
+		}
+
+		// we got a command worth syncing, so kill the timeout because
+		// we are probably talking to the uploader
+		timeout = 0;
+
+		// Set the bootloader port based on the port from which we received the first valid command
+		if (bl_type == NONE) {
+			bl_type = last_input;
+		}
+
+		// send the sync response for this command
+		sync_response();
+		continue;
+cmd_bad:
+		// send an 'invalid' response but don't kill the timeout - could be garbage
+		invalid_response();
+		continue;
+
+/*cmd_fail:
+		// send a 'command failed' response but don't kill the timeout - could be garbage
+		failure_response();
+		continue;*/
+	}
+}
+
+

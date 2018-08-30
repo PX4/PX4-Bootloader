@@ -14,6 +14,7 @@ MKFLAGS=--no-print-directory
 export CC	 	 = arm-none-eabi-gcc
 export OBJCOPY		 = arm-none-eabi-objcopy
 
+USBS_SRC=usbs_src
 #
 # Common configuration
 #
@@ -63,7 +64,6 @@ TARGETS	= \
 	usbs_px4io_bl \
 	px4io_bl 
 
-USBS_SRC=usbs_src
 
 all:	$(TARGETS) sizes
 
@@ -96,6 +96,7 @@ usbs_px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	@mkdir -p build/$@/$(USBS_SRC)
 	@rm -rf $(USBS_SRC)
 	@cp -a USBS/$@ $(USBS_SRC)
+	@cp -a USBS/core/* $(USBS_SRC)/
 	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	@rm -rf $(USBS_SRC)
 
@@ -137,6 +138,7 @@ usbs_px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	@mkdir -p build/$@/$(USBS_SRC)
 	@rm -rf $(USBS_SRC)
 	@cp -a USBS/$@ $(USBS_SRC)
+	@cp -a USBS/core/* $(USBS_SRC)/
 #	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f1 TARGET_HW=PX4_PIO_V1 LINKER_FILE=$(USBS_SRC)/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	@rm -rf $(USBS_SRC)

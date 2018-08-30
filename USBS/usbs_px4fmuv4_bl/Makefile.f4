@@ -14,7 +14,7 @@ PX4_BOOTLOADER_DELAY	?= 5000
 #SRCS_DIR     = usbs_px4fmuv4_bl
 SRCS_DIR     = $(USBS_SRC_DIR)
 #SRCS		 = $(COMMON_SRCS) main_f4.c
-SRCS		 = $(COMMON_SRCS) main_f4.c $(SRCS_DIR)/vectors.c
+SRCS		 = $(COMMON_SRCS) main_f4.c $(SRCS_DIR)/vectors.c $(SRCS_DIR)/tea.c
 
 OBJS		:= $(patsubst %.c,%.o,$(SRCS))
 DEPS		:= $(OBJS:.o=.d)
