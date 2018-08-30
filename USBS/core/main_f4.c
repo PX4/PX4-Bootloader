@@ -1,3 +1,13 @@
+/******************** (C) COPYRIGHT 2018 merafour ********************
+* Author             : 冷月追风@merafour.blog.163.com
+* Version            : V1.0.0
+* Date               : 30/8/2018
+* Description        : main.
+********************************************************************************
+* merafour.blog.163.com
+* merafour@163.com
+* github.com/Merafour
+*******************************************************************************/
 /*
  * STM32F4 board support for the bootloader.
  *
