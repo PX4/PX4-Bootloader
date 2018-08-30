@@ -447,6 +447,10 @@ void led_blink_off(void)
 {
 	led_set(LED_OFF);
 }
+void led_blink_on(void)
+{
+	led_set(LED_BLINK);
+}
 static void
 sync_response(void)
 {

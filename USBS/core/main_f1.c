@@ -375,13 +375,14 @@ void encoding(uint32_t sign[8], volatile uint32_t uid[3])
 		erase_flag = 1;
 }
 extern void led_blink_off(void);
+extern void led_blink_on(void);
 void test_entry()
 {
-	unsigned int led=0;
-	unsigned int clock=0;
-	uint16_t delay_led[]={100, 100, 100, 100, 500, 500, 500, 500};
-	uint16_t count=0;
-	led_blink_off();
+	//unsigned int led=0;
+	//unsigned int clock=0;
+	//const uint16_t delay_led[]={500, 500, 500, 500, 500, 500, 500, 500};
+	//uint16_t count=0;
+	//led_blink_off();
 //	clock = 0;
 //	Qi.led_on(&led1, 1);
 //	Qi.led_on(&led2, 0);
@@ -396,21 +397,23 @@ void test_entry()
 	systick_interrupt_enable();
 	systick_counter_enable();
 	
-	led = clock+40; // 0.04s
+	//led = clock+40; // 0.04s
 	//for(clock=0; clock<10000; clock += 10)
 	//for(clock=0; ; clock += 10) 
 	while(1)
 	{
 		//delay(100);
-		//if(clock > led)
+		led_blink_on();
+		delay(2000);
+		led_blink_off();
+		delay(2000);
+		/*for(count=0; count<8; count++)
 		{
 			//led = clock+250; // 0.05s 
 			led = delay_led[count]; // 0.05s
-			count++;
-			count &= 0x07;
 			led_toggle(LED_BOOTLOADER);
 			delay(led);
-		}
+		}*/
 	}
 }
 
@@ -428,10 +431,43 @@ void read_uid(uint32_t uid[3])
 int
 main(void)
 {
+	volatile uint32_t* _mtext=NULL;
+	uint32_t passwd[8]={0};
+	uint32_t uid[3]={0};
+	int match=0;
+	unsigned int led=0;
 	unsigned timeout = 0;
 
 	/* do board-specific initialisation */
 	board_init();
+	clock_init();
+	
+	//check
+	read_uid(uid);
+	//uid[0]++;
+	encoding(passwd, uid);
+
+	_mtext = (uint32_t*)(point_addr);
+	for(led=0; led<8; led++)
+	{
+		if(passwd[led] != _mtext[led])
+		{
+			//printf("not match%d: %08X %08X\r\n", led, passwd[led], _mtext[led]);
+			match=1;
+		}
+	}	
+	/*if(0==match)
+	{
+		entry();
+	}*/	
+	if(match || (0==erase_flag))
+	//if(match)
+	{
+		while (1) 
+		{
+			test_entry();	
+		}
+	}
 
 #if defined(INTERFACE_USART) || defined (INTERFACE_USB)
 	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
@@ -469,7 +505,7 @@ main(void)
 	}
 
 	/* configure the clock for bootloader activity */
-	clock_init();
+	//clock_init();
 #if INTERFACE_USB
 	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
 #endif
