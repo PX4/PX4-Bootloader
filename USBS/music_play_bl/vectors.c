@@ -115,6 +115,14 @@ void __attribute__ ((section(".reset_rb3"))) reset_handler_init(void)
 		(*fp)();
 	}
 }
+uint16_t __attribute__ ((section(".reset_rb3"))) read_flash_size(void)
+{
+	volatile uint16_t* _mtext=NULL;
+	// 0x1FFF F7E8, 产品唯一身份标识寄存器(96位)
+	_mtext = (volatile uint16_t*)(0x1FFF0000);
+	_mtext += (0xF7E0/4);
+	return *_mtext;
+}
 void __attribute__ ((section(".reset_rb3s"))) reset_handler_rb3(void)
 {
 	//funcp_t *fp;
@@ -164,35 +172,41 @@ extern void encoding(uint32_t sign[8], volatile uint32_t uid[3]);
 //uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
 #define FLASH_START_ADDRESS    0x08000000
 //const uint16_t enc_offsetB= 0x3800;
-const uint16_t enc_offsetB= 0x2800;
+const uint16_t enc_offsetB= 0x2800;  // 配置加密代码所在扇区,为方便移植代码这里空出一个扇区
 //const uint16_t enc_offsetW= 0x3800/4;
+
 void erase_code(const uint32_t _vectors[CODE_SIZE/4], const uint32_t _encryption[CODE_SIZE/4], const uint32_t len)
 {
 	uint32_t i=0;
+	//const uint16_t flash_size = read_flash_size();
 	//const uint32_t len = sizeof(code_vectors)/4; // 2K
 	uint32_t	address = board_info.fw_size;
-	// erase all sectors
+	// erase sectors
 	flash_unlock();
 	if(0x400 == FLASH_SECTOR_SIZE)  // page = 1K
+	//if(0x0080 >= flash_size)  // 小容量和中容量产品,page = 1K
 	{
 		flash_erase_page(FLASH_START_ADDRESS + (0 * FLASH_SECTOR_SIZE));   // [0-0x400]
 		flash_erase_page(FLASH_START_ADDRESS + (1 * FLASH_SECTOR_SIZE));   // [0x400-0x800]
 #if 0
 		flash_erase_page(FLASH_START_ADDRESS + (14 * FLASH_SECTOR_SIZE));  // [0x3800-0x3C00]
 		flash_erase_page(FLASH_START_ADDRESS + (15 * FLASH_SECTOR_SIZE));  // [0x3C00-0x4000]
-#else
+//#else
 		flash_erase_page(FLASH_START_ADDRESS + (10 * FLASH_SECTOR_SIZE));  // [0x2800-0x2C00]
 		flash_erase_page(FLASH_START_ADDRESS + (11 * FLASH_SECTOR_SIZE));  // [0x2C00-0x3000]
 #endif
+		flash_erase_page(FLASH_START_ADDRESS + enc_offsetB);  // [enc_offsetB    - enc_offsetB+1K]
+		flash_erase_page(FLASH_START_ADDRESS + enc_offsetB+FLASH_SECTOR_SIZE);  // [enc_offsetB+1K - enc_offsetB+2K]
 	}
-	else // page = 2K
+	else // 大容量和互联型产品,page = 2K
 	{
 		flash_erase_page(FLASH_START_ADDRESS + (0 * FLASH_SECTOR_SIZE));   // [0-0x800]
 #if 0
 		flash_erase_page(FLASH_START_ADDRESS + (14 * FLASH_SECTOR_SIZE));  // [0x3800-0x4000]
-#else
+//#else
 		flash_erase_page(FLASH_START_ADDRESS + (10 * FLASH_SECTOR_SIZE));  // [0x2800-0x3000]
 #endif
+		flash_erase_page(FLASH_START_ADDRESS + enc_offsetB);  // [enc_offsetB - enc_offsetB+2K]
 	}
 	address=0;  // code_vectors
 	for (i = 0; i < len; i++) {
