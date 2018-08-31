@@ -68,6 +68,8 @@ TARGETS	= \
 	update_flash_f4 \
 	usbs_px4io_bl \
 	music_play_bl \
+	music_play_12Kbl \
+	music_play_16Kbl \
 	px4io_bl 
 
 
@@ -180,6 +182,24 @@ music_play_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	@cp -a USBS/core/* $(USBS_SRC)/
 #	${MAKE} ${MKFLAGS} -f  $(USBS_SRC)/Makefile.f4 TARGET_HW=USBS_FMU_V4 LINKER_FILE=$(USBS_SRC)/stm32f4.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	${MAKE} ${MKFLAGS} -f  USBS/$@/Makefile.f1 TARGET_HW=MUSIC_PLAY LINKER_FILE=USBS/$@/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	@cp build/$@/$@.bin build/bl/$@_08000000.bin
+	@rm -rf $(USBS_SRC)
+music_play_12Kbl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	@mkdir -p build/bl
+	@mkdir -p build/$@/$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+	@cp -a USBS/$@ $(USBS_SRC)
+	@cp -a USBS/core/* $(USBS_SRC)/
+	${MAKE} ${MKFLAGS} -f  USBS/$@/Makefile.f1 TARGET_HW=MUSIC_PLAY12K LINKER_FILE=USBS/$@/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	@cp build/$@/$@.bin build/bl/$@_08000000.bin
+	@rm -rf $(USBS_SRC)
+music_play_16Kbl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	@mkdir -p build/bl
+	@mkdir -p build/$@/$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+	@cp -a USBS/$@ $(USBS_SRC)
+	@cp -a USBS/core/* $(USBS_SRC)/
+	${MAKE} ${MKFLAGS} -f  USBS/$@/Makefile.f1 TARGET_HW=MUSIC_PLAY16K LINKER_FILE=USBS/$@/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	@cp build/$@/$@.bin build/bl/$@_08000000.bin
 	@rm -rf $(USBS_SRC)
 

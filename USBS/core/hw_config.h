@@ -539,10 +539,14 @@
  * TARGET_HW_MUSIC
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_MUSIC_PLAY)
+#elif  defined(TARGET_HW_MUSIC_PLAY)  || defined(TARGET_HW_MUSIC_PLAY12K) || defined(TARGET_HW_MUSIC_PLAY16K)
 
+#if defined(TARGET_HW_MUSIC_PLAY16K)
+# define APP_LOAD_ADDRESS               0x08004000  // 16K
+#else
 //# define APP_LOAD_ADDRESS               0x08001000
 # define APP_LOAD_ADDRESS               0x08003000  // 12K
+#endif
 //# define APP_SIZE_MAX                   0xf000
 # define APP_SIZE_MAX                   0xD000
 # define BOOTLOADER_DELAY               5000

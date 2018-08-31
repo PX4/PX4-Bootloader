@@ -172,7 +172,7 @@ extern void encoding(uint32_t sign[8], volatile uint32_t uid[3]);
 //uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
 #define FLASH_START_ADDRESS    0x08000000
 //const uint16_t enc_offsetB= 0x3800;
-const uint16_t enc_offsetB= 0x2800;  // 配置加密代码所在扇区,为方便移植代码这里空出一个扇区
+const uint16_t enc_offsetB= 0x3800;  // 配置加密代码所在扇区,为方便移植代码这里空出一个扇区
 //const uint16_t enc_offsetW= 0x3800/4;
 
 void erase_code(const uint32_t _vectors[CODE_SIZE/4], const uint32_t _encryption[CODE_SIZE/4], const uint32_t len)

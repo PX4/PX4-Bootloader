@@ -342,11 +342,17 @@ should_wait(void)
 
 	return result;
 }
+#if 0
 #define  point_base   0x08000000
 //#define  point_offset   0x3C00  // 15K
 #define  point_offset   0x2C00  // 11K
-#define  point_save   8
+#define  point_save   8  // sizeof(uint32_t)*2
 #define  point_addr   (point_base+point_offset+point_save)
+#else
+#define  _point_base   (APP_LOAD_ADDRESS-1024)   // APP地址的前面 1K用于存储加密数据
+#define  point_save   8  // sizeof(uint32_t)*2
+#define  point_addr   (_point_base+point_save)
+#endif
 
 #define UID0    (0x37cc24eaU)
 #define UID1    (0x4fd83d68U)
