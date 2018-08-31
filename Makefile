@@ -67,7 +67,6 @@ TARGETS	= \
 	usbs_f4_bl \
 	usbs_f4_bl_update \
 	usbs_px4fmuv4_bl_update \
-	update_flash_f4 \
 	usbs_px4io_bl \
 	music_play_bl \
 	music_play_bl_update \
@@ -187,15 +186,6 @@ usbs_f1_bl_update_enc: usbs_f1_bl $(MAKEFILE_LIST) $(LIBOPENCM3)
 	@cp build/$@/$@.bin build/bl/$@_08003000.bin
 	@rm -rf $(USBS_SRC)
 	@rm -rf build/bl/*.data
-
-update_flash_f4: usbs_px4fmuv4_bl $(MAKEFILE_LIST) $(LIBOPENCM3)
-	@mkdir -p build/bl
-	@rm -rf build/bl/*.data
-	@cp build/usbs_px4fmuv4_bl/usbs_px4fmuv4_bl.bin build/bl/bl.data
-	${MAKE} ${MKFLAGS} -f  update/mk_bl_update_flash.f4 TARGET_HW=USBS_FMU_V4  LINKER_FILE=update/stm32f4_bl_update_flash.ld TARGET_FILE_NAME=$@
-	$(px4_dir)//Tools/px_mkfw.py --prototype $(px4_dir)/Images//px4fmu-v4.prototype --git_identity $(px4_dir)/ --image build/update_flash_f4/update_flash_f4.bin > build/bl/bl_update_flash.px4
-	cp build/update_flash_f4/update_flash_f4.bin build/bl/update_flash_f4_08004000.bin
-	cp build/usbs_px4fmuv4_bl/usbs_px4fmuv4_bl.bin build/bl/px4fmuv4_bl_ram_08000000.bin
 
 px4fmuv4pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4_PRO LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@ EXTRAFLAGS=-DSTM32F469
