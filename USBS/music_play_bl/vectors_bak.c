@@ -18,7 +18,7 @@
 #include "../libopencm3/lib/dispatch/vector_nvic.c"
 
 #include "../bl.h"
-#include "hw_config.h"
+#include "usbs_hw_config.h"
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>

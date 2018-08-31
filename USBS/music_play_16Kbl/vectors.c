@@ -36,8 +36,8 @@
 /* load the weak symbols for IRQ_HANDLERS */
 #include "../libopencm3/lib/dispatch/vector_nvic.c"
 
-#include "bl.h"
-#include "hw_config.h"
+#include "usbs_bl.h"
+#include "usbs_hw_config.h"
 #include <stdlib.h>
 #include <string.h>
 #include <libopencm3/stm32/rcc.h>

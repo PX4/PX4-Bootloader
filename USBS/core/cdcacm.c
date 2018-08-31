@@ -29,7 +29,7 @@
  * @author Gareth McMullin <gareth@blacksphere.co.nz>
  * @author David Sidrane <david_s5@nscdg.com>
  */
-#include "hw_config.h"
+#include "usbs_hw_config.h"
 
 #include <stdlib.h>
 
@@ -43,7 +43,7 @@
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>
 
-#include "bl.h"
+#include "usbs_bl.h"
 #if INTERFACE_USB != 0
 #define USB_CDC_REQ_GET_LINE_CODING			0x21 // Not defined in libopencm3
 

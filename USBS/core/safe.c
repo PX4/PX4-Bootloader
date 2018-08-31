@@ -38,7 +38,7 @@
  * SAFE interface for the bootloader.
  */
 
-#include "hw_config.h"
+#include "usbs_hw_config.h"
 #include "safe.h"
 #include <string.h>
 //#include "cdcacm.h"

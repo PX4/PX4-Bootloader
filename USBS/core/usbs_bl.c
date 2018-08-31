@@ -48,7 +48,7 @@
  *
  * Aside from the header includes below, this file should have no board-specific logic.
  */
-#include "hw_config.h"
+#include "usbs_hw_config.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -61,7 +61,7 @@
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/systick.h>
 
-#include "bl.h"
+#include "usbs_bl.h"
 #include "cdcacm.h"
 #include "uart.h"
 #include "safe.h"

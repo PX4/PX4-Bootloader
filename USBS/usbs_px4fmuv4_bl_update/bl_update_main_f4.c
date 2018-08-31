@@ -13,7 +13,7 @@
  *
  */
 
-#include "hw_config.h"
+#include "usbs_hw_config.h"
 
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
@@ -26,7 +26,7 @@
 #include <libopencm3/stm32/timer.h>
 
 
-#include "bl.h"
+#include "usbs_bl.h"
 #include "uart.h"
 
 /* flash parameters that we should not really know */

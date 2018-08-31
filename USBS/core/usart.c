@@ -28,7 +28,7 @@
  * USART interface for the bootloader.
  */
 
-#include "hw_config.h"
+#include "usbs_hw_config.h"
 
 # include <libopencm3/stm32/rcc.h>
 # include <libopencm3/stm32/gpio.h>
@@ -38,7 +38,7 @@
 #if !defined(USART_SR)
 #define USART_SR USART_ISR
 #endif
-#include "bl.h"
+#include "usbs_bl.h"
 #include "uart.h"
 
 uint32_t usart;

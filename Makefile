@@ -5,6 +5,7 @@
 #
 # Paths to common dependencies
 #
+export BUILD_DIR_ROOT ?= build
 export BL_BASE		?= $(wildcard .)
 export LIBOPENCM3	?= $(wildcard libopencm3)
 MKFLAGS=--no-print-directory
@@ -24,7 +25,8 @@ export FLAGS		 = -std=gnu99 \
 			   -Wundef \
 			   -Wall \
 			   -fno-builtin \
-			   -I$(LIBOPENCM3)/include \
+			   -I$(BL_BASE)/$(LIBOPENCM3)/include \
+			   -I$(BL_BASE)/. \
 			   -ffunction-sections \
 			   -nostartfiles \
 			   -lnosys \
@@ -32,8 +34,9 @@ export FLAGS		 = -std=gnu99 \
 			   -Wl,-g \
 			   -Werror
 
-export COMMON_SRCS	 = bl.c cdcacm.c  usart.c
-export COMMON_SRCS_USBS	 = $(USBS_SRC)/bl.c $(USBS_SRC)/cdcacm.c  $(USBS_SRC)/usart.c $(USBS_SRC)/safe.c $(USBS_SRC)/tea.c
+export COMMON_SRCS	 = bl.c
+export ARCH_SRCS	 = cdcacm.c  usart.c
+export COMMON_SRCS_USBS	 = $(USBS_SRC)/usbs_bl.c $(USBS_SRC)/cdcacm.c  $(USBS_SRC)/usart.c $(USBS_SRC)/safe.c $(USBS_SRC)/tea.c
 export USBS_BL_DIR=$(shell pwd)
 px4_dir=$(shell pwd)
 
@@ -41,15 +44,18 @@ px4_dir=$(shell pwd)
 # Bootloaders to build
 #
 #TARGETS	= \
+	nxphlitev3_bl \
 	aerofcv1_bl \
 	auavx2v1_bl \
 	crazyflie_bl \
 	mindpxv2_bl \
+	omnibusf4sd_bl \
 	px4aerocore_bl \
 	px4discovery_bl \
 	px4flow_bl \
 	px4fmu_bl \
 	px4fmuv2_bl \
+	px4fmuv3_bl \
 	px4fmuv4_bl \
 	px4fmuv4pro_bl \
 	px4fmuv5_bl \
@@ -57,12 +63,7 @@ px4_dir=$(shell pwd)
 	px4iov3_bl \
 	tapv1_bl \
 	cube_f4_bl \
-	cube_f7_bl
-
-TARGETS	= \
-	px4fmu_bl \
-	px4fmuv2_bl \
-	px4fmuv4_bl \
+	cube_f7_bl \
 	usbs_px4fmuv4_bl \
 	usbs_f4_bl \
 	usbs_f4_bl_update \
@@ -75,18 +76,27 @@ TARGETS	= \
 	usbs_f1_bl_update \
 	usbs_f1_bl_update_enc \
 	music_play_12Kbl \
-	music_play_16Kbl \
-	px4io_bl 
-
+	music_play_16Kbl 
+TARGETS	= \
+	usbs_px4fmuv4_bl \
+	usbs_f4_bl \
+	usbs_f4_bl_update \
+	usbs_px4fmuv4_bl_update \
+	music_play_bl \
+	music_play_bl_update \
+	music_play_bl_update_enc \
+	usbs_f1_bl \
+	usbs_f1_bl_update \
+	usbs_f1_bl_update_enc \
+	music_play_12Kbl \
+	music_play_16Kbl 
 
 all:	$(TARGETS) sizes
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
 	rm -f *.elf *.bin # Remove any elf or bin files contained directly in the Bootloader directory
-	rm -rf build_* # Remove build directories
-	rm -rf build*  # Remove build directories
-	rm -rf code    # Remove build directories
+	rm -rf build # Remove build directories
 
 #
 # Specific bootloader targets.
@@ -309,7 +319,7 @@ sizes:
 #
 .PHONY: deploy
 deploy:
-	zip -j Bootloader.zip build_*/*.bin
+	zip -j Bootloader.zip build/*/*.bin
 
 #
 # Submodule management
@@ -319,7 +329,7 @@ $(LIBOPENCM3): checksubmodules
 	${MAKE} -C $(LIBOPENCM3) lib
 
 .PHONY: checksubmodules
-checksubmodules: updatesubmodules
+checksubmodules:
 	$(Q) ($(BL_BASE)/Tools/check_submodules.sh)
 
 .PHONY: updatesubmodules

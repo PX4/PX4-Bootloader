@@ -17,7 +17,7 @@
 /* load the weak symbols for IRQ_HANDLERS */
 #include "./libopencm3/lib/dispatch/vector_nvic.c"
 
-#include "bl.h"
+#include "usbs_bl.h"
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
