@@ -1,0 +1,54 @@
+#/******************** (C) COPYRIGHT 2018 merafour ********************
+#* Author             : 冷月追风@merafour.blog.163.com
+#* Version            : V2.0.0
+#* Date               : 30/8/2018
+#* Description        : Makefile.
+#********************************************************************************
+#* merafour.blog.163.com
+#* merafour@163.com
+#* github.com/Merafour
+#*******************************************************************************/
+#
+# PX4 bootloader build rules for STM32F4 targets.
+#
+
+OPENOCD		?= openocd
+
+JTAGCONFIG ?= interface/olimex-jtag-tiny.cfg
+#JTAGCONFIG ?= interface/jtagkey-tiny.cfg
+
+# 5 seconds / 5000 ms default delay
+PX4_BOOTLOADER_DELAY	?= 5000
+
+SRCS_DIR     = $(USBS_SRC_DIR)
+SRCS		 = $(COMMON_SRCS_USBS) $(SRCS_DIR)/main_f4.c $(SRCS_DIR)/vectors.c
+
+OBJS		:= $(patsubst %.c,%.o,$(SRCS))
+DEPS		:= $(OBJS:.o=.d)
+
+FLAGS		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
+       -DTARGET_HW_$(TARGET_HW) \
+       -DSTM32F4 \
+       -T$(LINKER_FILE) \
+		   -L$(LIBOPENCM3)/lib \
+		   -lopencm3_stm32f4 \
+        $(EXTRAFLAGS)
+
+FLAGS		+= -I$(USBS_BL_DIR)/$(SRCS_DIR)
+
+#
+# General rules for making dependency and object files
+# This is where the compiler is called
+#
+include rules.mk
+
+#upload: all flash flash-bootloader
+upload: all flash-bootloader
+
+flash-bootloader:
+	$(OPENOCD) --search ../px4_bootloader -f $(JTAGCONFIG) -f stm32f4x.cfg -c init -c "reset halt" -c "flash write_image erase $(BINARY) 0x08000000" -c "reset run" -c shutdown
+
+# Use to upload to a stm32f4-discovery devboard, requires the latest version of openocd (from git)
+# build openocd with "cd openocd; ./bootstrap; ./configure --enable-maintainer-mode --enable-stlink"
+upload-discovery: 
+	$(OPENOCD) --search ../px4_bootloader -f board/stm32f4discovery.cfg -c init -c "reset halt" -c "flash probe 0" -c "stm32f2x mass_erase 0" -c "flash write_image erase $(BINARY) 0x08000000" -c "reset" -c shutdown
