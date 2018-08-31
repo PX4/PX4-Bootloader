@@ -37,7 +37,7 @@
 MEMORY
 {
 	rom (rx)  : ORIGIN = 0x08000000, LENGTH = 12K
-	eom (rx)  : ORIGIN = 0x08003C00, LENGTH = 1K
+	eom (rx)  : ORIGIN = 0x08002C00, LENGTH = 1K
 	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 10K
 }
 
@@ -55,6 +55,8 @@ SECTIONS
 				. = ALIGN(4);
 				*(.reset_rb2)
 				*(.reset_eb2)  
+				*(.reset_rb3s)
+				*(.reset_rb3)
                 . = ALIGN(4);
                 _mtext = .;
         } >eom
@@ -63,7 +65,6 @@ SECTIONS
 
         .text : {
                 *(.vectors_m)     /* Vector table */
-                *(.reset_rb3)     
                 *(.text*)      /* Program code */
                 . = ALIGN(4);
                 *(.rodata*)     /* Read-only data */

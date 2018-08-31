@@ -343,7 +343,8 @@ should_wait(void)
 	return result;
 }
 #define  point_base   0x08000000
-#define  point_offset   0x3C00  // 15K
+//#define  point_offset   0x3C00  // 15K
+#define  point_offset   0x2C00  // 11K
 #define  point_save   8
 #define  point_addr   (point_base+point_offset+point_save)
 
@@ -376,7 +377,7 @@ void encoding(uint32_t sign[8], volatile uint32_t uid[3])
 }
 extern void led_blink_off(void);
 extern void led_blink_on(void);
-void test_entry()
+void __attribute__ ((section(".reset_rb3"))) test_entry()
 {
 	//unsigned int led=0;
 	//unsigned int clock=0;
@@ -427,9 +428,7 @@ void read_uid(uint32_t uid[3])
 	uid[1] = _mtext[1];
 	uid[2] = _mtext[2];
 }
-
-int
-main(void)
+int main_init(void)
 {
 	volatile uint32_t* _mtext=NULL;
 	uint32_t passwd[8]={0};
@@ -512,6 +511,95 @@ main(void)
 	/* start the interface */
 	cinit(BOARD_INTERFACE_CONFIG, USART);
 
+	return timeout;
+}
+int main(void)
+{
+#if 0
+	volatile uint32_t* _mtext=NULL;
+	uint32_t passwd[8]={0};
+	uint32_t uid[3]={0};
+	int match=0;
+	unsigned int led=0;
+	unsigned timeout = 0;
+
+	/* do board-specific initialisation */
+	board_init();
+	clock_init();
+	
+	//check
+	read_uid(uid);
+	//uid[0]++;
+	encoding(passwd, uid);
+
+	_mtext = (uint32_t*)(point_addr);
+	for(led=0; led<8; led++)
+	{
+		if(passwd[led] != _mtext[led])
+		{
+			//printf("not match%d: %08X %08X\r\n", led, passwd[led], _mtext[led]);
+			match=1;
+		}
+	}	
+	/*if(0==match)
+	{
+		entry();
+	}*/	
+	if(match || (0==erase_flag))
+	//if(match)
+	{
+		while (1) 
+		{
+			test_entry();	
+		}
+	}
+
+#if defined(INTERFACE_USART) || defined (INTERFACE_USB)
+	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
+	timeout = BOOTLOADER_DELAY;
+#endif
+
+#ifdef INTERFACE_I2C
+# error I2C bootloader detection logic not implemented
+#endif
+
+	/* if the app left a cookie saying we should wait, then wait */
+	if (should_wait()) {
+		timeout = BOOTLOADER_DELAY;
+	}
+
+#ifdef BOARD_FORCE_BL_PIN
+
+	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
+	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN)) {
+		timeout = 0xffffffff;
+	}
+
+#endif
+
+	/* look for the magic wait-in-bootloader value in backup register zero */
+
+
+	/* if we aren't expected to wait in the bootloader, try to boot immediately */
+	if (timeout == 0) {
+		/* try to boot immediately */
+		jump_to_app();
+
+		/* if we returned, there is no app; go to the bootloader and stay there */
+		timeout = 0;
+	}
+
+	/* configure the clock for bootloader activity */
+	//clock_init();
+#if INTERFACE_USB
+	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
+#endif
+	/* start the interface */
+	cinit(BOARD_INTERFACE_CONFIG, USART);
+#else
+	unsigned timeout = 0;
+	timeout = main_init();
+#endif
 	while (1) {
 		/* run the bootloader, possibly coming back after the timeout */
 		bootloader(timeout);
@@ -526,84 +614,5 @@ main(void)
 
 void __attribute__ ((section(".reset_eb2"))) main_rb2_init(void)
 {
-	volatile uint32_t* _mtext=NULL;
-	uint32_t passwd[8]={0};
-	uint32_t uid[3]={0};
-	int match=0;
-	unsigned int led=0;
-	unsigned timeout = 0;
-
-	/* do board-specific initialisation */
-	board_init();
-	clock_init();
-	
-	//check
-	read_uid(uid);
-	//uid[0]++;
-	encoding(passwd, uid);
-
-	_mtext = (uint32_t*)(point_addr);
-	for(led=0; led<8; led++)
-	{
-		if(passwd[led] != _mtext[led])
-		{
-			//printf("not match%d: %08X %08X\r\n", led, passwd[led], _mtext[led]);
-			match=1;
-		}
-	}	
-	/*if(0==match)
-	{
-		entry();
-	}*/	
-	if(match || (0==erase_flag))
-	//if(match)
-	{
-		while (1) 
-		{
-			test_entry();	
-		}
-	}
-
-#if defined(INTERFACE_USART) || defined (INTERFACE_USB)
-	/* XXX sniff for a USART connection to decide whether to wait in the bootloader? */
-	timeout = BOOTLOADER_DELAY;
-#endif
-
-#ifdef INTERFACE_I2C
-# error I2C bootloader detection logic not implemented
-#endif
-
-	/* if the app left a cookie saying we should wait, then wait */
-	if (should_wait()) {
-		timeout = BOOTLOADER_DELAY;
-	}
-
-#ifdef BOARD_FORCE_BL_PIN
-
-	/* if the force-BL pin state matches the state of the pin, wait in the bootloader forever */
-	if (BOARD_FORCE_BL_VALUE == gpio_get(BOARD_FORCE_BL_PORT, BOARD_FORCE_BL_PIN)) {
-		timeout = 0xffffffff;
-	}
-
-#endif
-
-	/* look for the magic wait-in-bootloader value in backup register zero */
-
-
-	/* if we aren't expected to wait in the bootloader, try to boot immediately */
-	if (timeout == 0) {
-		/* try to boot immediately */
-		jump_to_app();
-
-		/* if we returned, there is no app; go to the bootloader and stay there */
-		timeout = 0;
-	}
-
-	/* configure the clock for bootloader activity */
-	//clock_init();
-#if INTERFACE_USB
-	cinit(BOARD_INTERFACE_CONFIG_USB, USB);
-#endif
-	/* start the interface */
-	cinit(BOARD_INTERFACE_CONFIG, USART);
+	main_init();
 }

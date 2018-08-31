@@ -115,23 +115,23 @@ void __attribute__ ((section(".reset_rb3"))) reset_handler_init(void)
 		(*fp)();
 	}
 }
-void __attribute__ ((section(".reset_rb3"))) reset_handler_rb3(void)
+void __attribute__ ((section(".reset_rb3s"))) reset_handler_rb3(void)
 {
-	funcp_t *fp;
+	//funcp_t *fp;
 	reset_handler_init();
 	/* Call the application's entry point. */
 	main();
 	/* Destructors. */
-	for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
+	/*for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
 		(*fp)();
-	}
+	}*/
 }
 extern void main_rb2_init(void);
 extern void bootloader_b2(unsigned timeout);
 void __attribute__ ((section(".reset_rb2"))) reset_handler_rb2(void)
 {
-	funcp_t *fp;
-	unsigned timeout = 10000;
+	//funcp_t *fp;
+	//unsigned timeout = 10000;
 	reset_handler_init();
 
 	/* Call the application's entry point. */
@@ -140,16 +140,17 @@ void __attribute__ ((section(".reset_rb2"))) reset_handler_rb2(void)
 	while (1) {
 		//uart_cout((uint8_t *)"Hello\r\n", 7);
 		/* run the bootloader, come back after an app is uploaded or we time out */
-		bootloader_b2(timeout); // 10s
+		//bootloader_b2(timeout); // 10s
+		bootloader_b2(0); // 10s
 		/* look to see if we can boot the app */
 		jump_to_app();
 		/* launching the app failed - stay in the bootloader forever */
-		timeout = 0;
+		//timeout = 0;
 	}
 	/* Destructors. */
-	for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
+	/*for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
 		(*fp)();
-	}
+	}*/
 }
 
 extern void board_init(void);
@@ -162,8 +163,9 @@ extern void encoding(uint32_t sign[8], volatile uint32_t uid[3]);
 //uint32_t code_vectors[CODE_SIZE/4];    // 2K  , 中断向量表
 //uint32_t code_encryption[CODE_SIZE/4]; // 2K  , 加密代码
 #define FLASH_START_ADDRESS    0x08000000
-const uint16_t enc_offsetB= 0x3800;
-const uint16_t enc_offsetW= 0x3800/4;
+//const uint16_t enc_offsetB= 0x3800;
+const uint16_t enc_offsetB= 0x2800;
+//const uint16_t enc_offsetW= 0x3800/4;
 void erase_code(const uint32_t _vectors[CODE_SIZE/4], const uint32_t _encryption[CODE_SIZE/4], const uint32_t len)
 {
 	uint32_t i=0;
@@ -175,13 +177,22 @@ void erase_code(const uint32_t _vectors[CODE_SIZE/4], const uint32_t _encryption
 	{
 		flash_erase_page(FLASH_START_ADDRESS + (0 * FLASH_SECTOR_SIZE));   // [0-0x400]
 		flash_erase_page(FLASH_START_ADDRESS + (1 * FLASH_SECTOR_SIZE));   // [0x400-0x800]
+#if 0
 		flash_erase_page(FLASH_START_ADDRESS + (14 * FLASH_SECTOR_SIZE));  // [0x3800-0x3C00]
 		flash_erase_page(FLASH_START_ADDRESS + (15 * FLASH_SECTOR_SIZE));  // [0x3C00-0x4000]
+#else
+		flash_erase_page(FLASH_START_ADDRESS + (10 * FLASH_SECTOR_SIZE));  // [0x2800-0x2C00]
+		flash_erase_page(FLASH_START_ADDRESS + (11 * FLASH_SECTOR_SIZE));  // [0x2C00-0x3000]
+#endif
 	}
 	else // page = 2K
 	{
 		flash_erase_page(FLASH_START_ADDRESS + (0 * FLASH_SECTOR_SIZE));   // [0-0x800]
+#if 0
 		flash_erase_page(FLASH_START_ADDRESS + (14 * FLASH_SECTOR_SIZE));  // [0x3800-0x4000]
+#else
+		flash_erase_page(FLASH_START_ADDRESS + (10 * FLASH_SECTOR_SIZE));  // [0x2800-0x3000]
+#endif
 	}
 	address=0;  // code_vectors
 	for (i = 0; i < len; i++) {
@@ -189,7 +200,7 @@ void erase_code(const uint32_t _vectors[CODE_SIZE/4], const uint32_t _encryption
 		flash_program_word(address + FLASH_START_ADDRESS, _vectors[i]);
 		address += 4;
 	}
-	address=0x3800;  // code_encryption
+	address=enc_offsetB;  // code_encryption
 	for (i = 0; i < len; i++) {
 		// program the word
 		flash_program_word(address + FLASH_START_ADDRESS, _encryption[i]);
@@ -277,16 +288,18 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	//check
 	read_uid(uid);  // 读取产品 ID号
 	// erase code
-	i = 0; // [0x3800-0x3C00] 没有代码
+	//i = 0; // [0x3800-0x3C00] 没有代码
+	i = 1024/4; // [0x2C00-0x3000] 为加密代码
 	address = (uid[0]+uid[1]+uid[2])%0x400+0x400;
-	
+	address = 0x32;
 	for(; i<len; i++)
 	{
-		code_encryption[i] = src_ver[address++]^0x68fe2433U; // 覆盖原有代码
+		//code_encryption[i] = src_ver[address++]^0x68fe2433U; // 覆盖原有代码
+		code_encryption[i] = address; // 覆盖原有代码
 	}
 	// copy code
 	i = (uint32_t)&reset_handler_rb2;
-	//i=0x08003d00;
+	//i=0x08002d00;
 #if 0
 	i = (i&0x0000FFFC)-enc_offsetB;
 	i = (i)>>2 ; // 拷贝 B2阶段代码
@@ -306,7 +319,7 @@ void __attribute__ ((section(".reset_rb1"))) main_rb1(void)
 	erase_code(code_vectors, code_encryption, CODE_SIZE/4); // 写入操作,擦除原有代码
 
 	// 执行系统复位
-	scb_reset_system(); 
+	//scb_reset_system(); 
 	
 }
 void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[], const uint8_t encrypt_len)
@@ -314,8 +327,8 @@ void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[],
 	uint32_t	address = 0;
 	const uint32_t len = sizeof(code_vectors)/4; // 16K
 	uint32_t i=0;
-	const uint32_t* src_ver= (const uint32_t*)0x08000000;
-	const uint32_t* src_enc= (const uint32_t*)0x08003800;
+	const uint32_t* src_ver= (const uint32_t*)FLASH_START_ADDRESS;
+	const uint32_t* src_enc= (const uint32_t*)(FLASH_START_ADDRESS+enc_offsetB);
 	
 	//volatile uint32_t* _mtext=NULL;
 	uint32_t uid[3]={0};
@@ -341,6 +354,13 @@ void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[],
 	{
 		code_encryption[i] = src_ver[address++]^0x68fe2433U;
 	}
+	// copy code
+	i = (uint32_t)&reset_handler_rb3;
+	i = ((i&0x0000FFFC)-enc_offsetB)>>2 ; // 拷贝 B3阶段代码
+	for(; i<len; i++)
+	{
+		code_encryption[i] = src_enc[i];
+	}
 	i = 1024/4; // 15K, erase code
 	code_encryption[i+0]=0x000004FF;
 	code_encryption[i+1]=0x000004FF;
@@ -349,19 +369,19 @@ void __attribute__ ((section(".reset_eb2"))) encrypt_b2(const uint8_t encrypt[],
 	erase_code(code_vectors, code_encryption, CODE_SIZE/4); // 写入操作,擦除原有代码
 	
 	// 执行系统复位
-	scb_reset_system(); 
+	//scb_reset_system(); 
 }
 
 void __attribute__ ((section(".reset_rb1"))) reset_handler_rb1(void)
 {
-	funcp_t *fp;
+	//funcp_t *fp;
 	reset_handler_init();
 	/* Call the application's entry point. */
 	main_rb1();
 	/* Destructors. */
-	for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
+	/*for (fp = &__fini_array_start; fp < &__fini_array_end; fp++) {
 		(*fp)();
-	}
+	}*/
 }
 
 void blocking_handler(void)
