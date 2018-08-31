@@ -68,6 +68,7 @@ TARGETS	= \
 	update_flash_f4 \
 	usbs_px4io_bl \
 	music_play_bl \
+	music_play_bl_update \
 	music_play_12Kbl \
 	music_play_16Kbl \
 	px4io_bl 
@@ -184,6 +185,19 @@ music_play_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  USBS/$@/Makefile.f1 TARGET_HW=MUSIC_PLAY LINKER_FILE=USBS/$@/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
 	@cp build/$@/$@.bin build/bl/$@_08000000.bin
 	@rm -rf $(USBS_SRC)
+music_play_bl_update: music_play_bl $(MAKEFILE_LIST) $(LIBOPENCM3)
+	@mkdir -p build/bl
+	@rm -rf build/bl/*.data
+	@cp build/$</$<.bin build/bl/usbs_bl.data
+	@mkdir -p build/$@/$(USBS_SRC)
+	@rm -rf $(USBS_SRC)
+	@cp -a USBS/$@ $(USBS_SRC)
+	@cp -a USBS/core/* $(USBS_SRC)/
+	${MAKE} ${MKFLAGS} -f  USBS/$@/Makefile.f1 TARGET_HW=MUSIC_PLAY LINKER_FILE=USBS/$@/stm32f1.ld TARGET_FILE_NAME=$@ USBS_SRC_DIR=$(USBS_SRC)
+	$(px4_dir)//Tools/px_mkfw.py --prototype $(px4_dir)/Images//px4fmu-v4.prototype --git_identity $(px4_dir)/ --image build/$@/$@.bin > build/bl/$@.px4
+	@cp build/$@/$@.bin build/bl/$@_08003000.bin
+	@rm -rf $(USBS_SRC)
+	@rm -rf build/bl/*.data
 music_play_12Kbl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	@mkdir -p build/bl
 	@mkdir -p build/$@/$(USBS_SRC)
