@@ -63,12 +63,13 @@ TARGETS	= \
 	px4iov3_bl \
 	tapv1_bl \
 	cube_f4_bl \
-	cube_f7_bl \
+	cube_f7_bl 
+
+TARGETS_USBS	= \
 	usbs_px4fmuv4_bl \
 	usbs_f4_bl \
 	usbs_f4_bl_update \
 	usbs_px4fmuv4_bl_update \
-	usbs_px4io_bl \
 	music_play_bl \
 	music_play_bl_update \
 	music_play_bl_update_enc \
@@ -77,8 +78,10 @@ TARGETS	= \
 	usbs_f1_bl_update_enc \
 	music_play_12Kbl \
 	music_play_16Kbl 
+TARGETS	+= $(TARGETS_USBS)
 
 all:	$(TARGETS) sizes
+#all:	$(TARGETS_USBS) sizes
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
