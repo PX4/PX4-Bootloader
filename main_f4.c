@@ -326,6 +326,7 @@ board_test_usart_receiving_break()
 	if (cnt_consecutive_low >= 18) {
 		return true;
 	}
+
 #endif // !defined(SERIAL_BREAK_DETECT_DISABLED)
 
 	return false;
@@ -337,7 +338,7 @@ board_init(void)
 {
 	/* fix up the max firmware size, we have to read memory to get this */
 	board_info.fw_size = APP_SIZE_MAX;
-#if defined(TARGET_HW_PX4_FMU_V2) || defined(TARGET_HW_PX4_FMU_V4)
+#if defined(TARGET_HW_PX4_FMU_V2) || defined(TARGET_HW_PX4_FMU_V3) || defined(TARGET_HW_PX4_FMU_V4)
 
 	if (check_silicon() && board_info.fw_size == (2 * 1024 * 1024) - BOOTLOADER_RESERVATION_SIZE) {
 		board_info.fw_size = (1024 * 1024) - BOOTLOADER_RESERVATION_SIZE;
@@ -619,7 +620,7 @@ int get_mcu_desc(int max, uint8_t *revstr)
 
 int check_silicon(void)
 {
-#if defined(TARGET_HW_PX4_FMU_V2) || defined(TARGET_HW_PX4_FMU_V4)
+#if defined(TARGET_HW_PX4_FMU_V2)  || defined(TARGET_HW_PX4_FMU_V3) || defined(TARGET_HW_PX4_FMU_V4)
 	uint32_t idcode = (*(uint32_t *)DBGMCU_IDCODE);
 	mcu_rev_e revid = (idcode & REVID_MASK) >> 16;
 
@@ -786,11 +787,13 @@ main(void)
 #if defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	try_boot = false;
 #else
+
 	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
 
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
+
 #endif
 #endif
 
