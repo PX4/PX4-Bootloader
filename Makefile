@@ -39,6 +39,8 @@ export ARCH_SRCS	 = cdcacm.c  usart.c
 
 #
 # Bootloaders to build
+# Note: px4fmuv3_bl is the same as px4fmuv2_bl except for a different USB device
+# string
 #
 TARGETS	= \
 	nxphlitev3_bl \
