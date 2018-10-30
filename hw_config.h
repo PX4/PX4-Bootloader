@@ -55,6 +55,11 @@
  *
  * * Other defines are somewhat self explanatory.
  */
+
+ /* Boot device selection list*/
+#define USB_DEV 	0x01
+#define SERIAL_DEV 	0x02
+
 #if  defined(TARGET_HW_PX4_FMU_V1)
 
 # define APP_LOAD_ADDRESS               0x08004000
@@ -991,4 +996,13 @@
 #if !defined(USB_DATA_ALIGN)
 # define USB_DATA_ALIGN
 #endif
+
+#ifndef BOOT_DEVICES_SELECTION
+#  define BOOT_DEVICES_SELECTION USB_DEV|SERIAL_DEV
+#endif
+
+#ifndef BOOT_DEVICES_FILTER_ONUSB
+#  define BOOT_DEVICES_FILTER_ONUSB USB_DEV|SERIAL_DEV
+#endif
+
 #endif /* HW_CONFIG_H_ */
