@@ -38,6 +38,12 @@ struct boardinfo board_info = {
 
 static void board_init(void);
 
+char
+board_get_devices(void)
+{
+	return BOOT_DEVICES_SELECTION;
+}
+
 static void
 board_init(void)
 {
