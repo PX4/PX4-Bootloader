@@ -182,6 +182,9 @@ static const struct rcc_clock_scale clock_setup = {
 	.apb2_frequency = 84000000,
 };
 
+/* State of an inserted USB cable */
+static bool usb_connected = false;
+
 static uint32_t
 board_get_rtc_signature()
 {
@@ -332,6 +335,16 @@ board_test_usart_receiving_break()
 	return false;
 }
 #endif
+
+char
+board_get_devices(void)
+{
+	char devices = BOOT_DEVICES_SELECTION;
+	if (usb_connected) {
+		devices &= BOOT_DEVICES_FILTER_ONUSB;
+	}
+	return devices;
+}
 
 static void
 board_init(void)
@@ -789,7 +802,7 @@ main(void)
 #else
 
 	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
-
+		usb_connected = true;
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
