@@ -144,11 +144,11 @@ inline void cfini(void)
 	uart_cfini();
 #endif
 }
-inline int cin(void)
+inline int cin(char devices)
 {
 #if INTERFACE_USB
 
-	if (bl_type == NONE || bl_type == USB) {
+	if ((bl_type == NONE || bl_type == USB) && (devices&USB_DEV) > 0) {
 		int usb_in = usb_cin();
 
 		if (usb_in >= 0) {
@@ -161,7 +161,7 @@ inline int cin(void)
 
 #if INTERFACE_USART
 
-	if (bl_type == NONE || bl_type == USART) {
+	if ((bl_type == NONE || bl_type == USART) && (devices&SERIAL_DEV) > 0) {
 		int	uart_in = uart_cin();
 
 		if (uart_in >= 0) {
@@ -388,12 +388,13 @@ static int
 cin_wait(unsigned timeout)
 {
 	int c = -1;
+	char devices = board_get_devices();
 
 	/* start the timeout */
 	timer[TIMER_CIN] = timeout;
 
 	do {
-		c = cin();
+		c = cin(devices);
 
 		if (c >= 0) {
 			cin_count++;

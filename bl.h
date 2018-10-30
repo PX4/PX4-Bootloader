@@ -102,6 +102,7 @@ extern void led_toggle(unsigned led);
 
 /* flash helpers from main_*.c */
 extern void board_deinit(void);
+extern char board_get_devices(void);
 extern void clock_deinit(void);
 extern uint32_t flash_func_sector_size(unsigned sector);
 extern void flash_func_erase_sector(unsigned sector);
@@ -120,5 +121,5 @@ extern int check_silicon(void);
 
 extern void cinit(void *config, uint8_t interface);
 extern void cfini(void);
-extern int cin(void);
+extern int cin(char devices);
 extern void cout(uint8_t *buf, unsigned len);
