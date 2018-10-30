@@ -52,7 +52,7 @@ struct boardinfo board_info = {
 
 static void board_init(void);
 
-char
+uint32_t
 board_get_devices(void)
 {
 	return BOOT_DEVICES_SELECTION;

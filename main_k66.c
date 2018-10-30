@@ -171,10 +171,10 @@ board_test_usart_receiving_break()
 }
 #endif
 
-char
+uint32_t
 board_get_devices(void)
 {
-	char devices = BOOT_DEVICES_SELECTION;
+	uint32_t devices = BOOT_DEVICES_SELECTION;
 	if (usb_connected) {
 		devices &= BOOT_DEVICES_FILTER_ONUSB;
 	}
