@@ -45,4 +45,5 @@ AP_HW_OMNIBUSNANOV6                   133
 AP_HW_SPEEDYBEEF4                     134
 AP_HW_F35LIGHTNING                    135
 AP_HW_MRO_X2V1_777                    136
+AP_HW_OMNIBUSF4V6                     137
 AP_HW_F4BY                             20 # value due to previous release by vendor
