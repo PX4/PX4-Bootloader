@@ -148,7 +148,7 @@ inline int cin(uint32_t devices)
 {
 #if INTERFACE_USB
 
-	if ((bl_type == NONE || bl_type == USB) && (devices&USB0_DEV) != 0) {
+	if ((bl_type == NONE || bl_type == USB) && (devices & USB0_DEV) != 0) {
 		int usb_in = usb_cin();
 
 		if (usb_in >= 0) {
@@ -161,7 +161,7 @@ inline int cin(uint32_t devices)
 
 #if INTERFACE_USART
 
-	if ((bl_type == NONE || bl_type == USART) && (devices&SERIAL0_DEV) != 0) {
+	if ((bl_type == NONE || bl_type == USART) && (devices & SERIAL0_DEV) != 0) {
 		int	uart_in = uart_cin();
 
 		if (uart_in >= 0) {
@@ -685,9 +685,9 @@ bootloader(unsigned timeout)
 
 #if defined(TARGET_HW_PX4_FMU_V4)
 
-			if (check_silicon()) {
-				goto bad_silicon;
-			}
+				if (check_silicon()) {
+					goto bad_silicon;
+				}
 
 #endif
 
