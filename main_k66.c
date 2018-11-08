@@ -175,9 +175,11 @@ uint32_t
 board_get_devices(void)
 {
 	uint32_t devices = BOOT_DEVICES_SELECTION;
+
 	if (usb_connected) {
 		devices &= BOOT_DEVICES_FILTER_ONUSB;
 	}
+
 	return devices;
 }
 
