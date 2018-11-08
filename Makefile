@@ -10,6 +10,16 @@ export BL_BASE		?= $(wildcard .)
 export LIBOPENCM3	?= $(wildcard libopencm3)
 export LIBKINETIS  	?= $(wildcard lib/kinetis/NXP_Kinetis_Bootloader_2_0_0)
 MKFLAGS=--no-print-directory
+
+SRC_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
+COLOR_BLUE = \033[0;94m
+NO_COLOR   = \033[m
+
+define colorecho
++@echo -e '${COLOR_BLUE}${1} ${NO_COLOR}'
+endef
+
 #
 # Tools
 #
@@ -166,3 +176,16 @@ $(LIBOPENCM3): checksubmodules
 .PHONY: checksubmodules
 checksubmodules:
 	$(Q) ($(BL_BASE)/Tools/check_submodules.sh)
+
+# Astyle
+# --------------------------------------------------------------------
+.PHONY: check_format format
+
+check_format:
+	$(call colorecho,'Checking formatting with astyle')
+	@$(SRC_DIR)/Tools/check_code_style_all.sh
+	@cd $(SRC_DIR) && git diff --check
+
+format:
+	$(call colorecho,'Formatting with astyle')
+	@$(SRC_DIR)/Tools/check_code_style_all.sh --fix
