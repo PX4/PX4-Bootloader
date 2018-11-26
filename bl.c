@@ -80,6 +80,8 @@
 //
 
 #define BL_PROTOCOL_VERSION 		5		// The revision of the bootloader protocol
+//* Next revision needs to update
+
 // protocol bytes
 #define PROTO_INSYNC				0x12    // 'in sync' byte sent before status
 #define PROTO_EOC					0x20    // end of command
@@ -89,6 +91,8 @@
 #define PROTO_FAILED				0x11    // INSYNC/FAILED  - 'fail' response
 #define PROTO_INVALID				0x13	// INSYNC/INVALID - 'invalid' response for bad commands
 #define PROTO_BAD_SILICON_REV 		0x14 	// On the F4 series there is an issue with < Rev 3 silicon
+#define PROTO_RESERVED_0X15     0x15  // Reserved
+
 // see https://pixhawk.org/help/errata
 // Command bytes
 #define PROTO_GET_SYNC				0x21    // NOP for re-establishing sync
@@ -104,6 +108,11 @@
 #define PROTO_BOOT					0x30    // boot the application
 #define PROTO_DEBUG					0x31    // emit debug information - format not defined
 #define PROTO_SET_BAUD				0x33    // set baud rate on uart
+
+#define PROTO_RESERVED_0X36     0x36  // Reserved
+#define PROTO_RESERVED_0X37     0x37  // Reserved
+#define PROTO_RESERVED_0X38     0x38  // Reserved
+#define PROTO_RESERVED_0X39     0x39  // Reserved
 
 #define PROTO_PROG_MULTI_MAX    64	// maximum PROG_MULTI size
 #define PROTO_READ_MULTI_MAX    255	// size of the size field
