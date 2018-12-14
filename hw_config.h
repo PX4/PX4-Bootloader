@@ -708,7 +708,7 @@
 
 #elif  defined(TARGET_HW_OMNIBUSF4SD)
 
-# define APP_LOAD_ADDRESS               0x08004000
+# define APP_LOAD_ADDRESS               0x08008000
 # define BOOTLOADER_DELAY               5000
 # define BOARD_OMNIBUSF4SD
 # define INTERFACE_USB                  1
@@ -719,6 +719,8 @@
 # define BOARD_TYPE                     42
 # define BOARD_FLASH_SECTORS            11
 # define BOARD_FLASH_SIZE               (1024 * 1024)
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE	1
+# define APP_RESERVATION_SIZE			(1 * 16 * 1024) /* 1 16 Kib Sectors */
 
 # define OSC_FREQ                       8
 
