@@ -11,9 +11,10 @@ OBJS		:= $(COBJS) $(AOBJS)
 DEPS		:= $(COBJS:.o=.d)
 
 ELF		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).elf
+HEX		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).hex
 BINARY		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).bin
 
-all:	debug $(BUILD_DIR) $(ELF) $(BINARY)
+all:	debug $(BUILD_DIR) $(ELF) $(BINARY) $(HEX)
 
 debug:
 #	@echo SRCS=$(SRCS)
@@ -41,6 +42,9 @@ $(ELF):		$(OBJS) $(MAKEFILE_LIST)
 
 $(BINARY):	$(ELF)
 	$(OBJCOPY) -O binary $(ELF) $(BINARY)
+
+$(HEX):	$(ELF)
+	$(OBJCOPY) -Oihex $(ELF) $(HEX)
 
 # Dependencies for .o files
 -include $(DEPS)
