@@ -188,32 +188,6 @@ clock_deinit(void)
 }
 
 /*---------------------------------------------------------------------------*/
-/** @brief Program a Half Word to FLASH
-
-This performs all operations necessary to program a 16 bit word to FLASH memory.
-The program error flag should be checked separately for the event that memory
-was not properly erased.
-
-Status bit polling is used to detect end of operation.
-
-@param[in] address Full address of flash half word to be programmed.
-@param[in] data half word to write
-*/
-
-void flash_program_half_word(uint32_t address, uint16_t data)
-{
-	flash_wait_for_last_operation();
-
-	FLASH_CR |= FLASH_CR_PG;
-
-	MMIO16(address) = data;
-
-	flash_wait_for_last_operation();
-
-	FLASH_CR &= ~FLASH_CR_PG;
-}
-
-/*---------------------------------------------------------------------------*/
 /** @brief Program a 32 bit Word to FLASH
 
 This performs all operations necessary to program a 32 bit word to FLASH memory.
@@ -245,18 +219,6 @@ the FLASH programming manual for details.
 @param[in] page_address Full address of flash page to be erased.
 */
 
-void flash_erase_page(uint32_t page_address)
-{
-	flash_wait_for_last_operation();
-
-	FLASH_CR |= FLASH_CR_PER;
-	FLASH_AR = page_address;
-	FLASH_CR |= FLASH_CR_STRT;
-
-	flash_wait_for_last_operation();
-
-	FLASH_CR &= ~FLASH_CR_PER;
-}
 
 uint32_t
 flash_func_sector_size(unsigned sector)
