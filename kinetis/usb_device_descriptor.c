@@ -36,6 +36,11 @@
 
 #include "usb_device_descriptor.h"
 
+#undef USB_DEVICE_CONFIG_SELF_POWER
+#define USB_DEVICE_CONFIG_SELF_POWER (0)
+
+
+
 /*******************************************************************************
 * Variables
 ******************************************************************************/
@@ -121,9 +126,9 @@ uint8_t g_UsbDeviceDescriptor[USB_DESCRIPTOR_LENGTH_DEVICE] = {
 	/* Maximum packet size for endpoint zero (only 8, 16, 32, or 64 are valid) */
 	USB_CONTROL_MAX_PACKET_SIZE,
 	/* Vendor ID (assigned by the USB-IF) */
-	0xC9U, 0x1FU,
+	USB_SHORT_GET_LOW(USBVENDORID), USB_SHORT_GET_HIGH(USBVENDORID),
 	/* Product ID (assigned by the manufacturer) */
-	0x1c, 0x00,
+	USB_SHORT_GET_LOW(USBPRODUCTID), USB_SHORT_GET_HIGH(USBPRODUCTID),
 	/* Device release number in binary-coded decimal */
 	USB_SHORT_GET_LOW(USB_DEVICE_CDC_BCD_VERSION), USB_SHORT_GET_HIGH(USB_DEVICE_CDC_BCD_VERSION),
 	/* Index of string descriptor describing manufacturer */
@@ -131,7 +136,7 @@ uint8_t g_UsbDeviceDescriptor[USB_DESCRIPTOR_LENGTH_DEVICE] = {
 	/* Index of string descriptor describing product */
 	0x02,
 	/* Index of string descriptor describing the device's serial number */
-	0x00,
+	0x03,
 	/* Number of possible configurations */
 	USB_DEVICE_CONFIGURATION_COUNT,
 };
@@ -174,14 +179,14 @@ uint8_t g_UsbDeviceConfigurationDescriptor[USB_DESCRIPTOR_LENGTH_CONFIGURATION_A
 	USB_DESCRIPTOR_LENGTH_CDC_CALL_MANAG, /* Size of this descriptor in bytes */
 	USB_DESCRIPTOR_TYPE_CDC_CS_INTERFACE, /* CS_INTERFACE Descriptor Type */
 	USB_CDC_CALL_MANAGEMENT_FUNC_DESC,
-	0x01, /*Bit 0: Whether device handle call management itself 1, Bit 1: Whether device can send/receive call
+	0x00, /*Bit 0: Whether device handle call management itself 1, Bit 1: Whether device can send/receive call
              management information over a Data Class Interface 0 */
 	0x01, /* Indicates multiplexed commands are handled via data interface */
 
 	USB_DESCRIPTOR_LENGTH_CDC_ABSTRACT,   /* Size of this descriptor in bytes */
 	USB_DESCRIPTOR_TYPE_CDC_CS_INTERFACE, /* CS_INTERFACE Descriptor Type */
 	USB_CDC_ABSTRACT_CONTROL_FUNC_DESC,
-	0x06, /* Bit 0: Whether device supports the request combination of Set_Comm_Feature, Clear_Comm_Feature, and
+	0x00, /* Bit 0: Whether device supports the request combination of Set_Comm_Feature, Clear_Comm_Feature, and
              Get_Comm_Feature 0, Bit 1: Whether device supports the request combination of Set_Line_Coding,
              Set_Control_Line_State, Get_Line_Coding, and the notification Serial_State 1, Bit ...  */
 
@@ -273,21 +278,17 @@ uint8_t g_UsbDeviceString2[USB_DESCRIPTOR_LENGTH_STRING2] = {sizeof(g_UsbDeviceS
 							     0,
 							     ' ',
 							     0,
-							     'N',
+							     'F',
 							     0,
-							     'X',
+							     'M',
 							     0,
-							     'P',
+							     'U',
 							     0,
-							     'H',
+							     'K',
 							     0,
-							     'l',
+							     '6',
 							     0,
-							     'i',
-							     0,
-							     't',
-							     0,
-							     'e',
+							     '6',
 							     0,
 							     ' ',
 							     0,
@@ -301,13 +302,19 @@ uint8_t g_UsbDeviceString2[USB_DESCRIPTOR_LENGTH_STRING2] = {sizeof(g_UsbDeviceS
 							     0
 							    };
 
+uint8_t g_UsbDeviceString3[USB_DESCRIPTOR_LENGTH_STRING3] = {sizeof(g_UsbDeviceString3),
+							     USB_DESCRIPTOR_TYPE_STRING,
+							     '0',
+							     0,
+							    };
+
 uint8_t *g_UsbDeviceStringDescriptorArray[USB_DEVICE_STRING_COUNT] = {g_UsbDeviceString0, g_UsbDeviceString1,
-								      g_UsbDeviceString2
+								      g_UsbDeviceString2, g_UsbDeviceString3
 								     };
 
 /* Define string descriptor size */
 uint32_t g_UsbDeviceStringDescriptorLength[USB_DEVICE_STRING_COUNT] = {
-	sizeof(g_UsbDeviceString0), sizeof(g_UsbDeviceString1), sizeof(g_UsbDeviceString2)
+	sizeof(g_UsbDeviceString0), sizeof(g_UsbDeviceString1), sizeof(g_UsbDeviceString2), sizeof(g_UsbDeviceString3)
 };
 usb_language_t g_UsbDeviceLanguage[USB_DEVICE_LANGUAGE_COUNT] = {{
 		g_UsbDeviceStringDescriptorArray, g_UsbDeviceStringDescriptorLength, (uint16_t)0x0409,
