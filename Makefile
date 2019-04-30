@@ -53,7 +53,7 @@ export ARCH_SRCS	 = cdcacm.c  usart.c
 # string
 #
 TARGETS	= \
-	nxphlitev3_bl \
+	fmuk66v3_bl \
 	aerofcv1_bl \
 	auavx2v1_bl \
 	crazyflie_bl \
@@ -85,8 +85,8 @@ clean:
 # Specific bootloader targets.
 #
 
-nxphlitev3_bl: $(MAKEFILE_LIST) $(LIBKINETIS)
-	${MAKE} ${MKFLAGS} -f  Makefile.k66 TARGET_HW=NXPHLITE_V3  LINKER_FILE=kinetisk66.ld TARGET_FILE_NAME=$@
+fmuk66v3_bl: $(MAKEFILE_LIST) $(LIBKINETIS)
+	${MAKE} ${MKFLAGS} -f  Makefile.k66 TARGET_HW=FMUK66_V3  LINKER_FILE=kinetisk66.ld TARGET_FILE_NAME=$@
 
 auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AUAV_X2V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
