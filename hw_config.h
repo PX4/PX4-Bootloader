@@ -843,18 +843,18 @@
 # define BOARD_FORCE_BL_STATE			1
 
 /****************************************************************************
- * TARGET_HW_NXPHLITE_V3
+ * TARGET_HW_FMUK66_V3
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_NXPHLITE_V3)
+#elif  defined(TARGET_HW_FMUK66_V3)
 # define APP_LOAD_ADDRESS               0x00006000  // Reserve 24K for BL
 # define BOOTLOADER_DELAY               5000
 # define BOARD_NXPHLITEV3
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                0
-# define USBDEVICESTRING                "PX4 BL NXPHlite v3.x"
-# define USBPRODUCTID                   0x0011
-
+# define USBDEVICESTRING                "PX4 BL FMUK66 v3.x"
+# define USBPRODUCTID                   0x001c
+# define USBVENDORID                    0x1fc9
 # define BOARD_TYPE                     28
 # define _FLASH_KBYTES                  2048
 # define FLASH_SECTOR_SIZE              4096
