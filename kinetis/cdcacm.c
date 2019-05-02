@@ -108,7 +108,7 @@ static uint8_t s_countryCode[COMM_FEATURE_DATA_SIZE] = {(COUNTRY_SETTING >> 0U) 
 static usb_cdc_acm_info_t s_usbCdcAcmInfo USB_DATA_ALIGN = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0, 0} ;
 /* Data buffer for receiving and sending*/
 static uint8_t s_currRecvBuf[DATA_BUFF_SIZE] USB_DATA_ALIGN;
-volatile static uint32_t s_recvSize = 0;
+volatile static int32_t s_recvSize = 0;
 
 /* USB device class information */
 static usb_device_class_config_struct_t s_cdcAcmConfig[1] = {{
@@ -161,54 +161,52 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
 				 */
 				error = USB_DeviceCdcAcmSend(handle, USB_CDC_VCOM_BULK_IN_ENDPOINT, NULL, 0);
 
-			} else if ((1 == s_cdcVcom.attach) && (1 == s_cdcVcom.startTransactions)) {
-				if ((epCbParam->buffer != NULL) || ((epCbParam->buffer == NULL) && (epCbParam->length == 0))) {
-					/* User: add your own code for send complete event */
-					/* Schedule buffer for next receive event */
-					g_usb_tx_done = true;
-					error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
-								     g_UsbDeviceCdcVcomDicEndpoints[0].maxPacketSize);
+			} else if ((epCbParam->buffer != NULL) || ((epCbParam->buffer == NULL) && (epCbParam->length == 0))) {
+				/* User: add your own code for send complete event */
+				/* Schedule buffer for next receive event */
+				g_usb_tx_done = true;
+				error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
+							     g_UsbDeviceCdcVcomDicEndpoints[0].maxPacketSize);
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
     defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
-					s_waitForDataReceive = 1;
-					USB0->INTEN &= ~USB_INTEN_SOFTOKEN_MASK;
+				s_waitForDataReceive = 1;
+				USB0->INTEN &= ~USB_INTEN_SOFTOKEN_MASK;
 #endif
-				}
-
-			} else {
 			}
 		}
 		break;
 
 	case kUSB_DeviceCdcEventRecvResponse: {
-			if ((1 == s_cdcVcom.attach) && (1 == s_cdcVcom.startTransactions)) {
-				s_recvSize = epCbParam->length;
 
+			s_recvSize = epCbParam->length;
+
+			if (s_recvSize > 0) {
 				for (int i = 0; i < s_recvSize; i++) {
 					buf_put(s_currRecvBuf[i]);
 				}
 
 				s_recvSize = 0;
+			}
+
 
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
     defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
-				s_waitForDataReceive = 0;
-				USB0->INTEN |= USB_INTEN_SOFTOKEN_MASK;
+			s_waitForDataReceive = 0;
+			USB0->INTEN |= USB_INTEN_SOFTOKEN_MASK;
 #endif
 
-				if (!s_recvSize) {
-					/* Schedule buffer for next receive event */
-					error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
-								     g_UsbDeviceCdcVcomDicEndpoints[0].maxPacketSize);
+			if (s_recvSize == 0) {
+				/* Schedule buffer for next receive event */
+				error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
+							     g_UsbDeviceCdcVcomDicEndpoints[0].maxPacketSize);
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
     defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
-					s_waitForDataReceive = 1;
-					USB0->INTEN &= ~USB_INTEN_SOFTOKEN_MASK;
+				s_waitForDataReceive = 1;
+				USB0->INTEN &= ~USB_INTEN_SOFTOKEN_MASK;
 #endif
-				}
 			}
 		}
 		break;
@@ -341,7 +339,7 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
 			if (acmInfo->dteStatus & USB_DEVICE_CDC_CONTROL_SIG_BITMAP_DTE_PRESENCE) {
 				/* DTE_ACTIVATED */
 				if (1 == s_cdcVcom.attach) {
-					s_cdcVcom.startTransactions = 1;
+
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
     defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
@@ -355,7 +353,6 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
 			} else {
 				/* DTE_DEACTIVATED */
 				if (1 == s_cdcVcom.attach) {
-					s_cdcVcom.startTransactions = 0;
 				}
 			}
 		}
@@ -526,12 +523,13 @@ usb_cfini(void)
 		uint8_t khciIrq[] = USB_IRQS;
 		irqNo = khciIrq[CONTROLLER_ID - kUSB_ControllerKhci0];
 
+		NVIC_DisableIRQ((IRQn_Type)irqNo);
+		USB_DeviceClassDeinit(CONTROLLER_ID);
+
 		SIM->SOPT2 &= ~SIM_SOPT2_USBSRC_MASK;
 		USB0->CLK_RECOVER_IRC_EN = 0x01U;
 		USB0->CLK_RECOVER_CTRL = 0;
 
-		USB_DeviceClassDeinit(CONTROLLER_ID);
-		NVIC_DisableIRQ((IRQn_Type)irqNo);
 
 		CLOCK_DisableClock(kCLOCK_Usbfs0);
 	}
@@ -539,7 +537,7 @@ usb_cfini(void)
 
 int usb_cin(void)
 {
-	if ((!s_cdcVcom.attach) || (!s_cdcVcom.startTransactions)) { return -1; }
+	if ((!s_cdcVcom.attach) /*|| (!s_cdcVcom.startTransactions)*/) { return -1; }
 
 	return buf_get();
 }
@@ -553,20 +551,19 @@ usb_cout(uint8_t *buf, unsigned count)
 		abuff[i] = buf[i];
 	}
 
-	if ((s_cdcVcom.attach) && (s_cdcVcom.startTransactions)) {
-		while (count) {
-			unsigned len = (count > 64) ? 64 : count;
-
-			while (!g_usb_tx_done) {};
-
-			g_usb_tx_done = false;
-
-			while (kStatus_USB_Busy == USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, abuff, len));
-
-			count -= len;
-			buf += len;
-		}
+	while (count) {
+		unsigned len = (count > 64) ? 64 : count;
 
 		while (!g_usb_tx_done) {};
+
+		g_usb_tx_done = false;
+
+		while (kStatus_USB_Busy == USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, abuff, len));
+
+		count -= len;
+		buf += len;
 	}
+
+	while (!g_usb_tx_done) {};
+
 }
