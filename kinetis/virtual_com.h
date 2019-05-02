@@ -74,8 +74,6 @@ typedef struct _usb_cdc_vcom_struct {
 	class_handle_t cdcAcmHandle; /* USB CDC ACM class handle.                                                         */
 	volatile uint8_t attach;     /* A flag to indicate whether a usb device is attached. 1: attached, 0: not attached */
 	uint8_t speed;               /* Speed of USB device. USB_SPEED_FULL/USB_SPEED_LOW/USB_SPEED_HIGH.                 */
-	volatile uint8_t
-	startTransactions; /* A flag to indicate whether a CDC device is ready to transmit and receive data.    */
 	uint8_t currentConfiguration; /* Current configuration value. */
 	uint8_t currentInterfaceAlternateSetting
 	[USB_CDC_VCOM_INTERFACE_COUNT]; /* Current alternate setting value for each interface. */
