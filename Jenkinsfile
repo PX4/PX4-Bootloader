@@ -20,7 +20,7 @@ pipeline {
                      "crazyflie_bl",
                      "cube_f4_bl",
                      "mindpxv2_bl",
-                     "nxphlitev3_bl",
+                     "fmuk66v3_bl",
                      "omnibusf4sd_bl",
                      "px4flow_bl",
                      "px4fmuv2_bl",
