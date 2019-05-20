@@ -913,14 +913,19 @@
 # define BOARD_LED_ON                   GPIO_ClearPinsOutput
 # define BOARD_LED_OFF                  GPIO_SetPinsOutput
 
-# define BOARD_USART                    4
-# define BOARD_PORT_USART               C
-# define BOARD_PORT_USART_AF            kPORT_MuxAlt3
+# define BOARD_UART                     4
+# define BOARD_PORT_UART                C
+# define BOARD_PORT_UART_AF             kPORT_MuxAlt3
 # define BOARD_PIN_TX                   15
 # define BOARD_PIN_RX                   14
 
+
+
 # define BOARD_PORT_VBUS                E
 # define BOARD_PIN_VBUS                 8
+
+# define BOARD_PORT_UART_RTS            E
+# define BOARD_UART_RTS_PIN             27
 
 # define SERIAL_BREAK_DETECT_DISABLED   1
 # define USB_DATA_ALIGN __attribute__((aligned(2)))
