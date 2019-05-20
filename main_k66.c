@@ -137,7 +137,7 @@ board_test_usart_receiving_break()
 	while (cnt < 60) {
 		// Only read pin when SysTick timer is true
 		if (systick_get_countflag() == 1) {
-			if (GPIO_ReadPinInput(BOARD_PORT_USART, BOARD_PIN_RX) == 0) {
+			if (GPIO_ReadPinInput(BOARD_PORT_UART, BOARD_PIN_RX) == 0) {
 				cnt_consecutive_low++;	// Increment the consecutive low counter
 
 			} else {
@@ -260,6 +260,36 @@ board_init(void)
 
 #endif
 
+	/* Regardless of UART booting ensure CTS on Radio is set High to not enter
+	 * bootloader on sik
+	 */
+
+#if INTERFACE_USB == 0
+	/* enable Clock to Port E pin if USB was not selected to set RTS */
+
+	CLOCK_EnableClock(KINETIS_CLOCK_PORT(BOARD_PORT_UART_RTS));
+#endif
+
+	port_pin_config_t uart_rts_port_config = {
+		.pullSelect           = kPORT_PullDisable,
+		.slewRate             = kPORT_FastSlewRate,
+		.passiveFilterEnable  = kPORT_PassiveFilterDisable,
+		.openDrainEnable      = kPORT_OpenDrainDisable,
+		.driveStrength        = kPORT_LowDriveStrength,
+		.mux                  = kPORT_MuxAsGpio,
+		.lockRegister         = kPORT_UnLockRegister,
+	};
+
+	/*  Sets the port configuration */
+
+	PORT_SetPinConfig(KINETIS_PORT(BOARD_PORT_UART_RTS), BOARD_UART_RTS_PIN, &uart_rts_port_config);
+
+	gpio_pin_config_t rts_pin_config = {
+		kGPIO_DigitalOutput,
+		1,
+	};
+	GPIO_PinInit(KINETIS_GPIO(BOARD_PORT_UART_RTS), BOARD_UART_RTS_PIN, &rts_pin_config);
+
 #if INTERFACE_USART
 
 	/* configure USART clock */
@@ -268,7 +298,7 @@ board_init(void)
 
 	/* configure USART pins */
 
-	CLOCK_EnableClock(KINETIS_CLOCK_PORT(BOARD_PORT_USART));
+	CLOCK_EnableClock(KINETIS_CLOCK_PORT(BOARD_PORT_UART));
 
 	port_pin_config_t uart_port_config = {
 		.pullSelect           = kPORT_PullDisable,
@@ -276,13 +306,13 @@ board_init(void)
 		.passiveFilterEnable  = kPORT_PassiveFilterDisable,
 		.openDrainEnable      = kPORT_OpenDrainDisable,
 		.driveStrength        = kPORT_LowDriveStrength,
-		.mux                  = BOARD_PORT_USART_AF,
+		.mux                  = BOARD_PORT_UART_AF,
 		.lockRegister         = kPORT_UnLockRegister,
 	};
 
 	/*  Sets the port configuration */
 
-	PORT_SetMultiplePinsConfig(KINETIS_PORT(BOARD_PORT_USART), KINETIS_MASK(BOARD_PIN_TX) | KINETIS_MASK(BOARD_PIN_RX),
+	PORT_SetMultiplePinsConfig(KINETIS_PORT(BOARD_PORT_UART), KINETIS_MASK(BOARD_PIN_TX) | KINETIS_MASK(BOARD_PIN_RX),
 				   &uart_port_config);
 
 #endif
@@ -343,7 +373,7 @@ board_deinit(void)
 		kPORT_PinDisabledOrAnalog,
 		kPORT_UnLockRegister,
 	};
-	gpio_pin_config_t unconfigure__pin_config = {
+	gpio_pin_config_t unconfigure_pin_config = {
 		kGPIO_DigitalInput,
 		0,
 	};
@@ -353,7 +383,7 @@ board_deinit(void)
 	 * the voltage being bleed off by an inupt pin impedance will allow
 	 * enough time to boot the app
 	 */
-	GPIO_PinInit(KINETIS_GPIO(BOARD_POWER_PORT), BOARD_POWER_PIN_OUT, &unconfigure__pin_config);
+	GPIO_PinInit(KINETIS_GPIO(BOARD_POWER_PORT), BOARD_POWER_PIN_OUT, &unconfigure_pin_config);
 	PORT_SetPinConfig(KINETIS_PORT(BOARD_POWER_PORT), BOARD_POWER_PIN, &unconfigure_port_config);
 
 #endif
@@ -363,9 +393,13 @@ board_deinit(void)
 #endif
 
 #if INTERFACE_USART
-	PORT_SetMultiplePinsConfig(KINETIS_PORT(BOARD_PORT_USART), KINETIS_MASK(BOARD_PIN_TX) | KINETIS_MASK(BOARD_PIN_RX),
+	PORT_SetMultiplePinsConfig(KINETIS_PORT(BOARD_PORT_UART), KINETIS_MASK(BOARD_PIN_TX) | KINETIS_MASK(BOARD_PIN_RX),
 				   &unconfigure_port_config);
 #endif
+
+	/* deinitialise RTS */
+	GPIO_PinInit(KINETIS_GPIO(BOARD_PORT_UART_RTS), BOARD_UART_RTS_PIN, &unconfigure_pin_config);
+	PORT_SetPinConfig(KINETIS_PORT(BOARD_PORT_UART_RTS), BOARD_UART_RTS_PIN, &unconfigure_port_config);
 
 	/* deinitialise LEDs */
 	uint32_t leds = 0;
@@ -381,10 +415,10 @@ board_deinit(void)
 		GPIO_ClearPinsOutput(KINETIS_GPIO(BOARD_PORT_LEDS), leds);
 
 #if defined(BOARD_PIN_LED_ACTIVITY)
-		GPIO_PinInit(KINETIS_GPIO(BOARD_PORT_LEDS), BOARD_PIN_LED_ACTIVITY, &unconfigure__pin_config);
+		GPIO_PinInit(KINETIS_GPIO(BOARD_PORT_LEDS), BOARD_PIN_LED_ACTIVITY, &unconfigure_pin_config);
 #endif
 #if defined(BOARD_PIN_LED_BOOTLOADER)
-		GPIO_PinInit(KINETIS_GPIO(BOARD_PORT_LEDS), BOARD_PIN_LED_BOOTLOADER, &unconfigure__pin_config);
+		GPIO_PinInit(KINETIS_GPIO(BOARD_PORT_LEDS), BOARD_PIN_LED_BOOTLOADER, &unconfigure_pin_config);
 #endif
 
 		PORT_SetMultiplePinsConfig(KINETIS_PORT(BOARD_PORT_LEDS), leds, &unconfigure_port_config);
@@ -400,9 +434,13 @@ board_deinit(void)
 	CLOCK_DisableClock(KINETIS_CLOCK_PORT(BOARD_PORT_VBUS));
 #endif
 
+#if INTERFACE_USB == 0
+	CLOCK_DisableClock(KINETIS_CLOCK_PORT(BOARD_PORT_UART_RTS));
+#endif
+
 #if INTERFACE_USART
-	CLOCK_DisableClock(KINETIS_CLOCK_PORT(BOARD_PORT_USART));
-	CLOCK_DisableClock(KINETIS_CLOCK_UART(BOARD_USART));
+	CLOCK_DisableClock(KINETIS_CLOCK_PORT(BOARD_PORT_UART));
+	CLOCK_DisableClock(KINETIS_CLOCK_UART(BOARD_UART));
 #endif
 
 	if (leds) {
