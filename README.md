@@ -7,8 +7,8 @@
 Build all targets:
 
 ```
-git submodule init
-git submodule update
+git submodule sync --recursive
+git submodule update --init --recursive
 make
 ```
 
