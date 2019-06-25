@@ -6,7 +6,11 @@
 
 Build all targets:
 
-```make```
+```
+git submodule init
+git submodule update
+make
+```
 
 The binaries will be in `build/BOARDNAME/BOARDNAME.elf`. Two files are built: ELF files for use with JTAG adapters and BIN files for direct onboard upgrading.
 
