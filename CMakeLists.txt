@@ -220,6 +220,7 @@ endif()
 
 
 include_directories(.)
+include_directories(${PX4_BOARD_DIR})
 
 set(FW_NAME ${PX4_BOARD_VENDOR}_${PX4_BOARD_MODEL}.elf)
 
