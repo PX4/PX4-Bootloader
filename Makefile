@@ -1,17 +1,144 @@
+############################################################################
 #
-# Common Makefile for the PX4 bootloaders
+# Copyright (c) 2019 PX4 Development Team. All rights reserved.
 #
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name PX4 nor the names of its contributors may be
+#    used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+############################################################################
 
+# Enforce the presence of the GIT repository
 #
-# Paths to common dependencies
-#
-export BUILD_DIR_ROOT ?= build
-export BL_BASE		?= $(wildcard .)
-export LIBOPENCM3	?= $(wildcard libopencm3)
-export LIBKINETIS  	?= $(wildcard lib/kinetis/NXP_Kinetis_Bootloader_2_0_0)
-MKFLAGS=--no-print-directory
+# We depend on our submodules, so we have to prevent attempts to
+# compile without it being present.
+ifeq ($(wildcard .git),)
+    $(error YOU HAVE TO USE GIT TO DOWNLOAD THIS REPOSITORY. ABORTING.)
+endif
 
-SRC_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+# Help
+# --------------------------------------------------------------------
+# Don't be afraid of this makefile, it is just passing
+# arguments to cmake to allow us to keep the wiki pages etc.
+# that describe how to build the px4 firmware
+# the same even when using cmake instead of make.
+#
+# Example usage:
+#
+# make px4_fmu-v2_bootloader 			(builds)
+# make px4_fmu-v2_bootloader upload 	(builds and uploads)
+# make px4_fmu-v2_bootloader test 		(builds and tests)
+#
+# This tells cmake to build the nuttx px4_fmu-v2 default config in the
+# directory build/px4_fmu-v2_bootloader and then call make
+# in that directory with the target upload.
+
+# explicity set default build target
+all: px4_fmu-v5
+
+# define a space character to be able to explicitly find it in strings
+space := $(subst ,, )
+
+# Parsing
+# --------------------------------------------------------------------
+# assume 1st argument passed is the main target, the
+# rest are arguments to pass to the makefile generated
+# by cmake in the subdirectory
+FIRST_ARG := $(firstword $(MAKECMDGOALS))
+ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+j ?= 4
+
+NINJA_BIN := ninja
+ifndef NO_NINJA_BUILD
+	NINJA_BUILD := $(shell $(NINJA_BIN) --version 2>/dev/null)
+
+	ifndef NINJA_BUILD
+		NINJA_BIN := ninja-build
+		NINJA_BUILD := $(shell $(NINJA_BIN) --version 2>/dev/null)
+	endif
+endif
+
+ifdef NINJA_BUILD
+	PX4_CMAKE_GENERATOR := Ninja
+	PX4_MAKE := $(NINJA_BIN)
+
+	ifdef VERBOSE
+		PX4_MAKE_ARGS := -v
+	else
+		PX4_MAKE_ARGS :=
+	endif
+else
+	ifdef SYSTEMROOT
+		# Windows
+		PX4_CMAKE_GENERATOR := "MSYS\ Makefiles"
+	else
+		PX4_CMAKE_GENERATOR := "Unix\ Makefiles"
+	endif
+	PX4_MAKE = $(MAKE)
+	PX4_MAKE_ARGS = -j$(j) --no-print-directory
+endif
+
+SRC_DIR := $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))")
+
+ifdef PX4_CMAKE_BUILD_TYPE
+	CMAKE_ARGS += -DCMAKE_BUILD_TYPE=${PX4_CMAKE_BUILD_TYPE}
+endif
+
+# Functions
+# --------------------------------------------------------------------
+# describe how to build a cmake config
+define cmake-build
+	@$(eval BUILD_DIR = "$(SRC_DIR)/build/$(1)")
+	@# check if the desired cmake configuration matches the cache then CMAKE_CACHE_CHECK stays empty
+	@$(call cmake-cache-check)
+	@# make sure to start from scratch when switching from GNU Make to Ninja
+	@if [ $(PX4_CMAKE_GENERATOR) = "Ninja" ] && [ -e $(BUILD_DIR)/Makefile ]; then rm -rf $(BUILD_DIR); fi
+	@# only excplicitly configure the first build, if cache file already exists the makefile will rerun cmake automatically if necessary
+	@if [ ! -e $(BUILD_DIR)/CMakeCache.txt ] || [ $(CMAKE_CACHE_CHECK) ]; then \
+		mkdir -p $(BUILD_DIR) \
+		&& cd $(BUILD_DIR) \
+		&& cmake "$(SRC_DIR)" -G"$(PX4_CMAKE_GENERATOR)" $(CMAKE_ARGS) \
+		|| (rm -rf $(BUILD_DIR)); \
+	fi
+	@# run the build for the specified target
+	@cmake --build $(BUILD_DIR) -- $(PX4_MAKE_ARGS) $(ARGS)
+endef
+
+# check if the options we want to build with in CMAKE_ARGS match the ones which are already configured in the cache inside BUILD_DIR
+define cmake-cache-check
+	@# change to build folder which fails if it doesn't exist and CACHED_CMAKE_OPTIONS stays empty
+	@# fetch all previously configured and cached options from the build folder and transform them into the OPTION=VALUE format without type (e.g. :BOOL)
+	@$(eval CACHED_CMAKE_OPTIONS = $(shell cd $(BUILD_DIR) 2>/dev/null && cmake -L 2>/dev/null | sed -n 's/\([^[:blank:]]*\):[^[:blank:]]*\(=[^[:blank:]]*\)/\1\2/gp' ))
+	@# transform the options in CMAKE_ARGS into the OPTION=VALUE format without -D
+	@$(eval DESIRED_CMAKE_OPTIONS = $(shell echo $(CMAKE_ARGS) | sed -n 's/-D\([^[:blank:]]*=[^[:blank:]]*\)/\1/gp' ))
+	@# find each currently desired option in the already cached ones making sure the complete configured string value is the same
+	@$(eval VERIFIED_CMAKE_OPTIONS = $(foreach option,$(DESIRED_CMAKE_OPTIONS),$(strip $(findstring $(option)$(space),$(CACHED_CMAKE_OPTIONS)))))
+	@# if the complete list of desired options is found in the list of verified options we don't need to reconfigure and CMAKE_CACHE_CHECK stays empty
+	@$(eval CMAKE_CACHE_CHECK = $(if $(findstring $(DESIRED_CMAKE_OPTIONS),$(VERIFIED_CMAKE_OPTIONS)),,y))
+endef
 
 COLOR_BLUE = \033[0;94m
 NO_COLOR   = \033[m
@@ -20,162 +147,70 @@ define colorecho
 +@echo -e '${COLOR_BLUE}${1} ${NO_COLOR}'
 endef
 
-#
-# Tools
-#
-export CC	 	 = arm-none-eabi-gcc
-export OBJCOPY		 = arm-none-eabi-objcopy
+# Get a list of all config targets boards/*/*.cmake
+ALL_CONFIG_TARGETS := $(shell find boards -maxdepth 3 -mindepth 3 -name 'bootloader.cmake' -print | sed -e 's/boards\///' | sed -e 's/\.cmake//' | sed -e 's/\//_/g' | sort)
 
-#
-# Common configuration
-#
-export FLAGS		 = -std=gnu99 \
-			   -Os \
-			   -g \
-			   -Wundef \
-			   -Wall \
-			   -fno-builtin \
-			   -I$(BL_BASE)/$(LIBOPENCM3)/include \
-			   -I$(BL_BASE)/. \
-			   -ffunction-sections \
-			   -nostartfiles \
-			   -lnosys \
-			   -Wl,-gc-sections \
-			   -Wl,-g \
-			   -Werror
+# ADD CONFIGS HERE
+# --------------------------------------------------------------------
+#  Do not put any spaces between function arguments.
 
-export COMMON_SRCS	 = bl.c
-export ARCH_SRCS	 = cdcacm.c  usart.c
+# All targets.
+$(ALL_CONFIG_TARGETS):
+	@$(eval PX4_CONFIG = $@)
+	@$(eval CMAKE_ARGS += -DCONFIG=$(PX4_CONFIG))
+	@$(call cmake-build,$(PX4_CONFIG)$(BUILD_DIR_SUFFIX))
 
-#
-# Bootloaders to build
-# Note: px4fmuv3_bl is the same as px4fmuv2_bl except for a different USB device
-# string
-#
-TARGETS	= \
-	fmuk66v3_bl \
-	aerofcv1_bl \
-	auavx2v1_bl \
-	crazyflie_bl \
-	mindpxv2_bl \
-	omnibusf4sd_bl \
-	px4aerocore_bl \
-	px4discovery_bl \
-	px4flow_bl \
-	px4fmu_bl \
-	px4fmuv2_bl \
-	px4fmuv3_bl \
-	px4fmuv4_bl \
-	px4fmuv4pro_bl \
-	px4fmuv5_bl \
-	px4io_bl \
-	px4iov3_bl \
-	tapv1_bl \
-	cube_f4_bl \
-	avx_v1_bl
+# Filter for only default targets to allow omiting the "_bootloader" postfix
+CONFIG_TARGETS_BOOTLOADER := $(patsubst %_bootloader,%,$(filter %_bootloader,$(ALL_CONFIG_TARGETS)))
+$(CONFIG_TARGETS_BOOTLOADER):
+	@$(eval PX4_CONFIG = $@_bootloader)
+	@$(eval CMAKE_ARGS += -DCONFIG=$(PX4_CONFIG))
+	@$(call cmake-build,$(PX4_CONFIG)$(BUILD_DIR_SUFFIX))
 
-all:	$(TARGETS) sizes
+all_config_targets: $(ALL_CONFIG_TARGETS)
+all_bootloader_targets: $(CONFIG_TARGETS_BOOTLOADER)
 
-clean:
-	cd libopencm3 && make --no-print-directory clean && cd ..
-	rm -f *.elf *.bin # Remove any elf or bin files contained directly in the Bootloader directory
-	rm -rf build # Remove build directories
+# All targets with just dependencies but no recipe must either be marked as phony (or have the special @: as recipe).
+.PHONY: all posix all_config_targets all_bootloader_targets
 
-#
-# Specific bootloader targets.
-#
+# Other targets
+# --------------------------------------------------------------------
 
-fmuk66v3_bl: $(MAKEFILE_LIST) $(LIBKINETIS)
-	${MAKE} ${MKFLAGS} -f  Makefile.k66 TARGET_HW=FMUK66_V3  LINKER_FILE=kinetisk66.ld TARGET_FILE_NAME=$@
+.PHONY: px4fmu_firmware
 
-auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AUAV_X2V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+# px4fmu bootloader firmware
+px4fmu_firmware: \
+	check_airmind_mindpx-v2_bootloader \
+	check_av_x-v1_bootloader \
+	check_bitcraze_crazyflie_bootloader \
+	check_intel_aerofc-v1_bootloader \
+	check_mro_x21-v1_bootloader \
+	check_nxp_fmuk66-v3_bootloader \
+	check_omnibus_f4sd_bootloader \
+	check_px4_fmu-v2_bootloader \
+	check_px4_fmu-v3_bootloader \
+	check_px4_fmu-v4_bootloader \
+	check_px4_fmu-v4pro_bootloader \
+	check_px4_fmu-v5_bootloader \
+	check_px4_io-v2_bootloader \
+	sizes
 
-px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+.PHONY: sizes quick_check
 
-px4fmuv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V2  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-px4fmuv3_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V3  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-px4fmuv4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-px4fmuv4pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V4_PRO LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@ EXTRAFLAGS=-DSTM32F469
-
-px4fmuv5_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=PX4_FMU_V5 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
-
-mindpxv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=MINDPX_V2 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-px4discovery_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_DISCOVERY_V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-px4flow_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FLOW_V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-px4aerocore_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_AEROCORE_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-crazyflie_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=CRAZYFLIE LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-omnibusf4sd_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=OMNIBUSF4SD LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-cube_f4_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=CUBE_F4  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-cube_f7_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=CUBE_F7 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
-
-avx_v1_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=AV_X_V1 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
-
-# Default bootloader delay is *very* short, just long enough to catch
-# the board for recovery but not so long as to make restarting after a
-# brownout problematic.
-#
-px4io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f1 TARGET_HW=PX4_PIO_V1 LINKER_FILE=stm32f1.ld TARGET_FILE_NAME=$@
-
-px4iov3_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f3 TARGET_HW=PX4_PIO_V3 LINKER_FILE=stm32f3.ld TARGET_FILE_NAME=$@
-
-tapv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=TAP_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AEROFC_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
-#
-# Show sizes
-#
-.PHONY: sizes
 sizes:
-	@-find build/*/ -name '*.elf' -type f | xargs size 2> /dev/null || :
+	@-find build -name *.elf -type f | xargs size 2> /dev/null || :
 
-#
-# Binary management
-#
-.PHONY: deploy
-deploy:
-	zip -j Bootloader.zip build/*/*.bin
+# All default targets that don't require a special build environment
+check: px4fmu_firmware check_format
 
-#
-# Submodule management
-#
+# quick_check builds a single nuttx and posix target, runs testing, and checks the style
+quick_check: check_px4_fmu-v5_bootloader check_format
 
-$(LIBOPENCM3): checksubmodules
-	${MAKE} -C $(LIBOPENCM3) lib
-
-.PHONY: checksubmodules
-checksubmodules:
-	$(Q) ($(BL_BASE)/Tools/check_submodules.sh)
+check_%:
+	@echo
+	$(call colorecho,'Building' $(subst check_,,$@))
+	@$(MAKE) --no-print-directory $(subst check_,,$@)
+	@echo
 
 # Astyle
 # --------------------------------------------------------------------
@@ -183,9 +218,54 @@ checksubmodules:
 
 check_format:
 	$(call colorecho,'Checking formatting with astyle')
-	@$(SRC_DIR)/Tools/check_code_style_all.sh
-	@cd $(SRC_DIR) && git diff --check
+	@"$(SRC_DIR)"/Tools/check_code_style_all.sh
+	@cd "$(SRC_DIR)" && git diff --check
 
 format:
 	$(call colorecho,'Formatting with astyle')
-	@$(SRC_DIR)/Tools/check_code_style_all.sh --fix
+	@"$(SRC_DIR)"/Tools/astyle/check_code_style_all.sh --fix
+
+# Cleanup
+# --------------------------------------------------------------------
+.PHONY: clean submodulesclean submodulesupdate distclean
+
+clean:
+	@rm -rf "$(SRC_DIR)"/build
+
+submodulesclean:
+	@git submodule foreach --quiet --recursive git clean -ff -x -d
+	@git submodule update --quiet --init --recursive --force || true
+	@git submodule sync --recursive
+	@git submodule update --init --recursive --force
+
+submodulesupdate:
+	@git submodule update --quiet --init --recursive || true
+	@git submodule sync --recursive
+	@git submodule update --init --recursive
+
+distclean:
+	@git submodule deinit -f .
+	@git clean -ff -x -d -e ".project" -e ".cproject" -e ".idea" -e ".settings" -e ".vscode"
+
+# Help / Error
+# --------------------------------------------------------------------
+
+# All other targets are handled by PX4_MAKE. Add a rule here to avoid printing an error.
+%:
+	$(if $(filter $(FIRST_ARG),$@), \
+		$(error "$@ cannot be the first argument. Use '$(MAKE) help|list_config_targets' to get a list of all possible [configuration] targets."),@#)
+
+# Print a list of non-config targets (based on http://stackoverflow.com/a/26339924/1487069)
+help:
+	@echo "Usage: $(MAKE) <target>"
+	@echo "Where <target> is one of:"
+	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | \
+		awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | \
+		egrep -v -e '^[^[:alnum:]]' -e '^($(subst $(space),|,$(ALL_CONFIG_TARGETS)))$$' -e '_bootloader$$' -e '^(posix|eagle|Makefile)'
+	@echo
+	@echo "Or, $(MAKE) <config_target> [<make_target(s)>]"
+	@echo "Use '$(MAKE) list_config_targets' for a list of configuration targets."
+
+# Print a list of all config targets.
+list_config_targets:
+	@for targ in $(patsubst %_default,%[_bootloader],$(ALL_CONFIG_TARGETS)); do echo $$targ; done

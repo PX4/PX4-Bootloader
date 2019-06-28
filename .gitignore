@@ -1,12 +1,7 @@
-.DS_Store
-.cproject
-.project
-.settings
-*.o
-*.d
-*.elf
-*.bin
-Bootloader.zip
-Bootloader.sublime-workspace
-.gdbinit
-build/
+*~
+build/*
+
+# CLion ignores
+.idea
+cmake-build-*/
+

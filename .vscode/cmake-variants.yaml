@@ -1,0 +1,48 @@
+CONFIG:
+  default: px4_fmu-v5
+  choices:
+    px4_fmu-v2:
+      short: px4_fmu-v2
+      buildType: MinSizeRel
+      settings:
+        CONFIG: px4_fmu-v2
+    px4_fmu-v3:
+      short: px4_fmu-v3
+      buildType: MinSizeRel
+      settings:
+        CONFIG: px4_fmu-v3
+    px4_fmu-v4:
+      short: px4_fmu-v4
+      buildType: MinSizeRel
+      settings:
+        CONFIG: px4_fmu-v4
+    px4_fmu-v4pro:
+      short: px4_fmu-v4pro
+      buildType: MinSizeRel
+      settings:
+        CONFIG: px4_fmu-v4pro
+    px4_fmu-v5:
+      short: px4_fmu-v5
+      buildType: MinSizeRel
+      settings:
+        CONFIG: px4_fmu-v5
+    airmind_mindpx-v2:
+      short: airmind_mindpx-v2
+      buildType: MinSizeRel
+      settings:
+        CONFIG: airmind_mindpx-v2
+    av_x-v1:
+      short: av-x
+      buildType: MinSizeRel
+      settings:
+        CONFIG: av_x-v1
+    intel_aerofc-v1:
+      short: intel_aerofc-v1
+      buildType: MinSizeRel
+      settings:
+        CONFIG: intel_aerofc-v1
+    nxp_fmuk66-v3:
+      short: nxp_fmuk66-v3
+      buildType: MinSizeRel
+      settings:
+        CONFIG: nxp_fmuk66-v3

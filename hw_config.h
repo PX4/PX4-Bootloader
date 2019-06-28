@@ -276,10 +276,10 @@
  * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
 */
 /****************************************************************************
- * TARGET_HW_PX4_FMU_V4_PRO
+ * TARGET_HW_PX4_FMU_V4PRO
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_PX4_FMU_V4_PRO)
+#elif  defined(TARGET_HW_PX4_FMU_V4PRO)
 
 # define APP_LOAD_ADDRESS               0x08004000
 # define BOOTLOADER_DELAY               5000
@@ -385,10 +385,10 @@
 */
 
 /****************************************************************************
- * TARGET_HW_MINDPX_V2
+ * TARGET_HW_AIRMIND_MINDPX_V2
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_MINDPX_V2)
+#elif  defined(TARGET_HW_AIRMIND_MINDPX_V2)
 
 # define APP_LOAD_ADDRESS               0x08004000
 # define BOOTLOADER_DELAY               5000
@@ -494,10 +494,10 @@
 # define BOARD_LED_OFF                  gpio_clear
 
 /****************************************************************************
- * TARGET_HW_PX4_PIO_V1 or TARGET_HW_PX4_PIO_V2
+ * TARGET_HW_PX4_IO_V1 or TARGET_HW_PX4_IO_V2
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_PX4_PIO_V1) ||  defined(TARGET_HW_PX4_PIO_V2)
+#elif  defined(TARGET_HW_PX4_IO_V1) ||  defined(TARGET_HW_PX4_IO_V2)
 
 # define APP_LOAD_ADDRESS               0x08001000
 # define APP_SIZE_MAX                   0xf000
@@ -540,10 +540,10 @@
 # define FLASH_SECTOR_SIZE              0x400
 
 /****************************************************************************
- * TARGET_HW_PX4_PIO_V3
+ * TARGET_HW_PX4_IO_V3
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_PX4_PIO_V3)
+#elif  defined(TARGET_HW_PX4_IO_V3)
 
 # define APP_LOAD_ADDRESS               0x08001000
 # define APP_SIZE_MAX                   0x3f000
@@ -672,10 +672,10 @@
 #define  SERIAL_BREAK_DETECT_DISABLED   1
 
 /****************************************************************************
- * TARGET_HW_CRAZYFLIE
+ * TARGET_HW_BITCRAZE_CRAZYFLIE
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_CRAZYFLIE)
+#elif  defined(TARGET_HW_BITCRAZE_CRAZYFLIE)
 
 # define APP_LOAD_ADDRESS               0x08004000
 # define BOOTLOADER_DELAY               5000
@@ -703,10 +703,10 @@
 # define USBMFGSTRING                   "Bitcraze AB"
 
 /****************************************************************************
- * TARGET_HW_OMNIBUS_NXT
+ * TARGET_HW_OMNIBUS_F4SD
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_OMNIBUSF4SD)
+#elif  defined(TARGET_HW_OMNIBUS_F4SD)
 
 # define APP_LOAD_ADDRESS               0x08008000
 # define BOOTLOADER_DELAY               5000
@@ -738,10 +738,10 @@
 # define USBMFGSTRING                   "Vertile"
 
 /****************************************************************************
- * TARGET_HW_AUAV_X2V1
+ * TARGET_HW_MRO_X21_V1
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_AUAV_X2V1)
+#elif defined(TARGET_HW_MRO_X21_V1)
 
 # define APP_LOAD_ADDRESS               0x08004000
 # define BOOTLOADER_DELAY               5000
@@ -795,10 +795,10 @@
 # define USBMFGSTRING                   "AUAV"
 
 /****************************************************************************
- * TARGET_HW_PX4_AEROFC_V1
+ * TARGET_HW_INTEL_AEROFC_V1
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_AEROFC_V1)
+#elif  defined(TARGET_HW_INTEL_AEROFC_V1)
 
 # define APP_LOAD_ADDRESS			0x0800C000
 # define BOOTLOADER_DELAY			5000
@@ -843,10 +843,10 @@
 # define BOARD_FORCE_BL_STATE			1
 
 /****************************************************************************
- * TARGET_HW_FMUK66_V3
+ * TARGET_HW_NXP_FMUK66_V3
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_FMUK66_V3)
+#elif  defined(TARGET_HW_NXP_FMUK66_V3)
 # define APP_LOAD_ADDRESS               0x00006000  // Reserve 24K for BL
 # define BOOTLOADER_DELAY               5000
 # define BOARD_NXPHLITEV3

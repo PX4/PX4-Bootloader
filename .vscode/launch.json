@@ -1,0 +1,84 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug nxp_fmuk66-v3 (jlink)",
+            "device": "MK66FN2M0xxx18",
+            //"svdFile": "${workspaceRoot}/../cmsis-svd/data/STMicro/XXXX.svd",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "interface": "swd",
+            "cwd": "${workspaceRoot}",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "set print pretty"
+            ]
+        },
+        {
+            "name": "Debug px4_fmu-v2/v3/v4 (jlink)",
+            "device": "STM32F427VI",
+            "svdFile": "${workspaceRoot}/../cmsis-svd/data/STMicro/STM32F427.svd",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "interface": "swd",
+            "cwd": "${workspaceRoot}",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "set print pretty",
+            ]
+        },
+        {
+            "name": "Debug px4_fmu-v2/v3/v4 (blackmagic)",
+            "device": "STM32F427VI",
+            "svdFile": "${workspaceRoot}/../cmsis-svd/data/STMicro/STM32F427.svd",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "bmp",
+            "BMPGDBSerialPort": "/dev/ttyACM0",
+            "interface": "swd",
+            "cwd": "${workspaceRoot}",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "set print pretty",
+            ]
+        },
+        {
+            "name": "Debug px4_fmu-v4pro (jlink)",
+            "device": "STM32F469VI",
+            "svdFile": "${workspaceRoot}/../cmsis-svd/data/STMicro/STM32F469.svd",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "interface": "swd",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "set print pretty",
+            ]
+        },
+        {
+            "name": "Debug px4_fmu-v5 (jlink)",
+            "device": "STM32F765VI",
+            "svdFile": "${workspaceRoot}/../cmsis-svd/data/STMicro/STM32F7x5.svd",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "interface": "swd",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "set print pretty",
+            ]
+        }
+    ]
+}

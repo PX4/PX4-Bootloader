@@ -8,27 +8,25 @@ pipeline {
       steps {
         script {
           def build_nodes = [:]
-
           def docker_images = [
-            nuttx: "px4io/px4-dev-nuttx:2019-02-14",
+            nuttx: "px4io/px4-dev-nuttx:2019-03-08",
           ]
 
           def nuttx_builds_archive = [
             target: [
-                     "auavx2v1_bl",
-                     "avx_v1_bl",
-                     "crazyflie_bl",
-                     "cube_f4_bl",
-                     "mindpxv2_bl",
-                     "fmuk66v3_bl",
-                     "omnibusf4sd_bl",
-                     "px4flow_bl",
-                     "px4fmuv2_bl",
-                     "px4fmuv3_bl",
-                     "px4fmuv4_bl",
-                     "px4fmuv4pro_bl",
-                     "px4fmuv5_bl",
-                     "px4io_bl"
+                     "airmind_mindpx-v2_bootloader",
+                     "av_x-v1_bootloader",
+                     "bitcraze_crazyflie_bootloader",
+                     "intel_aerofc-v1_bootloader",
+                     "mro_x21-v1_bootloader",
+                     "nxp_fmuk66-v3_bootloader",
+                     "omnibus_f4sd_bootloader",
+                     "px4_fmu-v2_bootloader",
+                     "px4_fmu-v3_bootloader",
+                     "px4_fmu-v4_bootloader",
+                     "px4_fmu-v4pro_bootloader",
+                     "px4_fmu-v5_bootloader",
+                     "px4_io-v2_bootloader"
             ],
             image: docker_images.nuttx,
             archive: true
@@ -72,8 +70,7 @@ def createBuildNode(Boolean archive, String docker_image, String target) {
             try {
               sh('export')
               checkout(scm)
-              sh('git clean -ff -x -d .')
-              sh('git submodule update --init --recursive --force')
+              sh('make distclean')
               sh('git fetch --tags')
               sh('ccache -z')
               sh('make ' + target)
@@ -87,8 +84,7 @@ def createBuildNode(Boolean archive, String docker_image, String target) {
               throw (exc)
             }
             finally {
-              sh('git submodule deinit -f .')
-              sh('git clean -ff -x -d .')
+              sh('make distclean')
             }
           }
       }
