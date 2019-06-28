@@ -75,7 +75,7 @@ static uint8_t usbd_control_buffer[128];
 
 static const struct usb_device_descriptor dev = {
 	.bLength = USB_DT_DEVICE_SIZE,
-	.bDescriptorType = USB_DT_DEVICE,	/**< Specifies he descriptor type */
+	.bDescriptorType = USB_DT_DEVICE,	/**< Specifies the descriptor type */
 	.bcdUSB = 0x0200,					/**< The USB interface version, binary coded (2.0) */
 	.bDeviceClass = USB_CLASS_CDC,		/**< USB device class, CDC in this case */
 	.bDeviceSubClass = 0,

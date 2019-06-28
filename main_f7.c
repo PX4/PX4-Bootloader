@@ -27,6 +27,14 @@
 #  define UART8    UART8_BASE
 #endif
 
+// A board may disable VBUS sensing, but still provide a (non-standard) VBUS
+// sensing pin (and use it for fast booting when USB is disconnected). If VBUS
+// sensing is enabled, only PA9 can be used.
+#ifndef BOARD_USB_VBUS_SENSE_DISABLED
+# define BOARD_PORT_VBUS                GPIOA
+# define BOARD_PIN_VBUS                 GPIO9
+#endif
+
 /* flash parameters that we should not really know */
 static struct {
 	uint32_t	sector_number;
@@ -146,9 +154,9 @@ static void board_init(void);
 
 /* standard clocking for all F7 boards: 216MHz w/ overdrive
  *
- * f_voc = f_osc * (PLLN / PLLM) = OSC_FREQ * PLLN / OSC_FREQ = PLLN = 432
- * f_pll = f_voc / PLLP = PLLN / PLLP = 216
- * f_usb_sdmmc = f_voc / PLLQ = 48
+ * f_vco = f_osc * (PLLN / PLLM) = OSC_FREQ * PLLN / OSC_FREQ = PLLN = 432
+ * f_pll = f_vco / PLLP = PLLN / PLLP = 216
+ * f_usb_sdmmc = f_vco / PLLQ = 48
  */
 static const struct rcc_clock_scale clock_setup = {
 	/* 216MHz */
@@ -346,11 +354,10 @@ board_init(void)
 #endif
 
 #if INTERFACE_USB
-	/* enable Port A GPIO9 to sample VBUS */
+#if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
+	/* enable configured GPIO to sample VBUS */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_GPIOAEN);
-#  if defined(USE_VBUS_PULL_DOWN)
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
-#  endif
+#endif
 #endif
 
 #if INTERFACE_USART
@@ -812,15 +819,16 @@ main(void)
 	 * If the force-bootloader pins are tied, we will stay here until they are removed and
 	 * we then time out.
 	 */
-#if defined(BOARD_USB_VBUS_SENSE_DISABLED)
-	try_boot = false;
-#else
+#if defined(BOARD_PORT_VBUS)
 
-	if (gpio_get(GPIOA, GPIO9) != 0) {
+	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
 		usb_connected = true;
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
+
+#else
+	try_boot = false;
 
 #endif
 #endif
