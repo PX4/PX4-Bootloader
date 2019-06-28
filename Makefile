@@ -53,10 +53,13 @@ export ARCH_SRCS	 = cdcacm.c  usart.c
 # string
 #
 TARGETS	= \
-	fmuk66v3_bl \
 	aerofcv1_bl \
 	auavx2v1_bl \
+	avx_v1_bl \
 	crazyflie_bl \
+	cube_f4_bl \
+	fmuk66v3_bl \
+	kakutef7_bl \
 	mindpxv2_bl \
 	omnibusf4sd_bl \
 	px4aerocore_bl \
@@ -70,9 +73,7 @@ TARGETS	= \
 	px4fmuv5_bl \
 	px4io_bl \
 	px4iov3_bl \
-	tapv1_bl \
-	cube_f4_bl \
-	avx_v1_bl
+	tapv1_bl
 
 all:	$(TARGETS) sizes
 
@@ -90,6 +91,9 @@ fmuk66v3_bl: $(MAKEFILE_LIST) $(LIBKINETIS)
 
 auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AUAV_X2V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+kakutef7_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=KAKUTEF7 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
 px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@

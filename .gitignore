@@ -6,6 +6,7 @@
 *.d
 *.elf
 *.bin
+*.hex
 Bootloader.zip
 Bootloader.sublime-workspace
 .gdbinit
