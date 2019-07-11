@@ -1014,6 +1014,36 @@
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
+/****************************************************************************
+ * TARGET_HW_SMARTAP_PRO
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_SMARTAP_PRO)
+
+# define APP_LOAD_ADDRESS               0x08008000
+# define BOOTLOADER_DELAY               5000
+# define BOARD_SMARTAP_PRO
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                0
+# define USBDEVICESTRING                "SmartAP PRO BL"
+# define USBPRODUCTID                   0x0011
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     32
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
+# define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+
+# define OSC_FREQ                       8
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO3
+# define BOARD_PIN_LED_BOOTLOADER       GPIO2
+# define BOARD_PORT_LEDS		        GPIOH
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOHEN
+# define BOARD_LED_ON                   gpio_set
+# define BOARD_LED_OFF                  gpio_clear
+
+
 #else
 # error Undefined Target Hardware
 #endif
