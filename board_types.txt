@@ -55,4 +55,5 @@ AP_HW_PIXHAWK4PRO                     139
 AP_HW_CUBEORANGE                      140
 AP_HW_MRO_CONTROL_ZERO                141
 AP_HW_MRO_CONTROL_ZERO_OEM            142
+AP_HW_MATEKF765_WING                  143
 AP_HW_F4BY                             20 # value due to previous release by vendor
