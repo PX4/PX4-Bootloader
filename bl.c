@@ -633,7 +633,7 @@ bootloader(unsigned timeout)
 				flash_func_erase_sector(i);
 			}
 
-			// enable the LED while verifying the erase
+			// disable the LED while verifying the erase
 			led_set(LED_OFF);
 
 			// verify the erase
