@@ -60,6 +60,7 @@ TARGETS	= \
 	cube_f4_bl \
 	fmuk66v3_bl \
 	kakutef7_bl \
+	matekf405wing_bl \
 	mindpxv2_bl \
 	omnibusf4sd_bl \
 	px4aerocore_bl \
@@ -95,6 +96,9 @@ auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 kakutef7_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=KAKUTEF7 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+
+matekf405wing_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=MATEKF405_WING LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 px4fmu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_FMU_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@

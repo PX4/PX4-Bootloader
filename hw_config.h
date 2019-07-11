@@ -782,6 +782,49 @@
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /****************************************************************************
+ * TARGET_HW_MATEKF405_WING
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_MATEKF405_WING)
+
+# define APP_LOAD_ADDRESS               0x0800C000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                1
+# define USBDEVICESTRING                "PX4 BL Matek F405-WING"
+# define USBPRODUCTID                   0x007f
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     127
+# define BOARD_FLASH_SECTORS            23
+# define BOARD_FLASH_SIZE               (1024 * 1024)
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE  2
+# define APP_RESERVATION_SIZE           (2 * 16 * 1024) /* 2 16 Kib Sectors */
+
+# define USBMFGSTRING                   "Matek Systems"
+
+# define OSC_FREQ                       8
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO13
+# define BOARD_PIN_LED_BOOTLOADER       GPIO14
+# define BOARD_PORT_LEDS                GPIOA
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOAEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USART                    USART1
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
+
+# define BOARD_PORT_USART               GPIOA
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO9
+# define BOARD_PIN_RX                   GPIO10
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
+
+/****************************************************************************
  * TARGET_HW_AUAV_X2V1
  ****************************************************************************/
 
