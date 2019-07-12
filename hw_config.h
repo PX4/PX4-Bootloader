@@ -1022,11 +1022,10 @@
 
 # define APP_LOAD_ADDRESS               0x08008000
 # define BOOTLOADER_DELAY               5000
-# define BOARD_SMARTAP_PRO
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                0
-# define USBDEVICESTRING                "SmartAP PRO BL"
-# define USBPRODUCTID                   0x0011
+# define USBDEVICESTRING                "PX4 BL SmartAP PRO"
+# define USBPRODUCTID                   0x0020
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     32

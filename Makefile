@@ -73,7 +73,7 @@ TARGETS	= \
 	px4fmuv5_bl \
 	px4io_bl \
 	px4iov3_bl \
-	tapv1_bl
+	tapv1_bl \
 	smartap_pro_bl
 
 all:	$(TARGETS) sizes
