@@ -25,6 +25,7 @@ TARGET_HW_AEROFC_V1                    65
 TARGET_HW_CUBE_F4                       9
 TARGET_HW_AV_V1                        29
 TARGET_HW_KAKUTEF7                    123
+TARGET_HW_SMARTAP_PRO                  32
 
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3

@@ -28,7 +28,8 @@ pipeline {
                      "px4fmuv4_bl",
                      "px4fmuv4pro_bl",
                      "px4fmuv5_bl",
-                     "px4io_bl"
+                     "px4io_bl",
+                     "smartap_pro_bl"
             ],
             image: docker_images.nuttx,
             archive: true

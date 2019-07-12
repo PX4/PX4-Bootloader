@@ -73,7 +73,8 @@ TARGETS	= \
 	px4fmuv5_bl \
 	px4io_bl \
 	px4iov3_bl \
-	tapv1_bl
+	tapv1_bl \
+	smartap_pro_bl
 
 all:	$(TARGETS) sizes
 
@@ -139,6 +140,9 @@ cube_f7_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 
 avx_v1_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=AV_X_V1 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+
+smartap_pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=SMARTAP_PRO LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
 # Default bootloader delay is *very* short, just long enough to catch
 # the board for recovery but not so long as to make restarting after a
