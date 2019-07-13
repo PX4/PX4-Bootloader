@@ -374,9 +374,7 @@ board_init(void)
 #if INTERFACE_USB
 #if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	/* enable configured GPIO to sample VBUS */
-	rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-#elif defined(BOARD_USB_VBUS_SENSE_CLOCK_REGISTER) && defined(BOARD_USB_VBUS_SENSE_CLOCK_BIT)
-	rcc_peripheral_enable_clock(&BOARD_USB_VBUS_SENSE_CLOCK_REGISTER, BOARD_USB_VBUS_SENSE_CLOCK_BIT);
+	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_SENSE_CLOCK_BIT);
 #endif
 #endif
 
