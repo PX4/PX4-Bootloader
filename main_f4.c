@@ -375,9 +375,6 @@ board_init(void)
 #if defined(BOARD_PORT_VBUS) && defined(BOARD_PIN_VBUS)
 	/* enable configured GPIO to sample VBUS */
 	rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_VBUS_SENSE_CLOCK_BIT);
-#  if defined(USE_VBUS_PULL_DOWN)
-	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, BOARD_PIN_VBUS);
-#  endif
 #endif
 #endif
 
@@ -810,13 +807,18 @@ main(void)
 	 * we then time out.
 	 */
 #if defined(BOARD_PORT_VBUS)
+#  if defined(USE_VBUS_PULL_DOWN)
+	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, BOARD_PIN_VBUS);
+#  endif
 
 	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
 		usb_connected = true;
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
-
+#  if defined(USE_VBUS_PULL_DOWN)
+	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_VBUS);
+#  endif
 #else
 	try_boot = false;
 
