@@ -816,6 +816,8 @@ main(void)
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
+
+
 #  if defined(USE_VBUS_PULL_DOWN)
 	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_VBUS);
 #  endif
