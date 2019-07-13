@@ -824,16 +824,13 @@ main(void)
 	 */
 #if defined(BOARD_PORT_VBUS)
 
-#  if defined(USE_VBUS_PULL_DOWN)
-	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, BOARD_PIN_VBUS);
-#  endif
-
 	if (gpio_get(BOARD_PORT_VBUS, BOARD_PIN_VBUS) != 0) {
 		usb_connected = true;
 		/* don't try booting before we set up the bootloader */
 		try_boot = false;
 	}
 
+	/* Don't leave the pulldown running forever */
 #  if defined(USE_VBUS_PULL_DOWN)
 	gpio_mode_setup(BOARD_PORT_VBUS, GPIO_MODE_INPUT, GPIO_PUPD_NONE, BOARD_PIN_VBUS);
 #  endif
