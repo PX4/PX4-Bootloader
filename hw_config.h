@@ -805,6 +805,11 @@
 
 # define OSC_FREQ                       8
 
+// VBUS sense is connected to PC13 instead of PA9
+# define BOARD_USB_VBUS_SENSE_DISABLED
+# define BOARD_PORT_VBUS                GPIOC
+# define BOARD_PIN_VBUS                 GPIO13
+
 # define BOARD_PIN_LED_ACTIVITY         GPIO13
 # define BOARD_PIN_LED_BOOTLOADER       GPIO14
 # define BOARD_PORT_LEDS                GPIOA
