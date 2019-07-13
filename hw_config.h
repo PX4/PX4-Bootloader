@@ -796,7 +796,7 @@
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     127
-# define BOARD_FLASH_SECTORS            23
+# define BOARD_FLASH_SECTORS            11
 # define BOARD_FLASH_SIZE               (1024 * 1024)
 # define BOARD_FIRST_FLASH_SECTOR_TO_ERASE  2
 # define APP_RESERVATION_SIZE           (2 * 16 * 1024) /* 2 16 Kib Sectors */
