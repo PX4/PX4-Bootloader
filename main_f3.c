@@ -98,8 +98,8 @@ board_init(void)
 	gpio_mode_setup(BOARD_PORT_USART_TX, GPIO_MODE_AF, GPIO_PUPD_PULLUP, BOARD_PIN_TX);
 	gpio_mode_setup(BOARD_PORT_USART_RX, GPIO_MODE_AF, GPIO_PUPD_PULLUP, BOARD_PIN_RX);
 	/* Setup USART TX & RX pins as alternate function. */
-	gpio_set_af(BOARD_PORT_USART_TX, BOARD_PORT_USART_AF, BOARD_PIN_TX);
-	gpio_set_af(BOARD_PORT_USART_RX, BOARD_PORT_USART_AF, BOARD_PIN_RX);
+	gpio_set_af(BOARD_PORT_USART_TX, BOARD_PORT_USART_AF_TX, BOARD_PIN_TX);
+	gpio_set_af(BOARD_PORT_USART_RX, BOARD_PORT_USART_AF_RX, BOARD_PIN_RX);
 
 	/* configure USART clock */
 	rcc_peripheral_enable_clock(&BOARD_USART_CLOCK_REGISTER, BOARD_USART_CLOCK_BIT);
