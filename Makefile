@@ -72,6 +72,7 @@ TARGETS	= \
 	px4fmuv4_bl \
 	px4fmuv4pro_bl \
 	px4fmuv5_bl \
+	px4fmuv5x_bl \
 	px4io_bl \
 	px4iov3_bl \
 	tapv1_bl \
@@ -119,6 +120,9 @@ px4fmuv4pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 
 px4fmuv5_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=PX4_FMU_V5 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+
+px4fmuv5x_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=PX4_FMU_V5X LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
 mindpxv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=MINDPX_V2 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
