@@ -57,9 +57,9 @@
  */
 
 /* Boot device selection list*/
-#define USB0_DEV	0x01
-#define SERIAL0_DEV	0x02
-#define SERIAL1_DEV	0x04
+#define USB0_DEV       0x01
+#define SERIAL0_DEV    0x02
+#define SERIAL1_DEV    0x04
 
 #if  defined(TARGET_HW_PX4_FMU_V1)
 
@@ -85,17 +85,17 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART1
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB2ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB2ENR_USART1EN
+# define BOARD_USART                    USART1
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
 
-# define BOARD_PORT_USART   			GPIOB
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO6
-# define BOARD_PIN_RX		     		GPIO7
+# define BOARD_PORT_USART               GPIOB
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO6
+# define BOARD_PIN_RX                   GPIO7
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
-# define  SERIAL_BREAK_DETECT_DISABLED   1
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPBEN
+# define  SERIAL_BREAK_DETECT_DISABLED  1
 
 /*
  * Uncommenting this allows to force the bootloader through
@@ -140,16 +140,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -195,16 +195,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -250,16 +250,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART1
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB2ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB2ENR_USART1EN
+# define BOARD_USART                    USART1
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
 
-# define BOARD_PORT_USART   			GPIOB
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO6
-# define BOARD_PIN_RX		     		GPIO7
+# define BOARD_PORT_USART               GPIOB
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO6
+# define BOARD_PIN_RX                   GPIO7
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPBEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPBEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -304,16 +304,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -358,16 +358,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_GPIODEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -413,16 +413,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -503,7 +503,7 @@
 # define APP_SIZE_MAX                   0xf000
 # define BOOTLOADER_DELAY               200
 # define BOARD_PIO
-# define INTERFACE_USB                	0
+# define INTERFACE_USB                  0
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
@@ -549,7 +549,7 @@
 # define APP_SIZE_MAX                   0x3f000
 # define BOOTLOADER_DELAY               200
 # define BOARD_PIO
-# define INTERFACE_USB                	0
+# define INTERFACE_USB                  0
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                ""
 # define USBPRODUCTID                   -1
@@ -569,9 +569,9 @@
 # define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
 # define BOARD_PORT_USART               GPIOA
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO2
-# define BOARD_PIN_RX		     		GPIO3
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO2
+# define BOARD_PIN_RX                   GPIO3
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHBENR
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHBENR_IOPAEN
 
@@ -639,19 +639,19 @@
 # define BOARD_FLASH_SECTORS            11
 # define BOARD_FLASH_SIZE               (1024 * 1024)
 # define BOARD_FIRST_FLASH_SECTOR_TO_ERASE  2
-# define APP_RESERVATION_SIZE			(2 * 16 * 1024) /* 2 16 Kib Sectors */
+# define APP_RESERVATION_SIZE            (2 * 16 * 1024) /* 2 16 Kib Sectors */
 # define OSC_FREQ                       16
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOA
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO2
-# define BOARD_PIN_RX		     		GPIO3
+# define BOARD_PORT_USART               GPIOA
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO2
+# define BOARD_PIN_RX                   GPIO3
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPAEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPAEN
 
 # define BOARD_PIN_LED_ACTIVITY         GPIO4
 # define BOARD_PIN_LED_BOOTLOADER       GPIO5
@@ -666,9 +666,9 @@
 # define BOARD_POWER_CLOCK_BIT          RCC_AHB1ENR_IOPAEN
 # define BOARD_POWER_ON                 gpio_set
 # define BOARD_POWER_OFF                gpio_clear
-# undef  BOARD_POWER_PIN_RELEASE		/* Leave pin enabling Power - un comment to release (disable power)*/
+# undef  BOARD_POWER_PIN_RELEASE        /* Leave pin enabling Power - un comment to release (disable power)*/
 # define USBMFGSTRING                   "The Autopilot"
-# define USB_FORCE_DISCONNECT			1
+# define USB_FORCE_DISCONNECT           1
 #define  SERIAL_BREAK_DETECT_DISABLED   1
 
 /****************************************************************************
@@ -718,8 +718,8 @@
 # define BOARD_TYPE                     42
 # define BOARD_FLASH_SECTORS            11
 # define BOARD_FLASH_SIZE               (1024 * 1024)
-# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE	1
-# define APP_RESERVATION_SIZE			(1 * 16 * 1024) /* 1 16 Kib Sectors */
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE    1
+# define APP_RESERVATION_SIZE           (1 * 16 * 1024) /* 1 16 Kib Sectors */
 
 # define OSC_FREQ                       8
 
@@ -751,8 +751,8 @@
 # define BOARD_TYPE                     123
 # define BOARD_FLASH_SECTORS            7
 # define BOARD_FLASH_SIZE               (1024 * 1024)
-# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE	2
-# define APP_RESERVATION_SIZE			(2 * 32 * 1024) /* 2 32 Kib Sectors */
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE    2
+# define APP_RESERVATION_SIZE            (2 * 32 * 1024) /* 2 32 Kib Sectors */
 
 # define OSC_FREQ                       8
 
@@ -770,7 +770,7 @@
 # define BOARD_PORT_VBUS                GPIOA
 # define BOARD_PIN_VBUS                 GPIO8
 
-# define BOARD_USART  					USART3 // labeled as UART3
+# define BOARD_USART                    USART3 // labeled as UART3
 # define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
 # define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART3EN
 # define BOARD_PORT_USART               GPIOB
@@ -810,16 +810,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -844,47 +844,47 @@
 
 #elif  defined(TARGET_HW_AEROFC_V1)
 
-# define APP_LOAD_ADDRESS			0x0800C000
-# define BOOTLOADER_DELAY			5000
-# define INTERFACE_USB				0
-# define USBDEVICESTRING			""
-# define USBPRODUCTID				0
+# define APP_LOAD_ADDRESS               0x0800C000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  0
+# define USBDEVICESTRING                ""
+# define USBPRODUCTID                   0
 
-# define INTERFACE_USART			1
-# define BOOT_DELAY_ADDRESS			0x000001a0
+# define INTERFACE_USART                1
+# define BOOT_DELAY_ADDRESS             0x000001a0
 
-# define BOARD_TYPE				65
-# define BOARD_FLASH_SECTORS			11
-# define BOARD_FLASH_SIZE			(1024 * 1024)
-# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE	2
-# define APP_RESERVATION_SIZE			(2 * 16 * 1024) /* 2 16 Kib Sectors */
+# define BOARD_TYPE                     65
+# define BOARD_FLASH_SECTORS            11
+# define BOARD_FLASH_SIZE               (1024 * 1024)
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE    2
+# define APP_RESERVATION_SIZE           (2 * 16 * 1024) /* 2 16 Kib Sectors */
 
-# define OSC_FREQ				16
+# define OSC_FREQ                       16
 
-# define BOARD_PIN_LED_ACTIVITY			GPIO12
-# define BOARD_PIN_LED_BOOTLOADER		GPIO9 | GPIO10 | GPIO11 | GPIO13 | GPIO14 | GPIO15
-# define BOARD_PORT_LEDS			GPIOE
-# define BOARD_CLOCK_LEDS			RCC_AHB1ENR_IOPEEN
-# define BOARD_LED_ON				gpio_clear
-# define BOARD_LED_OFF				gpio_set
+# define BOARD_PIN_LED_ACTIVITY         GPIO12
+# define BOARD_PIN_LED_BOOTLOADER       GPIO9 | GPIO10 | GPIO11 | GPIO13 | GPIO14 | GPIO15
+# define BOARD_PORT_LEDS                GPIOE
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPEEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART				USART2
-# define BOARD_USART_CLOCK_REGISTER		RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT			RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART			GPIOA
-# define BOARD_PORT_USART_AF			GPIO_AF7
-# define BOARD_PIN_TX				GPIO2
-# define BOARD_PIN_RX				GPIO3
-# define BOARD_USART_PIN_CLOCK_REGISTER		RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT		RCC_AHB1ENR_IOPAEN
+# define BOARD_PORT_USART               GPIOA
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO2
+# define BOARD_PIN_RX                   GPIO3
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPAEN
 
-# define BOARD_FORCE_BL_PIN			GPIO11
-# define BOARD_FORCE_BL_PORT			GPIOA
-# define BOARD_FORCE_BL_CLOCK_REGISTER		RCC_AHB1ENR
-# define BOARD_FORCE_BL_CLOCK_BIT		RCC_AHB1ENR_IOPAEN
-# define BOARD_FORCE_BL_PULL			GPIO_PUPD_PULLDOWN
-# define BOARD_FORCE_BL_STATE			1
+# define BOARD_FORCE_BL_PIN             GPIO11
+# define BOARD_FORCE_BL_PORT            GPIOA
+# define BOARD_FORCE_BL_CLOCK_REGISTER  RCC_AHB1ENR
+# define BOARD_FORCE_BL_CLOCK_BIT       RCC_AHB1ENR_IOPAEN
+# define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLDOWN
+# define BOARD_FORCE_BL_STATE           1
 
 /****************************************************************************
  * TARGET_HW_FMUK66_V3
@@ -903,8 +903,7 @@
 # define _FLASH_KBYTES                  2048
 # define FLASH_SECTOR_SIZE              4096
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
-# define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- \
-		(BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
+# define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- (BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
 
 # define OSC_FREQ                       16
 
@@ -957,16 +956,16 @@
 # define BOARD_LED_ON                   gpio_clear
 # define BOARD_LED_OFF                  gpio_set
 
-# define BOARD_USART  					USART2
-# define BOARD_USART_CLOCK_REGISTER 	RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT      	RCC_APB1ENR_USART2EN
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART   			GPIOD
-# define BOARD_PORT_USART_AF 			GPIO_AF7
-# define BOARD_PIN_TX     				GPIO5
-# define BOARD_PIN_RX		     		GPIO6
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
 # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT  	RCC_AHB1ENR_IOPDEN
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPDEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
 /*
@@ -1037,7 +1036,7 @@
 
 # define BOARD_PIN_LED_ACTIVITY         GPIO3
 # define BOARD_PIN_LED_BOOTLOADER       GPIO2
-# define BOARD_PORT_LEDS		        GPIOH
+# define BOARD_PORT_LEDS                GPIOH
 # define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOHEN
 # define BOARD_LED_ON                   gpio_set
 # define BOARD_LED_OFF                  gpio_clear
