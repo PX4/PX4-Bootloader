@@ -142,12 +142,15 @@
 #define STATE_PROTO_GET_CHIP      0x80    // Have Seen read chip version (MCU IDCODE)
 #define STATE_PROTO_GET_CHIP_DES  0x100   // Have Seen read chip version In ASCII
 #define STATE_PROTO_BOOT          0x200   // Have Seen boot the application
+
+#if defined(TARGET_HW_PX4_PIO_V1)
+#define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC)
+#define STATE_ALLOWS_REBOOT       (STATE_PROTO_GET_SYNC)
+#  define SET_BL_STATE(s)
+#else
 #define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC|STATE_PROTO_GET_DEVICE|STATE_PROTO_GET_CHIP)
 #define STATE_ALLOWS_REBOOT       (STATE_ALLOWS_ERASE|STATE_PROTO_PROG_MULTI|STATE_PROTO_GET_CRC)
-#if !defined(TARGET_HW_PX4_PIO_V1)
 #  define SET_BL_STATE(s) bl_state |= (s)
-#else
-#  define SET_BL_STATE(s) ;
 #endif
 
 static uint8_t bl_type;
@@ -515,7 +518,7 @@ void
 bootloader(unsigned timeout)
 {
 	bl_type = NONE; // The type of the bootloader, whether loading from USB or USART, will be determined by on what port the bootloader recevies its first valid command.
-	uint32_t  bl_state = 0; // Must see correct command sequence to erse and reboot (commit first word)
+	volatile uint32_t  bl_state = 0; // Must see correct command sequence to erse and reboot (commit first word)
 	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
 
