@@ -124,6 +124,35 @@
 #define PROTO_DEVICE_FW_SIZE	4	// size of flashable area
 #define PROTO_DEVICE_VEC_AREA	5	// contents of reserved vectors 7-10
 
+#define STATE_PROTO_OK          0x10    // INSYNC/OK      - 'ok' response
+#define STATE_PROTO_FAILED        0x11    // INSYNC/FAILED  - 'fail' response
+#define STATE_PROTO_INVALID       0x13  // INSYNC/INVALID - 'invalid' response for bad commands
+#define STATE_PROTO_BAD_SILICON_REV     0x14  // On the F4 series there is an issue with < Rev 3 silicon
+#define STATE_PROTO_RESERVED_0X15     0x15  // Reserved
+
+
+// State
+#define STATE_PROTO_GET_SYNC      0x1     // Have Seen NOP for re-establishing sync
+#define STATE_PROTO_GET_DEVICE    0x2     // Have Seen get device ID bytes
+#define STATE_PROTO_CHIP_ERASE    0x4     // Have Seen erase program area and reset program address
+#define STATE_PROTO_PROG_MULTI    0x8     // Have Seen write bytes at program address and increment
+#define STATE_PROTO_GET_CRC       0x10    // Have Seen compute & return a CRC
+#define STATE_PROTO_GET_OTP       0x20    // Have Seen read a byte from OTP at the given address
+#define STATE_PROTO_GET_SN        0x40    // Have Seen read a word from UDID area ( Serial)  at the given address
+#define STATE_PROTO_GET_CHIP      0x80    // Have Seen read chip version (MCU IDCODE)
+#define STATE_PROTO_GET_CHIP_DES  0x100   // Have Seen read chip version In ASCII
+#define STATE_PROTO_BOOT          0x200   // Have Seen boot the application
+
+#if defined(TARGET_HW_PX4_PIO_V1)
+#define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC)
+#define STATE_ALLOWS_REBOOT       (STATE_PROTO_GET_SYNC)
+#  define SET_BL_STATE(s)
+#else
+#define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC|STATE_PROTO_GET_DEVICE|STATE_PROTO_GET_CHIP)
+#define STATE_ALLOWS_REBOOT       (STATE_ALLOWS_ERASE|STATE_PROTO_PROG_MULTI|STATE_PROTO_GET_CRC)
+#  define SET_BL_STATE(s) bl_state |= (s)
+#endif
+
 static uint8_t bl_type;
 static uint8_t last_input;
 
@@ -489,7 +518,7 @@ void
 bootloader(unsigned timeout)
 {
 	bl_type = NONE; // The type of the bootloader, whether loading from USB or USART, will be determined by on what port the bootloader recevies its first valid command.
-
+	volatile uint32_t  bl_state = 0; // Must see correct command sequence to erase and reboot (commit first word)
 	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
 
@@ -546,6 +575,7 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
+			bl_state = STATE_PROTO_GET_SYNC;
 			break;
 
 		// get device info
@@ -600,6 +630,7 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
+			SET_BL_STATE(STATE_PROTO_GET_DEVICE);
 			break;
 
 		// erase and prepare for programming
@@ -622,6 +653,11 @@ bootloader(unsigned timeout)
 			}
 
 #endif
+
+			if ((bl_state & STATE_ALLOWS_ERASE) != STATE_ALLOWS_ERASE) {
+				goto cmd_bad;
+			}
+
 			// clear the bootloader LED while erasing - it stops blinking at random
 			// and that's confusing
 			led_set(LED_ON);
@@ -643,6 +679,7 @@ bootloader(unsigned timeout)
 				}
 
 			address = 0;
+			SET_BL_STATE(STATE_PROTO_CHIP_ERASE);
 
 			// resume blinking
 			led_set(LED_BLINK);
@@ -721,6 +758,8 @@ bootloader(unsigned timeout)
 				address += 4;
 			}
 
+			SET_BL_STATE(STATE_PROTO_PROG_MULTI);
+
 			break;
 
 		// fetch CRC of the entire flash area
@@ -752,6 +791,7 @@ bootloader(unsigned timeout)
 			}
 
 			cout_word(sum);
+			SET_BL_STATE(STATE_PROTO_GET_CRC);
 			break;
 
 		// read a word from the OTP
@@ -794,8 +834,16 @@ bootloader(unsigned timeout)
 					goto cmd_bad;
 				}
 
+				// expect valid indices 0, 4 ...ARCH_SN_MAX_LENGTH-4
+
+				if (index % sizeof(uint32_t) != 0 || index > ARCH_SN_MAX_LENGTH - sizeof(uint32_t)) {
+					goto cmd_bad;
+				}
+
 				cout_word(flash_func_read_sn(index));
 			}
+
+			SET_BL_STATE(STATE_PROTO_GET_SN);
 			break;
 
 		// read the chip ID code
@@ -809,6 +857,7 @@ bootloader(unsigned timeout)
 				}
 
 				cout_word(get_mcu_id());
+				SET_BL_STATE(STATE_PROTO_GET_CHIP);
 			}
 			break;
 
@@ -828,6 +877,7 @@ bootloader(unsigned timeout)
 				len = get_mcu_desc(len, buffer);
 				cout_word(len);
 				cout(buffer, len);
+				SET_BL_STATE(STATE_PROTO_GET_CHIP_DES);
 			}
 			break;
 
@@ -887,6 +937,10 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
+			if (first_word != 0xffffffff && (bl_state & STATE_ALLOWS_REBOOT) != STATE_ALLOWS_REBOOT) {
+				goto cmd_bad;
+			}
+
 			// program the deferred first word
 			if (first_word != 0xffffffff) {
 				flash_func_write_word(0, first_word);
@@ -929,6 +983,7 @@ bootloader(unsigned timeout)
 cmd_bad:
 		// send an 'invalid' response but don't kill the timeout - could be garbage
 		invalid_response();
+		bl_state = 0;
 		continue;
 
 cmd_fail:

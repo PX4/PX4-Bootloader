@@ -929,6 +929,7 @@
 
 # define SERIAL_BREAK_DETECT_DISABLED   1
 # define USB_DATA_ALIGN __attribute__((aligned(2)))
+# define ARCH_SN_MAX_LENGTH             16
 
 /****************************************************************************
  * TARGET_HW_CUBE_F4
@@ -1049,6 +1050,10 @@
 
 #else
 # error Undefined Target Hardware
+#endif
+
+#if !defined(ARCH_SN_MAX_LENGTH)
+# define ARCH_SN_MAX_LENGTH 12
 #endif
 
 #if !defined(USBMFGSTRING)
