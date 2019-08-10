@@ -834,6 +834,12 @@ bootloader(unsigned timeout)
 					goto cmd_bad;
 				}
 
+				// expect valid indices 0, 4 ...ARCH_SN_MAX_LENGTH-4
+
+				if (index % sizeof(uint32_t) != 0 || index > ARCH_SN_MAX_LENGTH - sizeof(uint32_t)) {
+					goto cmd_bad;
+				}
+
 				cout_word(flash_func_read_sn(index));
 			}
 
