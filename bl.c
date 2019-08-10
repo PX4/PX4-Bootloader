@@ -518,7 +518,7 @@ void
 bootloader(unsigned timeout)
 {
 	bl_type = NONE; // The type of the bootloader, whether loading from USB or USART, will be determined by on what port the bootloader recevies its first valid command.
-	volatile uint32_t  bl_state = 0; // Must see correct command sequence to erse and reboot (commit first word)
+	volatile uint32_t  bl_state = 0; // Must see correct command sequence to erase and reboot (commit first word)
 	uint32_t	address = board_info.fw_size;	/* force erase before upload will work */
 	uint32_t	first_word = 0xffffffff;
 
