@@ -15,9 +15,9 @@ before_script:
   - sudo apt-get install -qq flex bison libncurses5-dev autoconf texinfo build-essential libtool zlib1g-dev genromfs git wget cmake
   - pushd .
   - cd ~
-  - wget https://launchpadlibrarian.net/186124160/gcc-arm-none-eabi-4_8-2014q3-20140805-linux.tar.bz2
-  - tar -jxf gcc-arm-none-eabi-4_8-2014q3-20140805-linux.tar.bz2
-  - exportline="export PATH=$HOME/gcc-arm-none-eabi-4_8-2014q3/bin:\$PATH"
+  - wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+  - tar -jxf gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+  - exportline="export PATH=$HOME/gcc-arm-none-eabi-7-2018-q2-update/bin:\$PATH"
   - if grep -Fxq "$exportline" ~/.profile; then echo nothing to do ; else echo $exportline >> ~/.profile; fi
   - . ~/.profile
   - popd
