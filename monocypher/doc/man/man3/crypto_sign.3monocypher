@@ -1,0 +1,160 @@
+.Dd December 28, 2017
+.Dt CRYPTO_SIGN 3MONOCYPHER
+.Os
+.Sh NAME
+.Nm crypto_sign ,
+.Nm crypto_check ,
+.Nm crypto_sign_public_key
+.Nd public key signatures
+.Sh SYNOPSIS
+.In monocypher.h
+.Ft void
+.Fo crypto_sign_public_key
+.Fa "uint8_t public_key[32]"
+.Fa "const uint8_t secret_key[32]"
+.Fc
+.Ft void
+.Fo crypto_sign
+.Fa "uint8_t signature[64]"
+.Fa "const uint8_t secret_key[32]"
+.Fa "const uint8_t public_key[32]"
+.Fa "const uint8_t *message"
+.Fa "size_t message_size"
+.Fc
+.Ft int
+.Fo crypto_check
+.Fa "const uint8_t signature[64]"
+.Fa "const uint8_t public_key[32]"
+.Fa "const uint8_t *message"
+.Fa "size_t message_size"
+.Fc
+.Sh DESCRIPTION
+.Fn crypto_sign
+and
+.Fn crypto_check
+provide EdDSA public key signatures and verification.
+.Pp
+The arguments are:
+.Bl -tag -width Ds
+.It Fa signature
+The signature.
+.It Fa secret_key
+A 32-byte random number, known only to you.
+See
+.Xr intro 3monocypher
+about random number generation (use your operating system's random
+number generator).
+Do not use the same private key for both signatures and key exchanges.
+The public keys are different, and revealing both may leak information.
+.It Fa public_key
+The public key, generated from
+.Fa secret_key
+with
+.Fn crypto_sign_public_key .
+.It Fa message
+Message to sign.
+.It Fa message_size
+Length of
+.Fa message ,
+in bytes.
+.El
+.Pp
+.Fa signature
+and
+.Fa message
+may overlap.
+.Pp
+.Fn crypto_sign_public_key
+computes the public key of the specified secret key.
+.Pp
+.Fn crypto_sign
+signs a message with
+.Fa secret_key .
+The public key is optional, and will be recomputed if not provided.
+This recomputation doubles the execution time.
+.Pp
+.Fn crypto_check
+checks that a given signature is genuine.
+Meaning, only someone who had the private key could have signed the
+message.
+.Sy \It does not run in constant time .
+It does not have to in most threat models, because nothing is secret:
+everyone knows the public key, and the signature and message are
+rarely secret.
+If the message needs to be secret, use
+.Xr crypto_key_exchange 3monocypher
+and
+.Xr crypto_lock_aead 3monocypher
+instead.
+.Pp
+An incremental interface is available; see
+.Xr crypto_sign_init_first_pass 3monocypher .
+.Sh RETURN VALUES
+.Fn crypto_sign_public_key
+and
+.Fn crypto_sign
+return nothing.
+.Pp
+.Fn crypto_check
+returns 0 for legitimate messages and -1 for forgeries.
+.Sh EXAMPLES
+Generate a public key from a random secret key:
+.Bd -literal -offset indent
+const uint8_t sk[32]; /* Random secret key   */
+uint8_t       pk[32]; /* Matching public key */
+crypto_sign_public_key(pk, sk);
+/* Wipe the secret key if it is no longer needed */
+crypto_wipe(sk, 32);
+.Ed
+.Pp
+Sign a message:
+.Bd -literal -offset indent
+const uint8_t sk       [ 32]; /* Your secret key     */
+const uint8_t pk       [ 32]; /* Matching public key */
+const uint8_t message  [500]; /* Message to sign     */
+uint8_t       signature[ 64];
+crypto_sign(signature, sk, pk, message, 500);
+/* Wipe the secret key if it is no longer needed */
+crypto_wipe(sk, 32);
+.Ed
+.Pp
+Check the above:
+.Bd -literal -offset indent
+const uint8_t pk       [ 32]; /* Their public key   */
+const uint8_t message  [500]; /* Signed message     */
+const uint8_t signature[ 64]; /* Signature to check */
+if (crypto_check(signature, pk, message, 500)) {
+    /* Message is corrupted, abort processing */
+} else {
+    /* Message is genuine */
+}
+.Ed
+.Sh SEE ALSO
+.Xr crypto_blake2b 3monocypher ,
+.Xr crypto_key_exchange 3monocypher ,
+.Xr crypto_lock 3monocypher ,
+.Xr intro 3monocypher
+.Sh STANDARDS
+These functions implement EdDSA with Curve25519 and Blake2b.
+This is the same as Ed25519, with Blake2b instead of SHA-512.
+Ed25519 is described in RFC 7748.
+.Sh SECURITY CONSIDERATIONS
+.Ss Signature malleability
+EdDSA signatures are not unique like cryptographic hashes.
+For any given public key and message, there are many possible valid
+signatures.
+Some of them require knowledge of the private key.
+Others only require knowledge of an existing signature.
+Observing a valid signature only proves that someone with knowledge of
+the private key signed the document at some point.
+Do not rely on any other security property.
+.Ss Fault injection
+Fault injection (also known as glitching) may be used to manipulate the
+resulting signature and recover the secret key in some cases.
+This requires hardware access.
+If attackers are expected to have such access and the relevant
+equipment, use
+.Fn crypto_check
+to verify the signature before sending it away.
+This verification reduces the speed of the whole operation by a factor
+of 3, and only provides an incomplete protection.

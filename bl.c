@@ -52,7 +52,13 @@
 
 #include "bl.h"
 #include "cdcacm.h"
+
+#ifdef SECURE_BTL_ENABLED
+	#include "crypto.h"
+#endif
+
 #include "uart.h"
+
 
 // bootloader flash update protocol.
 //
@@ -303,6 +309,16 @@ jump_to_app()
 		return;
 	}
 
+#ifdef SECURE_BTL_ENABLED
+
+	enum errno error = verifyApp(APP_LOAD_ADDRESS, 1024); //todo exchange with real application size
+
+	if (error != NO_ERROR) {
+
+	}
+
+#endif
+
 	/* just for paranoia's sake */
 	flash_lock();
 
@@ -528,6 +544,8 @@ bootloader(unsigned timeout)
 	systick_interrupt_enable();
 	systick_counter_enable();
 
+	crypto_test_bench();
+	
 	/* if we are working with a timeout, start it running */
 	if (timeout) {
 		timer[TIMER_BL_WAIT] = timeout;
