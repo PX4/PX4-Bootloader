@@ -556,7 +556,7 @@ flash_func_erase_sector(unsigned sector)
 void
 flash_func_write_word(uint32_t address, uint32_t word)
 {
-	address += APP_LOAD_ADDRESS;
+	address += APP_MEM_AREA_START;
 
 	/* Ensure that all flash operations are complete. */
 
@@ -593,7 +593,7 @@ flash_func_read_word(uint32_t address)
 		return 0;
 	}
 
-	return *(uint32_t *)(address + APP_LOAD_ADDRESS);
+	return *(uint32_t *)(address + APP_MEM_AREA_START);
 }
 
 uint32_t
