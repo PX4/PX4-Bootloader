@@ -49,6 +49,7 @@ enum errno {
 	BTL_PROG_MULTI_BUF_OVER,
 	BTL_RX_NO_EOC,
 	INVALID_APPLICATION_HASH,
+	INVALID_APPLICATION_SIG,
 	INVALID_META_DATA,
 	BTL_FLASH_VERIFY_FAIL,
 	MAX_ERRNO_NR //leave this at the end of the enum, marks the size array.
