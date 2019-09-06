@@ -32,27 +32,22 @@
  ****************************************************************************/
 
 /**
- * @file btl_erno.h
+ * @file public_key.h
  *
- * Wrapper for the crypto stuff
+ * File holds public key for signed firmware.
  *
+ * 
  */
 
 #pragma once
 
-enum errno {
-
-	NO_ERROR=0,
-	BTL_RX_TIMEOUT,
-	BTL_PROG_MULTI_BAD_LEN,
-	BTL_PROG_MULTI_BAD_ADR,
-	BTL_PROG_MULTI_BUF_OVER,
-	BTL_RX_NO_EOC,
-	INVALID_APPLICATION_HASH,
-	INVALID_APPLICATION_SIG,
-	INVALID_META_DATA,
-	BTL_FLASH_VERIFY_FAIL,
-	MAX_ERRNO_NR //leave this at the end of the enum, marks the size array.
+const uint8_t public_key[32]={ 	0xb4, 0x3c, 0xb5, 0x77, 0xfd, 0xc6, 0xd6, 0x9e,
+							    0xfb, 0xc1, 0x0e, 0xc9, 0xb2, 0x82, 0x25, 0xb3,
+							    0x42, 0x4d, 0x3c, 0x90, 0x58, 0x0e, 0x6b, 0xa4,
+							    0xd8, 0xa7, 0xc3, 0xdc, 0xe7, 0xeb, 0x39, 0xb5
+						       };
 
 
-};
+
+
+

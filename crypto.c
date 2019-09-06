@@ -40,60 +40,54 @@
 
 #include <inttypes.h>
 #include <libopencm3/cm3/systick.h>
+# include <libopencm3/stm32/gpio.h>
 
 #include "crypto.h"
 #include "hw_config.h"
+#include "public_key.h"
 
 #include "monocypher/src/monocypher.h"
 
 //prevents compile errors with non crypto btl
 #ifndef APP_MEM_AREA_START
  #define APP_MEM_AREA_START APP_LOAD_ADDRESS
-#endif 
-
-const uint8_t public_key[32]={ 	0xb4, 0x3c, 0xb5, 0x77, 0xfd, 0xc6, 0xd6, 0x9e,
-							    0xfb, 0xc1, 0x0e, 0xc9, 0xb2, 0x82, 0x25, 0xb3,
-							    0x42, 0x4d, 0x3c, 0x90, 0x58, 0x0e, 0x6b, 0xa4,
-							    0xd8, 0xa7, 0xc3, 0xdc, 0xe7, 0xeb, 0x39, 0xb5
-						       };
+#endif
 
 //data structure representing the meta data header of crypto images
 struct meta_data
 {
 	size_t app_len;
-	uint8_t hash[64];
+	uint8_t signature[64];
 };
 
 size_t get_app_len(void)
 {
 	const struct meta_data *meta_data_ptr= (const struct meta_data *)APP_MEM_AREA_START;
-
 	return meta_data_ptr->app_len;
 }
 
-uint8_t* get_app_hash(void){
+uint8_t* get_app_signature(void){
 
 	struct meta_data *meta_data_ptr= (struct meta_data *)APP_MEM_AREA_START;
-	return meta_data_ptr->hash;
+	return meta_data_ptr->signature;
 }
 
-enum errno verifyApp(const size_t max_appl_len)
+bool verifyApp(const size_t max_appl_len)
 {
-	enum errno ret = NO_ERROR;
-	volatile uint8_t *app_hash_ptr = NULL;
+	bool ret = false;
+	volatile uint8_t *app_signature_ptr = NULL;
 
 	volatile size_t len = get_app_len();
 
 	if (len > max_appl_len ){
-		return INVALID_META_DATA;
+		return false;
 	}
 
-	app_hash_ptr = get_app_hash();
+	app_signature_ptr = get_app_signature();
 
-	if( crypto_check((const uint8_t *)app_hash_ptr, public_key, (const uint8_t *)APP_LOAD_ADDRESS, len) < 0 ){
-		ret = INVALID_APPLICATION_SIG;
+	if( crypto_check((const uint8_t *)app_signature_ptr, public_key, (const uint8_t *)APP_LOAD_ADDRESS, len) == 0 ){
+		ret = true;
 	}
 
 	return ret;
 }
-

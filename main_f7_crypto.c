@@ -623,14 +623,14 @@ int get_mcu_desc(int max, uint8_t *revstr)
 
 	mcu_des_t des = mcu_descriptions[STM32_UNKNOWN];
 
-	for (int i = 0; i < arraySize(mcu_descriptions); i++) {
+	for (unsigned int i = 0; i < arraySize(mcu_descriptions); i++) {
 		if (mcuid == mcu_descriptions[i].mcuid) {
 			des = mcu_descriptions[i];
 			break;
 		}
 	}
 
-	for (int i = 0; i < arraySize(silicon_revs); i++) {
+	for (unsigned int i = 0; i < arraySize(silicon_revs); i++) {
 		if (silicon_revs[i].revid == revid) {
 			des.rev = silicon_revs[i].rev;
 		}
@@ -674,7 +674,7 @@ led_on(unsigned led)
 	switch (led) {
 	case LED_ACTIVITY:
 #if defined(BOARD_PIN_LED_ACTIVITY)
-		BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		//BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
 #endif
 		break;
 
@@ -692,7 +692,7 @@ led_off(unsigned led)
 	switch (led) {
 	case LED_ACTIVITY:
 #if defined(BOARD_PIN_LED_ACTIVITY)
-		BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		//BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
 #endif
 		break;
 
@@ -710,7 +710,7 @@ led_toggle(unsigned led)
 	switch (led) {
 	case LED_ACTIVITY:
 #if defined(BOARD_PIN_LED_ACTIVITY)
-		gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
+		//gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED_ACTIVITY);
 #endif
 		break;
 

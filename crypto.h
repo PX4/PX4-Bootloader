@@ -41,13 +41,9 @@
 #pragma once
 
 #include <stdlib.h>
-#include "btl_errno.h"
 
 
-void crypto_test_bench(void);
-uint32_t blabe2b_hash(void);
-
-enum errno verifyApp(const size_t max_appl_len);
+bool verifyApp(const size_t max_appl_len);
 
 
 

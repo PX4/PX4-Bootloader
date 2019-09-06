@@ -52,7 +52,6 @@
 
 #include "bl.h"
 #include "cdcacm.h"
-#include "btl_errno.h"
 
 #ifdef SECURE_BTL_ENABLED
 	#include "crypto.h"
@@ -86,7 +85,7 @@
 // RESET		finalise flash programming, reset chip and starts application
 //
 
-#define BL_PROTOCOL_VERSION 		5		// The revision of the bootloader protocol
+#define BL_PROTOCOL_VERSION 		7		// The revision of the bootloader protocol
 //* Next revision needs to update
 
 // protocol bytes
@@ -162,7 +161,6 @@
 
 static uint8_t bl_type;
 static uint8_t last_input;
-volatile enum errno last_error= NO_ERROR;
 
 inline void cinit(void *config, uint8_t interface)
 {
@@ -313,10 +311,9 @@ jump_to_app()
 
 #ifdef SECURE_BTL_ENABLED
 
-	enum errno error = verifyApp((size_t)board_info.fw_size); //todo exchange with real application size
+	bool verified = verifyApp((size_t)board_info.fw_size); 
 
-	if (error != NO_ERROR) {
-		last_error = error;
+	if (verified == false) {
 		//image verification failed, do not jump to application. stay in BTL
 		return;
 	}
@@ -720,23 +717,19 @@ bootloader(unsigned timeout)
 			arg = cin_wait(50);
 
 			if (arg < 0) {
-				last_error = BTL_RX_TIMEOUT;
 				goto cmd_bad;
 			}
 
 			// sanity-check arguments
 			if (arg % 4) {
-				last_error = BTL_PROG_MULTI_BAD_LEN;
 				goto cmd_bad;
 			}
 
 			if ((address + arg) > board_info.fw_size) {
-				last_error = BTL_PROG_MULTI_BAD_ADR;
 				goto cmd_bad;
 			}
 
-			if (arg > sizeof(flash_buffer.c)) {
-				last_error = BTL_PROG_MULTI_BUF_OVER;
+			if (arg > (int)sizeof(flash_buffer.c)) {
 				goto cmd_bad;
 			}
 
@@ -744,7 +737,6 @@ bootloader(unsigned timeout)
 				c = cin_wait(1000);
 
 				if (c < 0) {
-					last_error = BTL_RX_TIMEOUT;
 					goto cmd_bad;
 				}
 
@@ -752,7 +744,6 @@ bootloader(unsigned timeout)
 			}
 
 			if (!wait_for_eoc(200)) {
-				last_error = BTL_RX_NO_EOC;
 				goto cmd_bad;
 			}
 
@@ -781,7 +772,6 @@ bootloader(unsigned timeout)
 
 				// do immediate read-back verify
 				if (flash_func_read_word(address) != flash_buffer.w[i]) {
-					last_error = BTL_FLASH_VERIFY_FAIL;
 					goto cmd_fail;
 				}
 
@@ -1012,20 +1002,12 @@ bootloader(unsigned timeout)
 		continue;
 cmd_bad:
 		// send an 'invalid' response but don't kill the timeout - could be garbage
-		if (last_error != NO_ERROR)
-		{
-
-		}
 		invalid_response();
 		bl_state = 0;
 		continue;
 
 cmd_fail:
 		// send a 'command failed' response but don't kill the timeout - could be garbage
-		if (last_error != NO_ERROR)
-		{
-
-		}
 		failure_response();
 		continue;
 

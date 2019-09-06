@@ -9,7 +9,7 @@ export BUILD_DIR_ROOT ?= build
 export BL_BASE		?= $(wildcard .)
 export LIBOPENCM3	?= $(wildcard libopencm3)
 export LIBKINETIS  	?= $(wildcard lib/kinetis/NXP_Kinetis_Bootloader_2_0_0)
-export LIBCRYPTO  	?= $(wildcard mbed-crypto)
+export LIBCRYPTO  	?= $(wildcard monocypher)
 MKFLAGS=--no-print-directory
 
 SRC_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
