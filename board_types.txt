@@ -30,6 +30,10 @@ TARGET_HW_SMARTAP_PRO                  32
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
 
+# NOTE: the full range from 1000 to 1999 (inclusive) is reserved for
+# use by the ArduPilot bootloader. Do not allocate IDs in this range
+# except via changes to the ArduPilot code
+
 # values starting with AP_ are implemented in the ArduPilot bootloader
 # https://github.com/ArduPilot/ardupilot/tree/master/Tools/AP_Bootloader
 # the values come from the APJ_BOARD_ID in the hwdef files here:
@@ -64,3 +68,7 @@ AP_HW_VRBRAIN_V52                    1152
 AP_HW_VRBRAIN_V54                    1154
 AP_HW_VRCORE_V10                     1910
 AP_HW_VRUBRAIN_V51                   1351
+AP_HW_F103_PERIPH                    1000
+AP_HW_CUAV_GPS                       1001
+AP_HW_OMNIBUSF4                      1002
+AP_HW_CUBEBLACK+                     1003
