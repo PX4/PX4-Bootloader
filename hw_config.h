@@ -1047,6 +1047,35 @@
 # define BOARD_LED_ON                   gpio_set
 # define BOARD_LED_OFF                  gpio_clear
 
+/****************************************************************************
+ * TARGET_HW_MODALAI_FMUV5M
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_MODALAI_FMUV5M)
+
+# define APP_LOAD_ADDRESS               0x08008000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                0
+# define USBDEVICESTRING                "PX4 BL FMU v5m.x"
+# define USBMFGSTRING                   "ModalAI"
+# define USBPRODUCTID                   0xa32f
+# define USBVENDORID                    0x0483
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     41775
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
+# define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+
+# define OSC_FREQ                       16
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO0 // RED
+# define BOARD_PIN_LED_BOOTLOADER       GPIO1 // GREEN
+# define BOARD_PORT_LEDS                GPIOB
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOBEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
 
 #else
 # error Undefined Target Hardware
