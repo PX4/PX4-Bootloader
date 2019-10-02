@@ -4,3 +4,6 @@
 [submodule "lib/kinetis/NXP_Kinetis_Bootloader_2_0_0"]
 	path = lib/kinetis/NXP_Kinetis_Bootloader_2_0_0
 	url = https://github.com/PX4-Works/NXP_Kinetis_Bootloader_2_0_0.git
+[submodule "monocypher"]
+	path = monocypher
+	url = https://github.com/LoupVaillant/Monocypher.git
