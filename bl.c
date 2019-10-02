@@ -46,7 +46,13 @@
 
 #include "bl.h"
 #include "cdcacm.h"
+
+#ifdef SECURE_BTL_ENABLED
+	#include "crypto.h"
+#endif
+
 #include "uart.h"
+
 
 // bootloader flash update protocol.
 //
@@ -322,6 +328,17 @@ jump_to_app()
 		return;
 	}
 
+#ifdef SECURE_BTL_ENABLED
+
+	bool verified = verifyApp((size_t)board_info.fw_size);
+
+	if (verified == false) {
+		//image verification failed, do not jump to application. stay in BTL
+		return;
+	}
+
+#endif
+
 	/* just for paranoia's sake */
 	arch_flash_lock();
 
@@ -422,6 +439,7 @@ invalid_response(void)
 	uint8_t data[] = {
 		PROTO_INSYNC,	// "in sync"
 		PROTO_INVALID	// "invalid command"
+
 	};
 
 	cout(data, sizeof(data));
