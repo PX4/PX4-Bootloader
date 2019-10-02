@@ -9,6 +9,7 @@ export BUILD_DIR_ROOT ?= build
 export BL_BASE		?= $(wildcard .)
 export LIBOPENCM3	?= $(wildcard libopencm3)
 export LIBKINETIS  	?= $(wildcard lib/kinetis/NXP_Kinetis_Bootloader_2_0_0)
+export LIBCRYPTO  	?= $(wildcard monocypher)
 MKFLAGS=--no-print-directory
 
 SRC_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -36,15 +37,20 @@ export FLAGS		 = -std=gnu99 \
 			   -Wall \
 			   -fno-builtin \
 			   -I$(BL_BASE)/$(LIBOPENCM3)/include \
+			   -I$(BL_BASE)/$(LIBCRYPTO)/src\
 			   -I$(BL_BASE)/. \
 			   -ffunction-sections \
 			   -nostartfiles \
 			   -lnosys \
 			   -Wl,-gc-sections \
 			   -Wl,-g \
-			   -Werror
+			   -Werror \
+			   -Xlinker -Map=output.map 
 
-export COMMON_SRCS	 = bl.c
+export COMMON_SRCS	 = bl.c crypto.c \
+						monocypher/src/monocypher.c\
+						monocypher/src/sha512.c
+					
 export ARCH_SRCS	 = cdcacm.c  usart.c
 
 #
@@ -71,6 +77,7 @@ TARGETS	= \
 	px4fmuv4_bl \
 	px4fmuv4pro_bl \
 	px4fmuv5_bl \
+	px4fmuv5_crypto_bl \
 	px4io_bl \
 	px4iov3_bl \
 	tapv1_bl \
@@ -113,6 +120,9 @@ px4fmuv4pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 
 px4fmuv5_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=PX4_FMU_V5 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+	
+px4fmuv5_crypto_bl:$(MAKEFILE_LIST) $(LIBOPENCM3) $(LIBCRYPTO)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7.crypto TARGET_HW=PX4_FMU_V5_CRYPTO LINKER_FILE=stm32f7_crypto.ld TARGET_FILE_NAME=$@
 
 mindpxv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=MINDPX_V2 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@

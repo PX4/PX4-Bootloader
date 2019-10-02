@@ -1,0 +1,38 @@
+.Dd December 28, 2017
+.Dt CRYPTO_MEMCMP 3MONOCYPHER
+.Os
+.Sh NAME
+.Nm crypto_memcmp ,
+.Nm crypto_zerocmp
+.Nd deprecated timing-safe data comparisons
+.Sh SYNOPSIS
+.In monocypher.h
+.Ft int
+.Fo crypto_memcmp
+.Fa "const uint8_t *p1"
+.Fa"const uint8_t *p2"
+.Fa "size_t n"
+.Fc
+.Ft int
+.Fo crypto_zerocmp
+.Fa "const uint8_t *p"
+.Fa "size_t n"
+.Fc
+.Sh DESCRIPTION
+.Fn crypto_memcmp
+and
+.Fn crypto_zerocmp
+were meant to provide timing-safe data comparison.
+They have been removed from Monocypher because they could not uphold
+those guarantees when compiled with
+.Fl O3
+on common compilers.
+Use
+.Xr crypto_verify16 3monocypher ,
+.Xr crypto_verify32 3monocypher
+and
+.Xr crypto_verify64 3monocypher
+instead.
+.Sh SEE ALSO
+.Xr crypto_verify16 3monocypher ,
+.Xr intro 3monocypher

@@ -1,0 +1,17 @@
+*~
+*.o
+*.a
+*.so
+*.so.*
+*.out
+*.vec
+*.gch
+*.sav
+*.profraw
+*.profdata
+tests/formal-analysis/*
+tests/formal-analysis
+*.tar.gz
+monocypher-*
+lib/*
+.git*

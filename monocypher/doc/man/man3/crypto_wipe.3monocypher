@@ -1,0 +1,54 @@
+.Dd December 28, 2017
+.Dt CRYPTO_WIPE 3MONOCYPHER
+.Os
+.Sh NAME
+.Nm crypto_wipe
+.Nd wipe data from memory
+.Sh SYNOPSIS
+.In monocypher.h
+.Ft void
+.Fo crypto_wipe
+.Fa "void *secret"
+.Fa "size_t secret_size"
+.Fc
+.Sh DESCRIPTION
+.Fn crypto_wipe
+securely erases sensitive data in memory.
+.Pp
+Sensitive data (such as cryptographic keys or secret plaintexts) should
+be erased from memory as early as possible, to minimise the window in
+which it can be leaked.
+Standard functions like memset and bzero are not safe to use, as the
+compiler may decide they have no effect and optimise them out.
+.Pp
+The arguments are:
+.Bl -tag -width Ds
+.It Fa secret
+The buffer to erase.
+.It Fa secret_size
+The number of bytes to erase from the buffer.
+Normally this is the size of the entire buffer.
+.El
+.Pp
+Monocypher will wipe its context structs when finalizing an operation
+such as signing or decrypting.
+When using direct interfaces like
+.Xr crypto_lock 3monocypher ,
+these context structs are invisible to you.
+They are exposed in incremental interfaces like
+.Xr crypto_lock_init 3monocypher .
+The original key buffer does not get automatically wiped.
+When using incremental interfaces, you may want to wipe the original key
+buffers immediately after calling the respective init function.
+.Pp
+Using
+.Fn crypto_wipe
+alone may not suffice for security.
+It is recommended to lock down relevant memory regions as well.
+Refer to
+.Xr intro 3monocypher
+for instructions on how to lock down memory on common operating systems.
+.Sh RETURN VALUES
+This function returns nothing.
+.Sh SEE ALSO
+.Xr intro 3monocypher

@@ -52,7 +52,13 @@
 
 #include "bl.h"
 #include "cdcacm.h"
+
+#ifdef SECURE_BTL_ENABLED
+	#include "crypto.h"
+#endif
+
 #include "uart.h"
+
 
 // bootloader flash update protocol.
 //
@@ -79,7 +85,7 @@
 // RESET		finalise flash programming, reset chip and starts application
 //
 
-#define BL_PROTOCOL_VERSION 		5		// The revision of the bootloader protocol
+#define BL_PROTOCOL_VERSION 		7		// The revision of the bootloader protocol
 //* Next revision needs to update
 
 // protocol bytes
@@ -303,6 +309,17 @@ jump_to_app()
 		return;
 	}
 
+#ifdef SECURE_BTL_ENABLED
+
+	bool verified = verifyApp((size_t)board_info.fw_size); 
+
+	if (verified == false) {
+		//image verification failed, do not jump to application. stay in BTL
+		return;
+	}
+
+#endif
+
 	/* just for paranoia's sake */
 	flash_lock();
 
@@ -404,6 +421,7 @@ invalid_response(void)
 	uint8_t data[] = {
 		PROTO_INSYNC,	// "in sync"
 		PROTO_INVALID	// "invalid command"
+
 	};
 
 	cout(data, sizeof(data));
@@ -528,6 +546,8 @@ bootloader(unsigned timeout)
 	systick_interrupt_enable();
 	systick_counter_enable();
 
+	//crypto_test_bench();
+	
 	/* if we are working with a timeout, start it running */
 	if (timeout) {
 		timer[TIMER_BL_WAIT] = timeout;
@@ -709,7 +729,7 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
-			if (arg > sizeof(flash_buffer.c)) {
+			if (arg > (int)sizeof(flash_buffer.c)) {
 				goto cmd_bad;
 			}
 

@@ -1,0 +1,116 @@
+.Dd July 18, 2018
+.Dt CRYPTO_X25519 3MONOCYPHER
+.Os
+.Sh NAME
+.Nm crypto_x25519 ,
+.Nm crypto_x25519_public_key
+.Nd X25519 key exchange
+.Sh SYNOPSIS
+.In monocypher.h
+.Ft int
+.Fo crypto_x25519
+.Fa "uint8_t raw_shared_secret[32]"
+.Fa "const uint8_t your_secret_key[32]"
+.Fa "const uint8_t their_public_key[32]"
+.Fc
+.Ft void
+.Fo crypto_x25519_public_key
+.Fa "uint8_t your_public_key[32]"
+.Fa "const uint8_t your_secret_key[32]"
+.Fc
+.Sh DESCRIPTION
+.Fn crypto_x25519
+computes a shared secret with
+.Fa your_secret_key
+and
+.Fa their_public_key .
+It is a low-level primitive.
+Use
+.Xr crypto_key_exchange 3monocypher
+unless you have a specific reason not to.
+.Pp
+.Fn crypto_x25519_public_key
+is the same as
+.Xr crypto_key_exchange_public_key 3monocypher .
+It deterministically computes the public key from a random secret key.
+.Pp
+The arguments are:
+.Bl -tag -width Ds
+.It Fa raw_shared_secret
+The shared secret, known only to those who know a relevant secret key
+(yours or theirs).
+It is not cryptographically random.
+Do not use it directly as a key.
+Hash it with
+.Xr crypto_chacha20_H 3monocypher
+or
+.Xr crypto_blake2b 3monocypher
+first.
+.It Fa your_secret_key
+A 32-byte secret random number.
+See
+.Xr intro 3monocypher
+for advice about generating random bytes (use the operating system's
+random number generator).
+.It Fa their_public_key
+The public key of the other party.
+.El
+.Sh RETURN VALUES
+Some public keys force the shared key to a known constant.
+.Fn crypto_x225519
+returns -1 if it detects such a public key, otherwise it
+returns 0.
+This never happens with legitimate public keys.
+.Pp
+.Sy The return value has been deprecated .
+.Fn crypto_x25519
+will return
+.Vt void
+starting with the next major release of Monocypher.
+Some poorly designed protocols require to test for
+.Dq contributory
+behaviour, which ensures that no untrusted party forces the shared
+secret to a known constant.
+Protocols should instead be designed in such a way that no such check
+is necessary, namely by authenticating the other party or exchanging
+keys over a trusted channel.
+.Pp
+.Fn crypto_x25519_public_key
+returns nothing.
+.Sh EXAMPLES
+Generate a pair of shared keys with your secret key and their public
+key.
+(This can help nonce management for full duplex communications.)
+.Bd -literal -offset indent
+const uint8_t their_pk     [32]; /* Their public key          */
+const uint8_t your_sk      [32]; /* Your secret key           */
+uint8_t       shared_secret[32]; /* Shared secret (NOT a key) */
+crypto_x25519(shared_secret, your_sk, their_pk;
+/* Wipe secrets if they are no longer needed */
+crypto_wipe(your_sk, 32);
+
+uint8_t shared_keys[64]; /* Two shared session keys */
+crypto_blake2b(shared_keys, shared_secret, 32);
+const uint8_t *key_1 = shared_keys;      /* Shared key 1 */
+const uint8_t *key_2 = shared_keys + 32; /* Shared key 2 */
+/* Wipe secrets if they are no longer needed */
+crypto_wipe(shared_secret, 32);
+.Ed
+.Sh SEE ALSO
+.Xr crypto_key_exchange 3monocypher ,
+.Xr intro 3monocypher
+.Sh STANDARDS
+This function implements X25519, described in RFC 7748.
+.Sh SECURITY CONSIDERATIONS
+If either of the long term secret keys leaks, it may compromise
+.Em all past messages .
+This can be avoided by using protocols that provide forward secrecy,
+such as the X3DH key agreement protocol.
+.Sh IMPLEMENTATION DETAILS
+The most significant bit of the public key is systematically ignored.
+It is not needed because every public key should be smaller than
+2^255-19, which fits in 255 bits.
+If another implementation of X25519 gives you a key that is not fully
+reduced and has its high bit set, the computation will fail.
+On the other hand, it also means you may use this bit for other purposes
+(such as parity flipping for Ed25519 compatibility).
