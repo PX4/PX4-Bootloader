@@ -59,7 +59,6 @@
 
 #include "uart.h"
 
-
 // bootloader flash update protocol.
 //
 // Command format:
@@ -545,8 +544,6 @@ bootloader(unsigned timeout)
 	systick_set_reload(board_info.systick_mhz * 1000);	/* 1ms tick, magic number */
 	systick_interrupt_enable();
 	systick_counter_enable();
-
-	//crypto_test_bench();
 	
 	/* if we are working with a timeout, start it running */
 	if (timeout) {
