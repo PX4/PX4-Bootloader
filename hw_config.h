@@ -1048,16 +1048,16 @@
 # define BOARD_LED_OFF                  gpio_clear
 
 /****************************************************************************
- * TARGET_HW_MODALAI_FC1
+ * TARGET_HW_MODALAI_FC_V1
  ****************************************************************************/
 
-#elif  defined(TARGET_HW_MODALAI_FC1)
+#elif  defined(TARGET_HW_MODALAI_FC_V1)
 
 # define APP_LOAD_ADDRESS               0x08008000
 # define BOOTLOADER_DELAY               5000
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
-# define USBDEVICESTRING                "PX4 BL ModalAI FC1"
+# define USBDEVICESTRING                "PX4 BL ModalAI FCv1"
 # define USBMFGSTRING                   "ModalAI"
 # define USBPRODUCTID                   0xa32f
 # define USBVENDORID                    0x0483
