@@ -75,7 +75,7 @@ TARGETS	= \
 	px4iov3_bl \
 	tapv1_bl \
 	smartap_pro_bl \
-	modalai_fc1_bl
+	modalai_fc_v1_bl
 
 all:	$(TARGETS) sizes
 
