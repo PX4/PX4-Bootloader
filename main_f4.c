@@ -12,7 +12,9 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/stm32/pwr.h>
-# include <libopencm3/stm32/timer.h>
+#include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/scb.h>
+#include <libopencm3/cm3/systick.h>
 
 #include "bl.h"
 #include "uart.h"
@@ -485,6 +487,22 @@ clock_init(void)
 	rcc_clock_setup_hse_3v3(&clock_setup);
 }
 
+inline void arch_systic_init(void)
+{
+	/* (re)start the timer system */
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	systick_set_reload(board_info.systick_mhz * 1000);  /* 1ms tick, magic number */
+	systick_interrupt_enable();
+	systick_counter_enable();
+}
+
+inline void arch_systic_deinit(void)
+{
+	/* kill the systick interrupt */
+	systick_interrupt_disable();
+	systick_counter_disable();
+}
+
 /**
   * @brief  Resets the RCC clock configuration to the default reset state.
   * @note   The default reset state of the clock configuration is given below:
@@ -520,6 +538,21 @@ clock_deinit(void)
 
 	/* Reset the CIR register */
 	RCC_CIR = 0x000000;
+}
+
+inline void arch_flash_lock(void)
+{
+	flash_lock();
+}
+
+inline void arch_flash_unlock(void)
+{
+	flash_unlock();
+}
+
+inline void arch_setvtor(uint32_t address)
+{
+	SCB_VTOR = address;
 }
 
 uint32_t

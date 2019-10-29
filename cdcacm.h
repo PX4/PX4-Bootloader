@@ -40,7 +40,7 @@
 #pragma once
 
 
-extern void usb_cinit(void);
+extern void usb_cinit(void *pconfig);
 extern void usb_cfini(void);
 extern int usb_cin(void);
 extern void usb_cout(uint8_t *buf, unsigned len);

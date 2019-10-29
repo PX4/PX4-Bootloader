@@ -301,7 +301,7 @@ otg_fs_isr(void)
 }
 
 void
-usb_cinit(void)
+usb_cinit(void *pconfig)
 {
 #if defined(STM32F4)
 
