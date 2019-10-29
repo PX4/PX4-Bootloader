@@ -61,6 +61,10 @@
 # define BOARD_INTERFACE_CONFIG_USB  	NULL
 #endif
 
+#define STK_CSR_CLKSOURCE_LSB   2
+#define STK_CSR_CLKSOURCE_AHB_DIV8  (0 << STK_CSR_CLKSOURCE_LSB)
+#define STK_CSR_CLKSOURCE_AHB   (1 << STK_CSR_CLKSOURCE_LSB)
+
 flash_config_t s_flashDriver;                       //!< Flash driver instance.
 static uint32_t s_flashRunCommand[kFLASH_ExecuteInRamFunctionMaxSizeInWords];
 static uint32_t s_flashCacheClearCommand[kFLASH_ExecuteInRamFunctionMaxSizeInWords];
@@ -458,6 +462,22 @@ static void CLOCK_CONFIG_FllStableDelay(void)
 	}
 }
 
+inline void arch_systic_init(void)
+{
+	/* (re)start the timer system */
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	systick_set_reload(board_info.systick_mhz * 1000);  /* 1ms tick, magic number */
+	systick_interrupt_enable();
+	systick_counter_enable();
+}
+
+inline void arch_systic_deinit(void)
+{
+	/* kill the systick interrupt */
+	systick_interrupt_disable();
+	systick_counter_disable();
+}
+
 void
 clock_deinit(void)
 {
@@ -550,8 +570,17 @@ clock_deinit(void)
 	SystemCoreClock = BOARD_RESETCLOCKRUN_CORE_CLOCK;
 }
 
-void flash_lock(void)
+inline void arch_flash_lock(void)
 {
+}
+
+inline void arch_flash_unlock(void)
+{
+}
+
+inline void arch_setvtor(uint32_t address)
+{
+	SCB->VTOR = address;
 }
 
 uint32_t flash_func_sector_size(unsigned sector)

@@ -42,13 +42,7 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
-
-# include <libopencm3/stm32/rcc.h>
-# include <libopencm3/stm32/gpio.h>
-# include <libopencm3/stm32/flash.h>
-
-#include <libopencm3/cm3/scb.h>
-#include <libopencm3/cm3/systick.h>
+#include <stdbool.h>
 
 #include "bl.h"
 #include "cdcacm.h"
@@ -161,7 +155,7 @@ inline void cinit(void *config, uint8_t interface)
 #if INTERFACE_USB
 
 	if (interface == USB) {
-		return usb_cinit();
+		return usb_cinit(config);
 	}
 
 #endif
@@ -231,7 +225,30 @@ inline void cout(uint8_t *buf, unsigned len)
 #endif
 }
 
+/* The PX4IO is so low on FLASH that this abstaction is not possible as
+ * a called API. Therefore these macros are needed.
+ */
+#if defined(TARGET_HW_PX4_PIO_V1)
+# include <libopencm3/stm32/flash.h>
+#include <libopencm3/cm3/systick.h>
+#include <libopencm3/cm3/scb.h>
 
+#define arch_systic_init(d) \
+	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB); \
+	systick_set_reload(board_info.systick_mhz * 1000); \
+	systick_interrupt_enable(); \
+	systick_counter_enable();
+
+#define arch_systic_deinit() \
+	systick_interrupt_disable(); \
+	systick_counter_disable();
+
+#define arch_flash_lock flash_lock
+#define arch_flash_unlock flash_unlock
+
+#define arch_setvtor(address) SCB_VTOR = address;
+
+#endif
 
 static const uint32_t	bl_proto_rev = BL_PROTOCOL_VERSION;	// value returned by PROTO_DEVICE_BL_REV
 
@@ -304,11 +321,10 @@ jump_to_app()
 	}
 
 	/* just for paranoia's sake */
-	flash_lock();
+	arch_flash_lock();
 
 	/* kill the systick interrupt */
-	systick_interrupt_disable();
-	systick_counter_disable();
+	arch_systic_deinit();
 
 	/* deinitialise the interface */
 	cfini();
@@ -320,7 +336,7 @@ jump_to_app()
 	board_deinit();
 
 	/* switch exception handlers to the application */
-	SCB_VTOR = APP_LOAD_ADDRESS;
+	arch_setvtor(APP_LOAD_ADDRESS);
 
 	/* extract the stack and entrypoint from the app vector table and go */
 	do_jump(app_base[0], app_base[1]);
@@ -523,10 +539,7 @@ bootloader(unsigned timeout)
 	uint32_t	first_word = 0xffffffff;
 
 	/* (re)start the timer system */
-	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
-	systick_set_reload(board_info.systick_mhz * 1000);	/* 1ms tick, magic number */
-	systick_interrupt_enable();
-	systick_counter_enable();
+	arch_systic_init();
 
 	/* if we are working with a timeout, start it running */
 	if (timeout) {
@@ -663,7 +676,7 @@ bootloader(unsigned timeout)
 			led_set(LED_ON);
 
 			// erase all sectors
-			flash_unlock();
+			arch_flash_unlock();
 
 			for (int i = 0; flash_func_sector_size(i) != 0; i++) {
 				flash_func_erase_sector(i);
@@ -709,7 +722,7 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
-			if (arg > sizeof(flash_buffer.c)) {
+			if ((unsigned int)arg > sizeof(flash_buffer.c)) {
 				goto cmd_bad;
 			}
 
