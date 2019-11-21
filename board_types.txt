@@ -27,6 +27,10 @@ TARGET_HW_AV_V1                        29
 TARGET_HW_KAKUTEF7                    123
 TARGET_HW_SMARTAP_PRO                  32
 
+Reserved  PX4 [BL] FMU v5X.x           51
+Reserved "PX4 [BL] FMU v6.x"           52
+Reserved "PX4 [BL] FMU v6X.x"          53
+
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
 
