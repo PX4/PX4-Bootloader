@@ -79,4 +79,5 @@ AP_HW_OMNIBUSF4                      1002
 AP_HW_CUBEBLACK+                     1003
 AP_HW_ZUBAXGNSS                      1004
 AP_HW_F303_PERIPH                    1005
-AP_HW_FRSKY_R9                       1006
+AP_HW_NIGHTCRAWLER                   1006
+AP_HW_FRSKY_R9                       1007
