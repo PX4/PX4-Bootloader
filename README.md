@@ -29,3 +29,7 @@ License: LGPL for libopencm3, BSD for core bootloader (see LICENSE.md)
 
 Typical use case. The PX4 IO. [px4pipbl.pdf](https://github.com/PX4/Bootloader/files/3955700/px4pipbl.pdf)
 
+To avoid accidental erasure or bad image loading:
+
+The booaloder need to receive `PROTO_GET_SYNC` and `PROTO_GET_DEVICE` Prior to receiving `PROTO_CHIP_ERASE`    
+The booaloder need to receive `PROTO_GET_SYNC` and `PROTO_GET_DEVICE` and `PROTO_PROG_MULTI` and `PROTO_GET_CRC` Prior to receiving `PROTO_BOOT`
