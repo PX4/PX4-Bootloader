@@ -24,3 +24,8 @@ License: LGPL for libopencm3, BSD for core bootloader (see LICENSE.md)
 
   * Chat: [Dronecode Slack](http://slack.px4.io)
   * Forum: [Dronecode Discuss](http://discuss.px4.io)
+
+## Bootloader Usage
+
+Typical use case. The PX4 IO. [px4pipbl.pdf](https://github.com/PX4/Bootloader/files/3955700/px4pipbl.pdf)
+
