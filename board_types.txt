@@ -82,3 +82,5 @@ AP_HW_ZUBAXGNSS                      1005
 AP_HW_NIGHTCRAWLER                   1006
 AP_HW_SKYBOT                         1007
 AP_HW_FRSKY_R9                       1008
+AP_HW_CUAV_NORA                      1009
+AP_HW_CUAV_X7_PRO                    1010
