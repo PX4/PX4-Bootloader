@@ -16,8 +16,9 @@ FLAGS		+= -mthumb -mcpu=cortex-m3\
        -DTARGET_HW_$(TARGET_HW) \
        -DSTM32F1 \
 		   -T$(LINKER_FILE) \
-		   -L$(LIBOPENCM3)/lib \
-		   -lopencm3_stm32f1
+				-L$(LIBOPENCM3)/lib/stm32/F1 \
+				-lopencm3_stm32f1 \
+		   $(EXTRAFLAGS)
 
 #
 # General rules for making dependency and object files
