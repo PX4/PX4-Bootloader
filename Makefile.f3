@@ -16,7 +16,7 @@ FLAGS 		+= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
        -DTARGET_HW_$(TARGET_HW) \
        -DSTM32F3 \
        -T$(LINKER_FILE) \
-		   -L$(LIBOPENCM3)/lib \
+		   -L$(LIBOPENCM3)/lib/stm32/F3 \
 		   -lopencm3_stm32f3 \
         $(EXTRAFLAGS)
 
