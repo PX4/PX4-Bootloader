@@ -87,3 +87,4 @@ AP_HW_CUAV_NORA                      1009
 AP_HW_CUAV_X7_PRO                    1010
 AP_HW_SUCCEXF4                       1011
 AP_HW_MRO_CONTROL_ZERO_PR            1012
+AP_HW_LIGHTSPARKMINI                 1013
