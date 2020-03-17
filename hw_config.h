@@ -1099,7 +1099,7 @@
 # define BOOTLOADER_DELAY               5000
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
-# define USBDEVICESTRING                "ARK BL BMS V1"
+# define USBDEVICESTRING                "PX4 BL ARK BMSv1"
 # define USBMFGSTRING                   "ARK"
 # define USBPRODUCTID                   0x0012
 // # define BOOT_DELAY_ADDRESS             0x000001a0
