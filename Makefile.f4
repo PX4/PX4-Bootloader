@@ -37,5 +37,5 @@ flash-bootloader:
 
 # Use to upload to a stm32f4-discovery devboard, requires the latest version of openocd (from git)
 # build openocd with "cd openocd; ./bootstrap; ./configure --enable-maintainer-mode --enable-stlink"
-upload-discovery: 
+upload-discovery:
 	$(OPENOCD) --search ../px4_bootloader -f board/stm32f4discovery.cfg -c init -c "reset halt" -c "flash probe 0" -c "stm32f2x mass_erase 0" -c "flash write_image erase $(BINARY) 0x08000000" -c "reset" -c shutdown

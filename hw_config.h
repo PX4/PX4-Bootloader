@@ -1089,6 +1089,47 @@
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
+/****************************************************************************
+ * TARGET_HW_ARK_BMS_V1
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_ARK_BMS_V1)
+
+# define APP_LOAD_ADDRESS               0x08018000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                1
+# define USBDEVICESTRING                "ARK BL BMS V1"
+# define USBMFGSTRING                   "ARK"
+# define USBPRODUCTID                   0x0012
+// # define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     69
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)
+# define BOARD_FLASH_SECTORS            11
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+
+# define OSC_FREQ                       16
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO14 // RED
+# define BOARD_PIN_LED_BOOTLOADER       GPIO0  // GREEN
+# define BOARD_PORT_LEDS                GPIOB
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOBEN
+# define BOARD_LED_ON                   gpio_set
+# define BOARD_LED_OFF                  gpio_clear
+
+# define BOARD_USART                    USART2
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
+
+# define BOARD_PORT_USART               GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO5
+# define BOARD_PIN_RX                   GPIO6
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIODEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
+
 #else
 # error Undefined Target Hardware
 #endif
