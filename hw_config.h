@@ -1171,6 +1171,10 @@
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIOAEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
+# define BOARD_USB_VBUS_SENSE_DISABLED
+# define BOARD_PORT_VBUS                GPIOA
+# define BOARD_PIN_VBUS                 GPIO0
+
 #else
 # error Undefined Target Hardware
 #endif
