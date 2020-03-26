@@ -1089,6 +1089,58 @@
 # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
 
+/****************************************************************************
+ * TARGET_HW_UVIFY_CORE
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_UVIFY_CORE)
+
+# define APP_LOAD_ADDRESS               0x08004000
+# define BOOTLOADER_DELAY               5000
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                1
+# define USBDEVICESTRING                "PX4 BL UVify Core"
+# define USBMFGSTRING                   "UVify"
+# define USBPRODUCTID                   0x0012
+# define USBVENDORID                    0x26ac
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define BOARD_TYPE                     20
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)
+# define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 11 : 23)
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+
+# define OSC_FREQ                       24
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO3
+# define BOARD_PIN_LED_BOOTLOADER       GPIO11|GPIO1
+# define BOARD_PORT_LEDS                GPIOB
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPBEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USART                    USART1
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB2ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB2ENR_USART1EN
+
+# define BOARD_PORT_USART               GPIOB
+# define BOARD_PORT_USART_AF            GPIO_AF7
+# define BOARD_PIN_TX                   GPIO6
+# define BOARD_PIN_RX                   GPIO7
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_IOPBEN
+# define SERIAL_BREAK_DETECT_DISABLED   1
+
+/*
+ * Uncommenting this allows to force the bootloader through
+ * a PWM output pin. As this can accidentally initialize
+ * an ESC prematurely, it is not recommended. This feature
+ * has not been used and hence defaults now to off.
+ *
+ * # define BOARD_FORCE_BL_PIN_OUT         GPIO14
+ * # define BOARD_FORCE_BL_PIN_IN          GPIO11
+ * # define BOARD_FORCE_BL_PORT            GPIOE
+ */
 #else
 # error Undefined Target Hardware
 #endif

@@ -6,6 +6,7 @@ TARGET_HW_PX4_FMU_V2                    9
 TARGET_HW_PX4_FMU_V3                    9 # same as FMU_V2
 TARGET_HW_PX4_FMU_V4                   11
 TARGET_HW_PX4_FMU_V4_PRO               13
+TARGET_HW_UVIFY_CORE		       20
 TARGET_HW_PX4_FMU_V5                   50
 TARGET_HW_PX4_FMU_V5X                  51
 TARGET_HW_PX4_FMU_V6                   52
