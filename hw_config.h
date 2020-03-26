@@ -1101,8 +1101,8 @@
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL UVify Core"
 # define USBMFGSTRING                   "UVify"
-# define USBPRODUCTID                   0x0012
-# define USBVENDORID                    0x26ac
+# define USBPRODUCTID                   0x0001
+# define USBVENDORID                    0x1008
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     20
