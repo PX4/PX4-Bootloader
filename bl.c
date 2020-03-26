@@ -401,7 +401,7 @@ sync_response(void)
 	cout(data, sizeof(data));
 }
 
-#if defined(TARGET_HW_PX4_FMU_V4)
+#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
 static void
 bad_silicon_response(void)
 {
@@ -659,7 +659,7 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
-#if defined(TARGET_HW_PX4_FMU_V4)
+#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
 
 			if (check_silicon()) {
 				goto bad_silicon;
@@ -742,7 +742,7 @@ bootloader(unsigned timeout)
 
 			if (address == 0) {
 
-#if defined(TARGET_HW_PX4_FMU_V4)
+#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
 
 				if (check_silicon()) {
 					goto bad_silicon;
@@ -1004,7 +1004,7 @@ cmd_fail:
 		failure_response();
 		continue;
 
-#if defined(TARGET_HW_PX4_FMU_V4)
+#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
 bad_silicon:
 		// send the bad silicon response but don't kill the timeout - could be garbage
 		bad_silicon_response();
