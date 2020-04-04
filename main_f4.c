@@ -87,8 +87,12 @@ static struct {
 // sensing pin (and use it for fast booting when USB is disconnected). If VBUS
 // sensing is enabled, only PA9 can be used.
 #ifndef BOARD_USB_VBUS_SENSE_DISABLED
+#ifndef BOARD_PORT_VBUS
 # define BOARD_PORT_VBUS                GPIOA
+#endif
+#ifndef BOARD_PIN_VBUS
 # define BOARD_PIN_VBUS                 GPIO9
+#endif
 #endif
 
 /* magic numbers from reference manual */

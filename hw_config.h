@@ -1139,7 +1139,7 @@
 # define APP_LOAD_ADDRESS               0x08018000
 # define BOOTLOADER_DELAY               5000
 # define INTERFACE_USB                  1
-# define INTERFACE_USART                1
+# define INTERFACE_USART                0
 # define USBDEVICESTRING                "ARKBMS"
 # define USBMFGSTRING                   "ARKBMS"
 # define USBPRODUCTID                   0x0012
@@ -1160,21 +1160,29 @@
 # define BOARD_LED_ON                   gpio_set
 # define BOARD_LED_OFF                  gpio_clear
 
-# define BOARD_USART                    USART2
-# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
-# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
+// # define BOARD_USART                    USART2
+// # define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+// # define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_USART2EN
 
-# define BOARD_PORT_USART               GPIOA
-# define BOARD_PORT_USART_AF            GPIO_AF7
-# define BOARD_PIN_TX                   GPIO2
-# define BOARD_PIN_RX                   GPIO3
-# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
-# define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIOAEN
-# define SERIAL_BREAK_DETECT_DISABLED   1
+// # define BOARD_PORT_USART               GPIOA
+// # define BOARD_PORT_USART_AF            GPIO_AF7
+// # define BOARD_PIN_TX                   GPIO2
+// # define BOARD_PIN_RX                   GPIO3
+// # define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+// # define BOARD_USART_PIN_CLOCK_BIT      RCC_AHB1ENR_GPIOAEN
+// # define SERIAL_BREAK_DETECT_DISABLED   1
 
-# define BOARD_USB_VBUS_SENSE_DISABLED
+// # define BOARD_USB_VBUS_SENSE_DISABLED
 # define BOARD_PORT_VBUS                GPIOA
 # define BOARD_PIN_VBUS                 GPIO0
+
+# define BOARD_POWER_PORT               GPIOC
+# define BOARD_POWER_PIN_OUT            GPIO13
+# define BOARD_POWER_CLOCK_REGISTER     RCC_AHB1ENR
+# define BOARD_POWER_CLOCK_BIT          RCC_AHB1ENR_IOPCEN
+# define BOARD_POWER_ON                 gpio_set
+# define BOARD_POWER_OFF                gpio_clear
+# undef  BOARD_POWER_PIN_RELEASE        /* Leave pin enabling Power - un comment to release (disable power)*/
 
 #else
 # error Undefined Target Hardware
