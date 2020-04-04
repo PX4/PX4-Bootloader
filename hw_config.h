@@ -1141,8 +1141,9 @@
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "ARKBMS"
-# define USBMFGSTRING                   "ARK"
+# define USBMFGSTRING                   "ARKBMS"
 # define USBPRODUCTID                   0x0012
+# define USBVENDORID                    0x0069
 // # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     69
