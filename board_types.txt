@@ -28,6 +28,7 @@ TARGET_HW_AV_V1                        29
 TARGET_HW_KAKUTEF7                    123
 TARGET_HW_SMARTAP_PRO                  32
 TARGET_HW_MODALAI_FC_V1             41775
+TARGET_HW_HOLYBRO_PIX32_V5                  78
 
 Reserved  PX4 [BL] FMU v5X.x           51
 Reserved "PX4 [BL] FMU v6.x"           52
@@ -92,4 +93,3 @@ AP_HW_SUCCEXF4                       1011
 AP_HW_LIGHTSPARKMINI                 1012
 AP_HW_MATEKH743                      1013
 AP_HW_MRO_CONTROL_ZERO_PR            1014
-
