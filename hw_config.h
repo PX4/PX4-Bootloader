@@ -1154,6 +1154,7 @@
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL PIX32V5"
 # define USBPRODUCTID                   0x004E
+# define USBVENDORID                    0x3162
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     78
