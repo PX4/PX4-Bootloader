@@ -22,6 +22,7 @@ pipeline {
                      "mindpxv2_bl",
                      "fmuk66v3_bl",
                      "omnibusf4sd_bl",
+                     "pix32v5_bl",
                      "px4flow_bl",
                      "px4fmuv2_bl",
                      "px4fmuv3_bl",
