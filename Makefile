@@ -154,7 +154,7 @@ st_nucleo_f412zg:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=ST_NUCLEO_F412ZG LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
 ark_bms_v1_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
-	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=ARK_BMS_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=ARK_BMS_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@ EXTRAFLAGS=-DSTM32F412
 
 # Default bootloader delay is *very* short, just long enough to catch
 # the board for recovery but not so long as to make restarting after a
