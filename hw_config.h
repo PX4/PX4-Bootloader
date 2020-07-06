@@ -1101,8 +1101,7 @@
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "NUCLEO-F412ZG"
 # define USBMFGSTRING                   "ST"
-# define USBPRODUCTID                   0x0012
-// # define BOOT_DELAY_ADDRESS             0x000001a0
+# define USBPRODUCTID                   0x0069
 
 # define BOARD_TYPE                     69
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)
@@ -1142,9 +1141,8 @@
 # define INTERFACE_USART                0
 # define USBDEVICESTRING                "ARKBMS"
 # define USBMFGSTRING                   "ARKBMS"
-# define USBPRODUCTID                   0x0012
+# define USBPRODUCTID                   0x0069
 # define USBVENDORID                    0x0069
-// # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     69
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)

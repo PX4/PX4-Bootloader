@@ -79,6 +79,7 @@ static struct {
 #define STM32F40x_41x	0x413
 #define STM32F42x_43x	0x419
 #define STM32F42x_446xx	0x421
+#define STM32F41x_412xx 0x441
 
 #define REVID_MASK	0xFFFF0000
 #define DEVID_MASK	0xFFF
@@ -99,6 +100,8 @@ static struct {
 
 typedef enum mcu_rev_e {
 	MCU_REV_STM32F4_REV_A = 0x1000,
+	MCU_REV_STM32F4_REV_B = 0x2000,
+	MCU_REV_STM32F4_REV_C = 0x3000,
 	MCU_REV_STM32F4_REV_Z = 0x1001,
 	MCU_REV_STM32F4_REV_Y = 0x1003,
 	MCU_REV_STM32F4_REV_1 = 0x1007,
@@ -119,6 +122,8 @@ mcu_des_t mcu_descriptions[] = {
 	{ STM32F40x_41x, 	"STM32F40x",	'?'},
 	{ STM32F42x_43x, 	"STM32F42x",	'?'},
 	{ STM32F42x_446xx, 	"STM32F446XX",	'?'},
+	{ STM32F41x_412xx, 	"STM32F412XX",	'?'},
+
 };
 
 typedef struct mcu_rev_t {
@@ -138,14 +143,15 @@ typedef struct mcu_rev_t {
  */
 const mcu_rev_t silicon_revs[] = {
 	{MCU_REV_STM32F4_REV_3, '3'}, /* Revision 3 */
-
+	{MCU_REV_STM32F4_REV_B, 'B'}, /* Revision B */
+	{MCU_REV_STM32F4_REV_C, 'C'}, /* Revision C */
 	{MCU_REV_STM32F4_REV_A, 'A'}, /* Revision A */  // FIRST_BAD_SILICON_OFFSET (place good ones above this line and update the FIRST_BAD_SILICON_OFFSET accordingly)
 	{MCU_REV_STM32F4_REV_Z, 'Z'}, /* Revision Z */
 	{MCU_REV_STM32F4_REV_Y, 'Y'}, /* Revision Y */
 	{MCU_REV_STM32F4_REV_1, '1'}, /* Revision 1 */
 };
 
-#define FIRST_BAD_SILICON_OFFSET 1
+#define FIRST_BAD_SILICON_OFFSET 3
 
 #define APP_SIZE_MAX			(BOARD_FLASH_SIZE - (BOOTLOADER_RESERVATION_SIZE + APP_RESERVATION_SIZE))
 
