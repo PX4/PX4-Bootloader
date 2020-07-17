@@ -977,6 +977,51 @@
 # define ARCH_SN_MAX_LENGTH             16
 
 /****************************************************************************
+ * TARGET_HW_FMUK66_E
+ ****************************************************************************/
+
+#elif  defined(TARGET_HW_FMUK66_E)
+# define APP_LOAD_ADDRESS               0x00006000  // Reserve 24K for BL
+# define BOOTLOADER_DELAY               5000
+# define BOARD_NXPHLITEV3
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                0
+# define USBDEVICESTRING                "PX4 BL FMUK66 E"
+# define USBPRODUCTID                   0x001c
+# define USBVENDORID                    0x1fc9
+# define BOARD_TYPE                     30
+# define _FLASH_KBYTES                  2048
+# define FLASH_SECTOR_SIZE              4096
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+# define BOARD_FLASH_SECTORS            ((BOARD_FLASH_SIZE / FLASH_SECTOR_SIZE)- (BOOTLOADER_RESERVATION_SIZE/FLASH_SECTOR_SIZE))
+
+# define OSC_FREQ                       16
+
+# define BOARD_PIN_LED_ACTIVITY         14                   // green LED
+# define BOARD_PIN_LED_BOOTLOADER       13                   // Amber LED
+# define BOARD_PORT_LEDS                D
+# define BOARD_LED_ON                   GPIO_ClearPinsOutput
+# define BOARD_LED_OFF                  GPIO_SetPinsOutput
+
+# define BOARD_UART                     4
+# define BOARD_PORT_UART                C
+# define BOARD_PORT_UART_AF             kPORT_MuxAlt3
+# define BOARD_PIN_TX                   15
+# define BOARD_PIN_RX                   14
+
+
+
+# define BOARD_PORT_VBUS                E
+# define BOARD_PIN_VBUS                 8
+
+# define BOARD_PORT_UART_RTS            E
+# define BOARD_UART_RTS_PIN             27
+
+# define SERIAL_BREAK_DETECT_DISABLED   1
+# define USB_DATA_ALIGN __attribute__((aligned(2)))
+# define ARCH_SN_MAX_LENGTH             16
+
+/****************************************************************************
  * TARGET_HW_CUBE_F4
  ****************************************************************************/
 
