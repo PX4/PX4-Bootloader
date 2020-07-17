@@ -427,7 +427,7 @@
 # define BOARD_USART_PIN_CLOCK_BIT_TX   RCC_AHB1ENR_GPIOBEN
 # define BOARD_USART_PIN_CLOCK_BIT_RX   RCC_AHB1ENR_GPIODEN
 # define SERIAL_BREAK_DETECT_DISABLED   1
-
+# define OVERRIDE_USART_BAUDRATE        1500000
 
 /****************************************************************************
  * TARGET_HW_MINDPX_V2
