@@ -401,7 +401,7 @@ sync_response(void)
 	cout(data, sizeof(data));
 }
 
-#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
+#if !defined(STM32F1) && !defined(TARGET_HW_PX4_FMU_V2)
 static void
 bad_silicon_response(void)
 {
@@ -412,7 +412,7 @@ bad_silicon_response(void)
 
 	cout(data, sizeof(data));
 }
-#endif
+#endif /* !STM32F1 && !TARGET_HW_PX4_FMU_V2 */
 
 static void
 invalid_response(void)
@@ -659,13 +659,13 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
-#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
+#if !defined(STM32F1) && !defined(TARGET_HW_PX4_FMU_V2)
 
 			if (check_silicon()) {
 				goto bad_silicon;
 			}
 
-#endif
+#endif /* !STM32F1 && !TARGET_HW_PX4_FMU_V2 */
 
 			if ((bl_state & STATE_ALLOWS_ERASE) != STATE_ALLOWS_ERASE) {
 				goto cmd_bad;
@@ -742,13 +742,13 @@ bootloader(unsigned timeout)
 
 			if (address == 0) {
 
-#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
+#if !defined(STM32F1) && !defined(TARGET_HW_PX4_FMU_V2)
 
 				if (check_silicon()) {
 					goto bad_silicon;
 				}
 
-#endif
+#endif /* !STM32F1 && !TARGET_HW_PX4_FMU_V2 */
 
 				// save the first word and don't program it until everything else is done
 				first_word = flash_buffer.w[0];
@@ -1004,11 +1004,11 @@ cmd_fail:
 		failure_response();
 		continue;
 
-#if defined(TARGET_HW_PX4_FMU_V4) || defined(TARGET_HW_UVIFY_CORE)
+#if !defined(STM32F1) && !defined(TARGET_HW_PX4_FMU_V2)
 bad_silicon:
 		// send the bad silicon response but don't kill the timeout - could be garbage
 		bad_silicon_response();
 		continue;
-#endif
+#endif /* !STM32F1 && !TARGET_HW_PX4_FMU_V2 */
 	}
 }
