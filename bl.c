@@ -141,10 +141,12 @@
 #define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC)
 #define STATE_ALLOWS_REBOOT       (STATE_PROTO_GET_SYNC)
 #  define SET_BL_STATE(s)
+#  define SET_BL_FIRST_STATE(s)   bl_state |= (s)
 #else
 #define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC|STATE_PROTO_GET_DEVICE)
 #define STATE_ALLOWS_REBOOT       (STATE_ALLOWS_ERASE|STATE_PROTO_PROG_MULTI|STATE_PROTO_GET_CRC)
-#  define SET_BL_STATE(s) bl_state |= (s)
+#  define SET_BL_STATE(s)         bl_state |= (s)
+#  define SET_BL_FIRST_STATE(s)   bl_state |= (s)
 #endif
 
 static uint8_t bl_type;
@@ -588,7 +590,7 @@ bootloader(unsigned timeout)
 				goto cmd_bad;
 			}
 
-			SET_BL_STATE(STATE_PROTO_GET_SYNC);
+			SET_BL_FIRST_STATE(STATE_PROTO_GET_SYNC);
 			break;
 
 		// get device info
