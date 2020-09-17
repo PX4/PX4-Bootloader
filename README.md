@@ -4,6 +4,10 @@
 
 ## Build instructions
 
+Use ONLY `arm-none-eabi-gcc (GNU Tools for Arm Embedded Processors 7-2017-q4-major) 7.2.1 20170904 (release) [ARM/embedded-7-branch revision 255204]`
+
+**Version 9.3 will cause issues with flash programing and not work at this time!**
+
 Build all targets:
 
 ```
