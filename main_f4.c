@@ -484,7 +484,7 @@ board_deinit(void)
 static inline void
 clock_init(void)
 {
-	rcc_clock_setup_hse_3v3(&clock_setup);
+	rcc_clock_setup_pll(&clock_setup);
 }
 
 inline void arch_systic_init(void)
