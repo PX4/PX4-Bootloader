@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2012-2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020 Technology Innovation Institute. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +32,29 @@
  ****************************************************************************/
 
 /**
- * @file crypto.h
+ * @file public_key.h
  *
- * Wrapper for the crypto stuff
- * 
+ * File holds public keys for signed firmware.
+ *
+ *
  */
 
 #pragma once
 
-#include <stdlib.h>
+static const uint8_t public_keys[][32] = {
+	{
+#include "keys/key0.pub"
+	}
+};
 
+#define NUMBER_OF_KEYS (sizeof(public_keys) / sizeof(public_keys[0]))
 
-bool verifyApp(const size_t max_appl_len);
+static inline const uint8_t *get_pubkey_by_index(uint8_t idx)
+{
+	if (idx < NUMBER_OF_KEYS) {
+		return public_keys[idx];
 
-
-
-
+	} else {
+		return NULL;
+	}
+}

@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2012-2014 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020 Technology Innovation Institute. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,52 +41,31 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "hw_config.h"
-#include "public_key.h"
-#include "monocypher/src/monocypher.h"
+#include "monocypher/src/optional/monocypher-ed25519.h"
+#include "crypto_hal/monocypher/public_key.h"
+#include "crypto_hal/image_toc.h"
 
-#include "crypto.h"
-
-//prevents compile errors with non crypto btl
-#ifndef APP_MEM_AREA_START
- #define APP_MEM_AREA_START APP_LOAD_ADDRESS
-#endif
-
-//data structure representing the meta data header of crypto images
-struct meta_data
+bool verify_app(uint16_t idx, const image_toc_entry_t *toc_entries)
 {
-	size_t app_len;
-	uint8_t signature[64];
-};
-
-size_t get_app_len(void)
-{
-	const struct meta_data *meta_data_ptr= (const struct meta_data *)APP_MEM_AREA_START;
-	return meta_data_ptr->app_len;
-}
-
-uint8_t* get_app_signature(void){
-
-	struct meta_data *meta_data_ptr= (struct meta_data *)APP_MEM_AREA_START;
-	return meta_data_ptr->signature;
-}
-
-bool verifyApp(const size_t max_appl_len)
-{
-	bool ret = false;
 	volatile uint8_t *app_signature_ptr = NULL;
+	volatile size_t len = 0;
 
-	volatile size_t len = get_app_len();
+	uint8_t sig_idx = toc_entries[idx].signature_idx;
+	uint8_t sig_key = toc_entries[idx].signature_key;
 
-	if (len > max_appl_len ){
+	const uint8_t *public_key = get_pubkey_by_index(sig_key);
+
+	if (public_key == NULL) {
 		return false;
 	}
 
-	app_signature_ptr = get_app_signature();
+	app_signature_ptr = (volatile uint8_t *)toc_entries[sig_idx].start;
+	len = (size_t)toc_entries[idx].end - (size_t)toc_entries[idx].start;
 
-	if( crypto_check((const uint8_t *)app_signature_ptr, public_key, (const uint8_t *)APP_LOAD_ADDRESS, len) == 0 ){
-		ret = true;
+	if (crypto_ed25519_check((const uint8_t *)app_signature_ptr, public_key, (const uint8_t *)toc_entries[idx].start,
+				 len) == 0) {
+		return true;
 	}
 
-	return ret;
+	return false;
 }
