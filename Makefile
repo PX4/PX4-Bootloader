@@ -42,7 +42,8 @@ export FLAGS		 = -std=gnu99 \
 			   -lnosys \
 			   -Wl,-gc-sections \
 			   -Wl,-g \
-			   -Werror
+			   -Werror \
+			   -Xlinker -Map=$(BUILD_DIR_ROOT)/$@/output.map
 
 ifneq ($(CRYPTO_HAL),)
 include crypto_hal/$(CRYPTO_HAL)/Makefile.include
