@@ -1,0 +1,11 @@
+#
+# Monocypher SW crypto additions for PX4 bootloaders
+#
+
+FLAGS += -DSECURE_BTL_ENABLED -Imonocypher/src/ -fdata-sections
+
+CRYPTO_SRCS = \
+		crypto_hal/monocypher/crypto.c \
+		crypto_hal/image_toc.c \
+		monocypher/src/monocypher.c \
+		monocypher/src/optional/monocypher-ed25519.c
