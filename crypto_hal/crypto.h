@@ -32,22 +32,25 @@
  ****************************************************************************/
 
 /**
- * @file public_key.h
+ * @file crypto.h
  *
- * File holds public key for signed firmware.
+ * Wrapper for the crypto stuff
  *
- * 
  */
 
 #pragma once
 
-const uint8_t public_key[32]={ 	0xb4, 0x3c, 0xb5, 0x77, 0xfd, 0xc6, 0xd6, 0x9e,
-							    0xfb, 0xc1, 0x0e, 0xc9, 0xb2, 0x82, 0x25, 0xb3,
-							    0x42, 0x4d, 0x3c, 0x90, 0x58, 0x0e, 0x6b, 0xa4,
-							    0xd8, 0xa7, 0xc3, 0xdc, 0xe7, 0xeb, 0x39, 0xb5
-						       };
+#ifdef SECURE_BTL_ENABLED
 
+#include <stdlib.h>
 
+#include "image_toc.h"
+
+bool find_toc(const image_toc_entry_t **toc_entries, uint8_t *len);
+
+bool verify_app(uint16_t idx, const image_toc_entry_t *toc_entries);
+
+#endif
 
 
 

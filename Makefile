@@ -44,8 +44,14 @@ export FLAGS		 = -std=gnu99 \
 			   -Wl,-g \
 			   -Werror
 
-export COMMON_SRCS	 = bl.c
+ifneq ($(CRYPTO_HAL),)
+include crypto_hal/$(CRYPTO_HAL)/Makefile.include
+endif
+
+export COMMON_SRCS	 = bl.c $(CRYPTO_SRCS)
+
 export ARCH_SRCS	 = cdcacm.c  usart.c
+
 
 #
 # Bootloaders to build
@@ -103,7 +109,7 @@ auavx2v1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 kakutef7_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=KAKUTEF7 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
-	
+
 pix32v5_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=HOLYBRO_PIX32_V5 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 

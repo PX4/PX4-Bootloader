@@ -48,7 +48,7 @@
 #include "cdcacm.h"
 
 #ifdef SECURE_BTL_ENABLED
-	#include "crypto.h"
+#include "crypto_hal/crypto.h"
 #endif
 
 #include "uart.h"
@@ -316,6 +316,45 @@ jump_to_app()
 		return;
 	}
 
+#ifdef SECURE_BTL_ENABLED
+	const image_toc_entry_t *toc_entries;
+	uint8_t len;
+	uint8_t i = 0;
+
+	/* TOC not found or empty, stay in btl */
+	if (!find_toc(&toc_entries, &len)) {
+		return;
+	}
+
+	/* Verify the first entry, containing the TOC itself */
+	if (!verify_app(0, toc_entries)) {
+		/* Image verification failed, stay in btl */
+		return;
+	}
+
+	/* TOC is verified, find the first bootable app */
+
+	for (i = 0; i < len; i++) {
+		if (toc_entries[i].flags1 & TOC_FLAG1_BOOT) {
+			/* Verify app, if needed. i == 0 is already verified */
+			if (i != 0 &&
+			    toc_entries[i].flags1 & TOC_FLAG1_CHECK_SIGNATURE &&
+			    !verify_app(i, toc_entries)) {
+				return;
+			}
+
+			app_base = toc_entries[i].start;
+			break;
+		}
+	}
+
+	if (i == len) {
+		/* No bootable app found in TOC */
+		return;
+	}
+
+#endif
+
 	/*
 	 * The second word of the app is the entrypoint; it must point within the
 	 * flash area (or we have a bad flash).
@@ -327,17 +366,6 @@ jump_to_app()
 	if (app_base[1] >= (APP_LOAD_ADDRESS + board_info.fw_size)) {
 		return;
 	}
-
-#ifdef SECURE_BTL_ENABLED
-
-	bool verified = verifyApp((size_t)board_info.fw_size);
-
-	if (verified == false) {
-		//image verification failed, do not jump to application. stay in BTL
-		return;
-	}
-
-#endif
 
 	/* just for paranoia's sake */
 	arch_flash_lock();
@@ -355,7 +383,7 @@ jump_to_app()
 	board_deinit();
 
 	/* switch exception handlers to the application */
-	arch_setvtor(APP_LOAD_ADDRESS);
+	arch_setvtor((uint32_t)app_base);
 
 	/* extract the stack and entrypoint from the app vector table and go */
 	do_jump(app_base[0], app_base[1]);
