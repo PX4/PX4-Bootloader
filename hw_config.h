@@ -342,7 +342,7 @@
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL FMU v5.x"
 # define USBPRODUCTID                   0x0032
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     50
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
