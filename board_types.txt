@@ -39,6 +39,8 @@ Reserved  PX4 [BL] FMU v5X.x           51
 Reserved "PX4 [BL] FMU v6.x"           52
 Reserved "PX4 [BL] FMU v6X.x"          53
 
+Reserved "GUMSTIX [BL] FMU v6"         54
+
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
 
