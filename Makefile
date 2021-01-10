@@ -42,8 +42,7 @@ export FLAGS		 = -std=gnu99 \
 			   -lnosys \
 			   -Wl,-gc-sections \
 			   -Wl,-g \
-			   -Werror \
-			   -Xlinker -Map=$(BUILD_DIR_ROOT)/$@/output.map
+			   -Werror
 
 ifneq ($(CRYPTO_HAL),)
 include crypto_hal/$(CRYPTO_HAL)/Makefile.include
@@ -92,7 +91,7 @@ all:	$(TARGETS) sizes
 
 clean:
 	cd libopencm3 && make --no-print-directory clean && cd ..
-	rm -f *.elf *.bin # Remove any elf or bin files contained directly in the Bootloader directory
+	rm -f *.elf *.bin *.map # Remove any elf or bin files contained directly in the Bootloader directory
 	rm -rf build # Remove build directories
 
 #
