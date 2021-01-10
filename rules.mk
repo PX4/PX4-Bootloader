@@ -14,6 +14,8 @@ ELF		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).elf
 HEX		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).hex
 BINARY		 = $(BUILD_DIR)/$(TARGET_FILE_NAME).bin
 
+FLAGS		+= -Xlinker -Map=$(BUILD_DIR)/${TARGET_FILE_NAME}.map
+
 all:	debug $(BUILD_DIR) $(ELF) $(BINARY) $(HEX)
 
 debug:
