@@ -747,6 +747,33 @@
 
 # define USBMFGSTRING                   "Bitcraze AB"
 
+#elif  defined(TARGET_HW_CRAZYFLIE21)
+
+# define APP_LOAD_ADDRESS               0x08004000
+# define BOOTLOADER_DELAY               5000
+# define BOARD_CRAZYFLIE21
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                0
+# define USBDEVICESTRING                "Crazyflie21 BL"
+# define USBPRODUCTID                   0x0016
+
+# define BOARD_TYPE                     14
+# define BOARD_FLASH_SECTORS            11
+# define BOARD_FLASH_SIZE               (1024 * 1024)
+
+# define OSC_FREQ                       8
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO0
+# define BOARD_PIN_LED_BOOTLOADER       GPIO2
+# define BOARD_PORT_LEDS                GPIOC
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_IOPCEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USB_VBUS_SENSE_DISABLED
+
+# define USBMFGSTRING                   "Bitcraze AB"
+
 /****************************************************************************
  * TARGET_HW_OMNIBUS_NXT
  ****************************************************************************/
