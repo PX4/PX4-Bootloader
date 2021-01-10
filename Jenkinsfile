@@ -18,6 +18,7 @@ pipeline {
                      "auavx2v1_bl",
                      "avx_v1_bl",
                      "crazyflie_bl",
+                     "crazyflie21_bl",
                      "cube_f4_bl",
                      "mindpxv2_bl",
                      "fmuk66v3_bl",
