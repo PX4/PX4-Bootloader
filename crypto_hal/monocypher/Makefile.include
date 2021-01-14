@@ -4,6 +4,22 @@
 
 FLAGS += -DSECURE_BTL_ENABLED -Imonocypher/src/ -fdata-sections
 
+ifneq ($(PUBLIC_KEY0),)
+	FLAGS += -DPUBLIC_KEY0='$(PUBLIC_KEY0)'
+endif
+
+ifneq ($(PUBLIC_KEY1),)
+	FLAGS += -DPUBLIC_KEY1='$(PUBLIC_KEY1)'
+endif
+
+ifneq ($(PUBLIC_KEY2),)
+	FLAGS += -DPUBLIC_KEY2='$(PUBLIC_KEY2)'
+endif
+
+ifneq ($(PUBLIC_KEY3),)
+	FLAGS += -DPUBLIC_KEY3='$(PUBLIC_KEY3)'
+endif
+
 CRYPTO_SRCS = \
 		crypto_hal/monocypher/crypto.c \
 		crypto_hal/image_toc.c \

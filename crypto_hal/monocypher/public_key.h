@@ -41,10 +41,46 @@
 
 #pragma once
 
-static const uint8_t public_keys[][32] = {
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+#ifndef PUBLIC_KEY0
+#error "At least one key (PUBLIC_KEY0) must be defined"
+#endif
+
+/* This constant only exists to calculate size of the
+   key. It will be removed by the linker */
+static const uint8_t public_key0[] = {
+#include STR(PUBLIC_KEY0)
+};
+
+static const uint8_t public_keys[][sizeof(public_key0)] = {
+
 	{
-#include "keys/key0.pub"
+#include STR(PUBLIC_KEY0)
 	}
+
+#ifdef PUBLIC_KEY1
+	,
+	{
+#include STR(PUBLIC_KEY1)
+	}
+#endif
+
+#ifdef PUBLIC_KEY2
+	,
+	{
+#include STR(PUBLIC_KEY2)
+	}
+#endif
+
+#ifdef PUBLIC_KEY3
+	,
+	{
+#include STR(PUBLIC_KEY3)
+	}
+#endif
+
 };
 
 #define NUMBER_OF_KEYS (sizeof(public_keys) / sizeof(public_keys[0]))
