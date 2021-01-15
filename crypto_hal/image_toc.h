@@ -41,8 +41,11 @@
    do with the image
 */
 #define TOC_FLAG1_BOOT 0x1
-#define TOC_FLAG1_CHECK_SIGNATURE 0x2
-#define TOC_FLAG1_DECRYPT 0x4
+#define TOC_FLAG1_VTORS 0x2
+#define TOC_FLAG1_CHECK_SIGNATURE 0x4
+#define TOC_FLAG1_DECRYPT 0x8
+
+#define TOC_FLAG1_RDCT 0x80
 
 #define TOC_START_MAGIC 0x00434f54 /* "TOC" */
 #define TOC_END_MAGIC 0x00444e45 /* "END" */

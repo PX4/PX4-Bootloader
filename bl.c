@@ -307,6 +307,7 @@ void
 jump_to_app()
 {
 	const uint32_t *app_base = (const uint32_t *)APP_LOAD_ADDRESS;
+	const uint32_t *vec_base = (const uint32_t *)app_base;
 
 	/*
 	 * We refuse to program the first word of the app until the upload is marked
@@ -321,6 +322,10 @@ jump_to_app()
 	uint8_t len;
 	uint8_t i = 0;
 
+	/* When secure btl is used, the address comes from the TOC */
+	app_base = (const uint32_t *)0;
+	vec_base = (const uint32_t *)0;
+
 	/* TOC not found or empty, stay in btl */
 	if (!find_toc(&toc_entries, &len)) {
 		return;
@@ -332,25 +337,35 @@ jump_to_app()
 		return;
 	}
 
-	/* TOC is verified, find the first bootable app */
-
+	/* TOC is verified, loop through all the apps and perform crypto ops */
 	for (i = 0; i < len; i++) {
-		if (toc_entries[i].flags1 & TOC_FLAG1_BOOT) {
-			/* Verify app, if needed. i == 0 is already verified */
-			if (i != 0 &&
-			    toc_entries[i].flags1 & TOC_FLAG1_CHECK_SIGNATURE &&
-			    !verify_app(i, toc_entries)) {
-				return;
-			}
+		/* Verify app, if needed. i == 0 is already verified */
+		if (i != 0 &&
+		    toc_entries[i].flags1 & TOC_FLAG1_CHECK_SIGNATURE &&
+		    !verify_app(i, toc_entries)) {
+			/* Signature check failed, don't process this app */
+			continue;
+		}
 
+		/* Check if this app is bootable, if so set the app_base */
+		if (toc_entries[i].flags1 & TOC_FLAG1_BOOT) {
 			app_base = toc_entries[i].start;
-			break;
+		}
+
+		/* Check if this app has vectors, if so set the vec_base */
+		if (toc_entries[i].flags1 & TOC_FLAG1_VTORS) {
+			vec_base = toc_entries[i].start;
 		}
 	}
 
-	if (i == len) {
-		/* No bootable app found in TOC */
+	if (app_base == 0) {
+		/* No bootable app found in TOC, bail out */
 		return;
+	}
+
+	if (vec_base == 0) {
+		/* No separate vectors block, vectors come along with the app */
+		vec_base = app_base;
 	}
 
 #endif
@@ -383,7 +398,7 @@ jump_to_app()
 	board_deinit();
 
 	/* switch exception handlers to the application */
-	arch_setvtor((uint32_t)app_base);
+	arch_setvtor((uint32_t)vec_base);
 
 	/* extract the stack and entrypoint from the app vector table and go */
 	do_jump(app_base[0], app_base[1]);
