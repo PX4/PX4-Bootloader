@@ -83,7 +83,13 @@ are:
 
 TOC_FLAG1_BOOT:
   - This flag marks a bootable image; the bootloader will jump to this
-  image after all the crypto actions have been taken.
+  image after all the crypto actions have been taken. If no separate
+  vector table exists in the TOC, the application's vector table is used
+
+TOC_FLAG1_VTORS:
+  - This flag marks a separate vector table block. The bootloader will
+  set the interrupt vectors to this block. This will override the vector
+  table from the application.
 
 TOC_FLAG1_CHECK_SIGNATURE:
   - Any block marked with this flag in the TOC will be signature checked.
@@ -100,6 +106,11 @@ TOC_FLAG1_DECRYPT:
   either bootloader or px4 firmware
   Currently this flag is ignored by the bootloader, as there is no private key
   storage implemented.
+
+TOC_FLAG1_RDCT:
+  - This flag marks that the block is an R&D certificate, unlocking some
+  features for an individual device. This flag is reserved for future use,
+  it is not yet implemented in bootloader.
 
 - The "flags" don't control the signature check for the first block;
   this one contains the TOC, and it must be tamper protected as well
