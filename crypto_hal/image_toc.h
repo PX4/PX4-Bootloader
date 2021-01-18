@@ -44,6 +44,7 @@
 #define TOC_FLAG1_VTORS 0x2
 #define TOC_FLAG1_CHECK_SIGNATURE 0x4
 #define TOC_FLAG1_DECRYPT 0x8
+#define TOC_FLAG1_COPY 0x10
 
 #define TOC_FLAG1_RDCT 0x80
 
@@ -104,5 +105,14 @@ typedef struct __attribute__((__packed__))
 	uint64_t valid_until;
 	uint8_t signature[];
 } image_cert_t;
+
+/* If decrypt or copy flags are defined, this returns the target address.
+ * Otherwise, return the start address.
+ */
+inline static const void *get_base_addr(const image_toc_entry_t *e)
+{
+	return (e->flags1 & TOC_FLAG1_DECRYPT) || (e->flags1 & TOC_FLAG1_COPY) ?
+	       e->target : e->start;
+}
 
 #endif
