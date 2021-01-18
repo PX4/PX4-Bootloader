@@ -43,6 +43,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "bl.h"
 #include "cdcacm.h"
@@ -347,14 +348,28 @@ jump_to_app()
 			continue;
 		}
 
+		/* Check if this app needs decryption */
+		if (toc_entries[i].flags1 & TOC_FLAG1_DECRYPT &&
+		    !decrypt_app(i, toc_entries)) {
+			/* Decryption / authenticated decryption failed, skip this app */
+			continue;
+		}
+
+		/* Check if this app needs to be copied to RAM */
+		if (toc_entries[i].flags1 & TOC_FLAG1_COPY) {
+			/* TOC is verified, so we assume that the addresses are good */
+			memcpy(toc_entries[i].target, toc_entries[i].start,
+			       (uintptr_t)toc_entries[i].end - (uintptr_t)toc_entries[i].start);
+		}
+
 		/* Check if this app is bootable, if so set the app_base */
 		if (toc_entries[i].flags1 & TOC_FLAG1_BOOT) {
-			app_base = toc_entries[i].start;
+			app_base = get_base_addr(&toc_entries[i]);
 		}
 
 		/* Check if this app has vectors, if so set the vec_base */
 		if (toc_entries[i].flags1 & TOC_FLAG1_VTORS) {
-			vec_base = toc_entries[i].start;
+			vec_base = get_base_addr(&toc_entries[i]);
 		}
 	}
 

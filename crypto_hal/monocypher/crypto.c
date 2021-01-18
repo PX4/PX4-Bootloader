@@ -69,3 +69,17 @@ bool verify_app(uint16_t idx, const image_toc_entry_t *toc_entries)
 
 	return false;
 }
+
+bool decrypt_app(uint16_t idx, const image_toc_entry_t *toc_entries)
+{
+	/* We don't support embedding private keys to the bootloader.
+	 * This function exists only for implementing the complete api.
+	 * With monocypher it could be possible to embed a symmetric key
+	 * to the bootloader and implement RFC 8439 w. xchacha20
+	 * decryption using crypto_unlock(...);
+	 * but the security of a system where private keys are directly
+	 * embedded into bootloader code would be questionable
+	 */
+
+	return false;
+}

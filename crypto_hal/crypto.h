@@ -50,6 +50,8 @@ bool find_toc(const image_toc_entry_t **toc_entries, uint8_t *len);
 
 bool verify_app(uint16_t idx, const image_toc_entry_t *toc_entries);
 
+bool decrypt_app(uint16_t idx, const image_toc_entry_t *toc_entries);
+
 #endif
 
 
