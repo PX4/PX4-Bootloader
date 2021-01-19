@@ -188,7 +188,7 @@ board_get_rtc_signature()
 	uint32_t result = BOOT_RTC_REG;
 
 	/* disable the backup registers */
-	RCC_BDCR &= RCC_BDCR_RTCEN;
+	RCC_BDCR &= ~RCC_BDCR_RTCEN;
 	PWR_CR1 &= ~PWR_CR1_DBP;
 
 	return result;
@@ -204,7 +204,7 @@ board_set_rtc_signature(uint32_t sig)
 	BOOT_RTC_REG = sig;
 
 	/* disable the backup registers */
-	RCC_BDCR &= RCC_BDCR_RTCEN;
+	RCC_BDCR &= ~RCC_BDCR_RTCEN;
 	PWR_CR1 &= ~PWR_CR1_DBP;
 }
 
