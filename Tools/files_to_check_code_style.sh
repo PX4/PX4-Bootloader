@@ -11,4 +11,5 @@ fi
 exec find . \
     -path ./libopencm3 -prune -o \
     -path ./lib -prune -o \
+    -path ./monocypher -prune -o \
     -type f \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) | grep $PATTERN
