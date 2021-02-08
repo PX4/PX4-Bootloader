@@ -292,6 +292,7 @@ uint8_t g_UsbDeviceString2[USB_DESCRIPTOR_LENGTH_STRING2] = {sizeof(g_UsbDeviceS
 							     0,
 							     ' ',
 							     0,
+#if defined(TARGET_HW_FMUK66_V3)
 							     'v',
 							     0,
 							     '3',
@@ -300,6 +301,11 @@ uint8_t g_UsbDeviceString2[USB_DESCRIPTOR_LENGTH_STRING2] = {sizeof(g_UsbDeviceS
 							     0,
 							     'x',
 							     0
+#endif
+#if defined(TARGET_HW_FMUK66_E)
+							     'E',
+							     0,
+#endif
 							    };
 
 uint8_t g_UsbDeviceString3[USB_DESCRIPTOR_LENGTH_STRING3] = {sizeof(g_UsbDeviceString3),

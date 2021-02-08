@@ -968,7 +968,7 @@
 # define BOARD_NXPHLITEV3
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                0
-# define USBDEVICESTRING                "PX4 BL FMUK66 v3.x"
+# define USBDEVICESTRING                // See kinetis/usb_device_descriptor.c
 # define USBPRODUCTID                   0x001c
 # define USBVENDORID                    0x1fc9
 # define BOARD_TYPE                     28
@@ -1013,7 +1013,7 @@
 # define BOARD_NXPHLITEV3
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                0
-# define USBDEVICESTRING                "PX4 BL FMUK66 E"
+# define USBDEVICESTRING                // See kinetis/usb_device_descriptor.c
 # define USBPRODUCTID                   0x001c
 # define USBVENDORID                    0x1fc9
 # define BOARD_TYPE                     30
