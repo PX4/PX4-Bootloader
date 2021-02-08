@@ -48,6 +48,7 @@ SRCS		 = $(COMMON_SRCS) $(addprefix $(ARCH)/,$(ARCH_SRCS)) $(CSRCS) main_k66.c k
 LIB_WORK_AROUNDS=   -DSTM32F4 \
                     -DTOWER=0 \
                     -DFREEDOM=0 \
+                    -DCLOCK_SETUP=6\
 
 
 FLAGS += $(LIB_WORK_AROUNDS) \
