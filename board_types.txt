@@ -43,6 +43,7 @@ Reserved "PX4 [BL] FMU v6X.x"          53
 
 Reserved "GUMSTIX [BL] FMU v6"         54
 Reserved "ARK CAN FLOW"                80
+Reserved "NXP ucans32k146"             34
 
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
