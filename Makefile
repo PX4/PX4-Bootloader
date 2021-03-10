@@ -62,13 +62,14 @@ TARGETS	= \
 	aerofcv1_bl \
 	auavx2v1_bl \
 	avx_v1_bl \
-	crazyflie_bl \
 	crazyflie21_bl \
+	crazyflie_bl \
 	cube_f4_bl \
-	fmuk66v3_bl \
 	fmuk66e_bl \
+	fmuk66v3_bl \
 	kakutef7_bl \
 	mindpxv2_bl \
+	modalai_fc_v1_bl \
 	omnibusf4sd_bl \
 	pix32v5_bl \
 	px4aerocore_bl \
@@ -83,9 +84,8 @@ TARGETS	= \
 	px4fmuv5x_bl \
 	px4io_bl \
 	px4iov3_bl \
-	tapv1_bl \
 	smartap_pro_bl \
-	modalai_fc_v1_bl \
+	tapv1_bl \
 	uvify_core_bl
 
 all:	$(TARGETS) sizes
