@@ -84,6 +84,7 @@ TARGETS	= \
 	px4fmuv5x_bl \
 	px4io_bl \
 	px4iov3_bl \
+	smartap_airlink_bl \
 	smartap_pro_bl \
 	tapv1_bl \
 	uvify_core_bl
@@ -164,6 +165,9 @@ cube_f7_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 
 avx_v1_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=AV_X_V1 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+
+smartap_airlink_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=SMARTAP_AIRLINK LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
 smartap_pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=SMARTAP_PRO LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
