@@ -514,8 +514,6 @@ failure_response(void)
 	cout(data, sizeof(data));
 }
 
-static volatile unsigned cin_count;
-
 static int
 cin_wait(unsigned timeout)
 {
@@ -528,7 +526,6 @@ cin_wait(unsigned timeout)
 		c = cin(board_get_devices());
 
 		if (c >= 0) {
-			cin_count++;
 			break;
 		}
 
