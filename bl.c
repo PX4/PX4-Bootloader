@@ -878,6 +878,7 @@ bootloader(unsigned timeout)
 			break;
 
 #ifndef DISABLE_FOR_IO
+
 		// read a word from the OTP
 		//
 		// command:			GET_OTP/<addr:4>/EOC
