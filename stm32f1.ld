@@ -1,7 +1,7 @@
 /************************************************************************
  *
- *   Copyright (c) 2012-2021 PX4 Development Team. All rights reserved.
- *   Copyright (c) 2010 libopencm3 project (Uwe Hermann, Stephen Caudle)
+ *	 Copyright (c) 2012-2021 PX4 Development Team. All rights reserved.
+ *	 Copyright (c) 2010 libopencm3 project (Uwe Hermann, Stephen Caudle)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
  *
  * LICENSE NOTE FOR EXTERNAL LIBOPENCM3 LIBRARY:
  *
- *   The PX4 development team considers libopencm3 to be
- *   still GPL, not LGPL licensed, as it is unclear if
- *   each and every author agreed to the LGPS -> GPL change.
+ *	 The PX4 development team considers libopencm3 to be
+ *	 still GPL, not LGPL licensed, as it is unclear if
+ *	 each and every author agreed to the LGPS -> GPL change.
  *
  ***********************************************************************/
 
@@ -46,15 +46,15 @@ EXTERN (vector_table)
 /* Define sections. */
 SECTIONS
 {
-        . = ORIGIN(rom);
+	. = ORIGIN(rom);
 
-        .text : {
-                *(.vectors)     /* Vector table */
-                *(.text*)       /* Program code */
-                . = ALIGN(4);
-                *(.rodata*)     /* Read-only data */
-                . = ALIGN(4);
-        } >rom
+	.text : {
+		*(.vectors)		/* Vector table */
+		*(.text*)		/* Program code */
+		. = ALIGN(4);
+		*(.rodata*)		/* Read-only data */
+		. = ALIGN(4);
+	} >rom
 
 	/* C++ Static constructors/destructors, also used for __attribute__
 	 * ((constructor)) and the likes */
@@ -79,33 +79,33 @@ SECTIONS
 		__fini_array_end = .;
 	} >rom
 
-        . = ORIGIN(ram);
+	. = ORIGIN(ram);
 
-        .data : {
-                _data = .;
-                *(.data*)       /* Read-write initialized data */
-                . = ALIGN(4);
-                _edata = .;
-        } >ram AT >rom
+	.data : {
+		_data = .;
+		*(.data*)		/* Read-write initialized data */
+		. = ALIGN(4);
+		_edata = .;
+	} >ram AT >rom
 
 	_data_loadaddr = LOADADDR(.data);
 
-        .bss : {
-		_sbss = .;
-                *(.bss*)        /* Read-write zero initialized data */
-                *(COMMON)
-                . = ALIGN(4);
-                _ebss = .;
-        } >ram
+	.bss : {
+	_sbss = .;
+		*(.bss*)		/* Read-write zero initialized data */
+		*(COMMON)
+		. = ALIGN(4);
+		_ebss = .;
+	} >ram
 
-        /*
-         * The .eh_frame section appears to be used for C++ exception handling.
-         * You may need to fix this if you're using C++.
-         */
-        /DISCARD/ : { *(.eh_frame) }
+	/*
+	 * The .eh_frame section appears to be used for C++ exception handling.
+	 * You may need to fix this if you're using C++.
+	 */
+	/DISCARD/ : { *(.eh_frame) }
 
-        . = ALIGN(4);
-        end = .;
+	. = ALIGN(4);
+	end = .;
 }
 
 PROVIDE(_stack = 0x20002000);
