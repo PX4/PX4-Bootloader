@@ -1,0 +1,30 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+    - 'main'
+  pull_request:
+    branches:
+    - '*'
+
+
+jobs:
+  coverage:
+    name: Build
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential wget astyle
+      - name: Get toolchain
+        run: |
+            wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2
+            tar -jxf gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2
+            echo "$(pwd)/gcc-arm-none-eabi-9-2020-q2-update/bin" >> $GITHUB_PATH
+      - name: Build
+        run: make
+      - name: Check style
+        run: make check_format
