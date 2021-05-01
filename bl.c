@@ -552,6 +552,7 @@ cout_word(uint32_t val)
 	cout((uint8_t *)&val, 4);
 }
 
+#ifndef DISABLE_FOR_IO
 static int
 cin_word(uint32_t *wp, unsigned timeout)
 {
@@ -573,6 +574,7 @@ cin_word(uint32_t *wp, unsigned timeout)
 	*wp = u.w;
 	return 0;
 }
+#endif
 
 static uint32_t
 crc32(const uint8_t *src, unsigned len, unsigned state)
@@ -882,6 +884,7 @@ bootloader(unsigned timeout)
 			SET_BL_STATE(STATE_PROTO_GET_CRC);
 			break;
 
+#ifndef DISABLE_FOR_IO
 		// read a word from the OTP
 		//
 		// command:			GET_OTP/<addr:4>/EOC
@@ -968,6 +971,7 @@ bootloader(unsigned timeout)
 				SET_BL_STATE(STATE_PROTO_GET_CHIP_DES);
 			}
 			break;
+#endif
 
 #ifdef BOOT_DELAY_ADDRESS
 

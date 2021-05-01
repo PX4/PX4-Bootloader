@@ -583,6 +583,7 @@
 # define BOARD_FLASH_SECTORS            60
 # define BOARD_TYPE                     10
 # define FLASH_SECTOR_SIZE              0x400
+# define DISABLE_FOR_IO                 1
 
 /****************************************************************************
  * TARGET_HW_PX4_PIO_V3
