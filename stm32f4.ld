@@ -1,6 +1,6 @@
 /************************************************************************
  *
- *   Copyright (c) 2012-2014 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2012-2021 PX4 Development Team. All rights reserved.
  *   Copyright (c) 2010 libopencm3 project (Uwe Hermann, Stephen Caudle)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -54,7 +54,6 @@ SECTIONS
                 . = ALIGN(4);
                 *(.rodata*)     /* Read-only data */
                 . = ALIGN(4);
-                _etext = .;
         } >rom
 
 	/* C++ Static constructors/destructors, also used for __attribute__
@@ -82,20 +81,22 @@ SECTIONS
 
         . = ORIGIN(ram);
 
-        .data : AT(_etext) {
+        .data : {
                 _data = .;
                 *(.data*)       /* Read-write initialized data */
                 . = ALIGN(4);
                 _edata = .;
-        } >ram
+        } >ram AT >rom
+
 	_data_loadaddr = LOADADDR(.data);
 
         .bss : {
+		_sbss = .;
                 *(.bss*)        /* Read-write zero initialized data */
                 *(COMMON)
                 . = ALIGN(4);
                 _ebss = .;
-        } >ram AT >rom
+        } >ram
 
         /*
          * The .eh_frame section appears to be used for C++ exception handling.
