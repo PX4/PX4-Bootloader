@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 set -eu
 
-PATTERN="-e ."
+ENDINGS="\.c$\|\.h$\|\.cpp$\|\.hpp$"
 
 if [ $# -gt 0 ]
 then
-    PATTERN="$1"
+	exec git ls-files | grep $ENDINGS | grep - F "$1"
+else
+	exec git ls-files | grep $ENDINGS
 fi
-
-exec find . \
-    -path ./libopencm3 -prune -o \
-    -path ./lib -prune -o \
-    -path ./monocypher -prune -o \
-    -path "./gcc-arm-none-eabi-*" -prune -o \
-    -type f \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) | grep $PATTERN

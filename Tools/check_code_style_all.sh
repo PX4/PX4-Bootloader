@@ -60,7 +60,10 @@ if [ ! -f $HOOK_FILE ] && [ "$CI" != "true" ]; then
 	fi
 fi
 
-${DIR}/files_to_check_code_style.sh | xargs -n 1 -P 8 -I % ${DIR}/check_code_style.sh %
+for F in $(${DIR}/files_to_check_code_style.sh)
+do
+	${DIR}/check_code_style.sh $F
+done
 
 if [ $? -eq 0 ]; then
     echo "Format checks passed"
