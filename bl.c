@@ -545,7 +545,7 @@ cout_word(uint32_t val)
 	cout((uint8_t *)&val, 4);
 }
 
-#ifndef DISABLE_FOR_IO
+#ifndef NO_OTP_SN_CHIP
 static int
 cin_word(uint32_t *wp, unsigned timeout)
 {
@@ -877,7 +877,7 @@ bootloader(unsigned timeout)
 			SET_BL_STATE(STATE_PROTO_GET_CRC);
 			break;
 
-#ifndef DISABLE_FOR_IO
+#ifndef NO_OTP_SN_CHIP
 
 		// read a word from the OTP
 		//
