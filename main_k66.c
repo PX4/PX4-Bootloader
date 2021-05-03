@@ -85,7 +85,7 @@ struct boardinfo board_info = {
 
 static void board_init(void);
 
-#define BOOT_RTC_SIGNATURE          0xb007b007
+#define BOOT_RTC_SIGNATURE          0xb0070001
 #define POWER_DOWN_RTC_SIGNATURE    0xdeaddead // Written by app fw to not re-power on.
 #define BOOT_RTC_REG                0
 
