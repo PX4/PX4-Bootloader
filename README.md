@@ -18,7 +18,7 @@ Build a specific board: Please check the [Makefile](Makefile) for specific build
 
 ## License
 
-License: LGPL for libopencm3, BSD for core bootloader (see LICENSE.md)
+License: LGPL3 for libopencm3, BSD-3-clause for core bootloader (see [LICENSE.md](LICENSE.md))
 
 ## Contact
 
