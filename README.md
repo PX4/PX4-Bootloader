@@ -1,4 +1,4 @@
-# Bootloaders for the Pixhawk board family
+# Bootloader for the Pixhawk board family
 
 [![GitHub Actions Status](https://github.com/PX4/PX4-Bootloader/workflows/Build%20and%20Deploy/badge.svg?branch=master)](https://github.com/PX4/PX4-Bootloader/actions?query=branch%3Amaster)
 
@@ -27,9 +27,9 @@ License: LGPL for libopencm3, BSD for core bootloader (see LICENSE.md)
 
 ## Bootloader Usage
 
-Typical use case. The PX4 IO. [px4pipbl.pdf](https://github.com/PX4/Bootloader/files/3955700/px4pipbl.pdf)
+The typical use case as used for the the PX4IO is described in [px4pipbl.pdf](https://github.com/PX4/Bootloader/files/3955700/px4pipbl.pdf).
 
 To avoid accidental erasure or bad image loading:
 
-The booaloder need to receive `PROTO_GET_SYNC` and `PROTO_GET_DEVICE` Prior to receiving `PROTO_CHIP_ERASE`
-The booaloder need to receive `PROTO_GET_SYNC` and `PROTO_GET_DEVICE` and `PROTO_PROG_MULTI` and `PROTO_GET_CRC` Prior to receiving `PROTO_BOOT`
+- The bootloader needs to receive `PROTO_GET_SYNC` and `PROTO_GET_DEVICE` prior to receiving `PROTO_CHIP_ERASE`.
+- The bootloader needs to receive `PROTO_GET_SYNC` and `PROTO_GET_DEVICE` and `PROTO_PROG_MULTI` and `PROTO_GET_CRC` prior to receiving `PROTO_BOOT`.
