@@ -14,7 +14,7 @@ make
 
 The binaries will be in `build/BOARDNAME/BOARDNAME.elf`. Two files are built: ELF files for use with JTAG adapters and BIN files for direct onboard upgrading.
 
-Build a specific board: Please check the `Makefile` for specific build targets.
+Build a specific board: Please check the [Makefile](Makefile) for specific build targets.
 
 ## License
 
