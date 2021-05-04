@@ -1,6 +1,6 @@
 # Bootloaders for the Pixhawk board family
 
-[![Build Status](https://travis-ci.org/PX4/Bootloader.svg?branch=master)](https://travis-ci.org/PX4/Bootloader)
+[![GitHub Actions Status](https://github.com/PX4/PX4-Bootloader/workflows/Build%20and%20Deploy/badge.svg?branch=master)](https://github.com/PX4/PX4-Bootloader/actions?query=branch%3Amaster)
 
 ## Build instructions
 
