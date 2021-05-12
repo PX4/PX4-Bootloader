@@ -1380,7 +1380,7 @@
  ****************************************************************************/
 #elif   defined(TARGET_HW_ATL_MGD)
 
-# define APP_LOAD_ADDRESS               0x08008000
+# define APP_LOAD_ADDRESS               0x08018000
 # define BOOTLOADER_DELAY               5000
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
@@ -1399,6 +1399,8 @@
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
 # define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE    2
+# define APP_RESERVATION_SIZE            (2 * 32 * 1024) /* 2 32 Kib Sectors */
 
 # define BOARD_PIN_LED_ACTIVITY         GPIO7 // BLUE
 # define BOARD_PIN_LED_BOOTLOADER       GPIO6 // GREEN
