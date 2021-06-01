@@ -31,11 +31,12 @@ TARGET_HW_SMARTAP_AIRLINK              55
 TARGET_HW_SMARTAP_PRO                  32
 TARGET_HW_MODALAI_FC_V1             41775
 TARGET_HW_HOLYBRO_PIX32_V5             78
-TARGET_HW_HOLYBRO_TBD                  79
+TARGET_HW_HOLYBRO_CAN_GPS              79
 TARGET_HW_FMUK66_V3                    28
 TARGET_HW_AV_X_V1                      29
 TARGET_HW_FMUK66_E                     30
 TARGET_HW_FMURT1062-V1                 31
+TARGET_HW_FF_RTK_CAN_GPS               85
 
 
 Reserved  PX4 [BL] FMU v5X.x           51
@@ -44,7 +45,6 @@ Reserved "PX4 [BL] FMU v6X.x"          53
 
 Reserved "GUMSTIX [BL] FMU v6"         54
 Reserved "ARK CAN FLOW"                80
-Reserved "FFRTK"                       85
 Reserved "NXP ucans32k146"             34
 
 # values from external vendors
