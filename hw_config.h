@@ -1376,9 +1376,9 @@
 */
 
 /****************************************************************************
- * TARGET_HW_ATL_MGD
+ * TARGET_HW_ATL_MANTIS_EDU
  ****************************************************************************/
-#elif   defined(TARGET_HW_ATL_MGD)
+#elif   defined(TARGET_HW_ATL_MANTIS_EDU)
 
 # define APP_LOAD_ADDRESS               0x08018000
 # define BOOTLOADER_DELAY               5000
@@ -1390,12 +1390,12 @@
 # define OVERRIDE_USART_BAUDRATE        500000
 
 # define USBPRODUCTID                   0x0061
-# define USBDEVICESTRING                "PX4 BL ATL Mantis-G Developer"
+# define USBDEVICESTRING                "PX4 BL ATL Mantis-EDU"
 # define USBMFGSTRING                   "Advanced Technology Labs AG"
 
 # define OSC_FREQ                       16
 
-# define BOARD_TYPE                     66 // TODO: this need revision
+# define BOARD_TYPE                     97
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
 # define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
