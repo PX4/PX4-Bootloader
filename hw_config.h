@@ -1375,6 +1375,63 @@
  * # define BOARD_FORCE_BL_PULL            GPIO_PUPD_PULLUP
 */
 
+/****************************************************************************
+ * TARGET_HW_ATL_MANTIS_EDU
+ ****************************************************************************/
+#elif   defined(TARGET_HW_ATL_MANTIS_EDU)
+
+# define APP_LOAD_ADDRESS               0x08018000
+# define BOOTLOADER_DELAY               5000
+# define BOOT_DELAY_ADDRESS             0x000001a0
+
+# define INTERFACE_USB                  1
+# define INTERFACE_USART                1
+
+# define OVERRIDE_USART_BAUDRATE        500000
+
+# define USBPRODUCTID                   0x0061
+# define USBDEVICESTRING                "PX4 BL ATL Mantis-EDU"
+# define USBMFGSTRING                   "Advanced Technology Labs"
+
+# define OSC_FREQ                       16
+
+# define BOARD_TYPE                     97
+# define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
+# define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 7 : 11)
+# define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
+# define BOARD_FIRST_FLASH_SECTOR_TO_ERASE    2
+# define APP_RESERVATION_SIZE            (2 * 32 * 1024) /* 2 32 Kib Sectors */
+
+# define BOARD_PIN_LED_ACTIVITY         GPIO7 // BLUE
+# define BOARD_PIN_LED_BOOTLOADER       GPIO6 // GREEN
+# define BOARD_PORT_LEDS                GPIOC
+# define BOARD_CLOCK_LEDS               RCC_AHB1ENR_GPIOCEN
+# define BOARD_LED_ON                   gpio_clear
+# define BOARD_LED_OFF                  gpio_set
+
+# define BOARD_USART                    UART4
+# define BOARD_USART_CLOCK_REGISTER     RCC_APB1ENR
+# define BOARD_USART_CLOCK_BIT          RCC_APB1ENR_UART4EN
+
+# define BOARD_PORT_USART_TX            GPIOD
+# define BOARD_PORT_USART_RX            GPIOD
+# define BOARD_PORT_USART_AF            GPIO_AF8
+# define BOARD_PIN_TX                   GPIO1
+# define BOARD_PIN_RX                   GPIO0
+# define BOARD_USART_PIN_CLOCK_REGISTER RCC_AHB1ENR
+# define BOARD_USART_PIN_CLOCK_BIT_TX   RCC_AHB1ENR_GPIODEN
+# define BOARD_USART_PIN_CLOCK_BIT_RX   RCC_AHB1ENR_GPIODEN
+
+# define BOARD_POWER_PIN_OUT            GPIO5
+# define BOARD_POWER_PORT               GPIOC
+# define BOARD_POWER_CLOCK_REGISTER     RCC_AHB1ENR
+# define BOARD_POWER_CLOCK_BIT          RCC_AHB1ENR_GPIOCEN
+# define BOARD_POWER_ON                 gpio_set
+# define BOARD_POWER_OFF                gpio_clear
+
+# define SERIAL_BREAK_DETECT_DISABLED   1
+# undef USE_VBUS_PULL_DOWN
+
 #else
 # error Undefined Target Hardware
 #endif

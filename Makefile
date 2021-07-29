@@ -87,7 +87,8 @@ TARGETS	= \
 	smartap_airlink_bl \
 	smartap_pro_bl \
 	tapv1_bl \
-	uvify_core_bl
+	uvify_core_bl \
+	atl_mantis_edu_bl
 
 all:	$(TARGETS) sizes
 
@@ -193,6 +194,9 @@ tapv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 
 aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=AEROFC_V1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+
+atl_mantis_edu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=ATL_MANTIS_EDU LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
 #
 # Show sizes
