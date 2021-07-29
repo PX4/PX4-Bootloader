@@ -1391,7 +1391,7 @@
 
 # define USBPRODUCTID                   0x0061
 # define USBDEVICESTRING                "PX4 BL ATL Mantis-EDU"
-# define USBMFGSTRING                   "Advanced Technology Labs AG"
+# define USBMFGSTRING                   "Advanced Technology Labs"
 
 # define OSC_FREQ                       16
 
