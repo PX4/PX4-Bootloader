@@ -1161,7 +1161,7 @@
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "PX4 BL SmartAP AIRLink"
-# define USBPRODUCTID                   0xa32f
+# define USBPRODUCTID                   0x37
 # define USBVENDORID                    0x0483
 # define USBMFGSTRING                   "Sky-Drones Technologies Ltd"
 # define BOOT_DELAY_ADDRESS             0x000001a0
