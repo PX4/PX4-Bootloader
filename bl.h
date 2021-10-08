@@ -90,7 +90,9 @@ extern int buf_get(void);
 #ifdef BOOT_DELAY_ADDRESS
 # define BOOT_DELAY_SIGNATURE1	0x92c2ecff
 # define BOOT_DELAY_SIGNATURE2	0xc5057d5d
-# define BOOT_DELAY_MAX		30
+# ifndef BOOT_DELAY_MAX
+#   define BOOT_DELAY_MAX		30
+# endif
 #endif
 
 #define MAX_DES_LENGTH 20
