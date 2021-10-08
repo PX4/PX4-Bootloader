@@ -397,7 +397,7 @@
 # define USBPRODUCTID                   0x0033
 # define USBVENDORID                    0x3185
 # define USBMFGSTRING                   "Auterion"
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     51
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
@@ -819,7 +819,7 @@
 # define INTERFACE_USART                0
 # define USBDEVICESTRING                "PX4 KakuteF7"
 # define USBPRODUCTID                   0x0016
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     123
 # define BOARD_FLASH_SECTORS            7
@@ -1116,7 +1116,7 @@
 # define BOOTLOADER_DELAY               5000
 # define INTERFACE_USB                  0
 # define INTERFACE_USART                1
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     29
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
@@ -1164,7 +1164,7 @@
 # define USBPRODUCTID                   0x37
 # define USBVENDORID                    0x0483
 # define USBMFGSTRING                   "Sky-Drones Technologies Ltd"
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     55
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
@@ -1208,7 +1208,7 @@
 # define INTERFACE_USART                0
 # define USBDEVICESTRING                "PX4 BL SmartAP PRO"
 # define USBPRODUCTID                   0x0020
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     32
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
@@ -1238,7 +1238,7 @@
 # define USBMFGSTRING                   "ModalAI"
 # define USBPRODUCTID                   0xa32f
 # define USBVENDORID                    0x0483
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     41775
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
@@ -1332,7 +1332,7 @@
 # define USBDEVICESTRING                "PX4 BL PIX32V5"
 # define USBPRODUCTID                   0x004E
 # define USBVENDORID                    0x3162
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define BOARD_TYPE                     78
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1ff0f442)
@@ -1382,7 +1382,7 @@
 
 # define APP_LOAD_ADDRESS               0x08018000
 # define BOOTLOADER_DELAY               5000
-# define BOOT_DELAY_ADDRESS             0x000001a0
+# define BOOT_DELAY_ADDRESS             0x00000200
 
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
