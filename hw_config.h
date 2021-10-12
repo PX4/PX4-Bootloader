@@ -1383,6 +1383,7 @@
 # define APP_LOAD_ADDRESS               0x08018000
 # define BOOTLOADER_DELAY               5000
 # define BOOT_DELAY_ADDRESS             0x00000200
+# define BOOT_DELAY_MAX                 254
 
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
