@@ -353,6 +353,22 @@ board_init(void)
 	BOARD_POWER_ON(BOARD_POWER_PORT, BOARD_POWER_PIN_OUT);
 #endif
 
+#if defined(BOARD_CAMERA_POWER_PIN_OUT)
+	/* We need to init the systic, otherwise it is not running here yet and delay() would not work. */
+	arch_systic_init();
+	/* It does not work if we send the pulse too early. */
+	delay(700);
+
+	rcc_peripheral_enable_clock(&BOARD_CAMERA_POWER_CLOCK_REGISTER, BOARD_CAMERA_POWER_CLOCK_BIT);
+	gpio_mode_setup(BOARD_CAMERA_POWER_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, BOARD_CAMERA_POWER_PIN_OUT);
+	gpio_set_output_options(BOARD_CAMERA_POWER_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, BOARD_CAMERA_POWER_PIN_OUT);
+
+	/* We need to start the camera by sending a pulse. */
+	BOARD_CAMERA_POWER_ON(BOARD_CAMERA_POWER_PORT, BOARD_CAMERA_POWER_PIN_OUT);
+	delay(20);
+	BOARD_CAMERA_POWER_OFF(BOARD_CAMERA_POWER_PORT, BOARD_CAMERA_POWER_PIN_OUT);
+#endif
+
 #if INTERFACE_USB
 #if !defined(BOARD_USB_VBUS_SENSE_DISABLED)
 	/* enable configured GPIO to sample VBUS */
