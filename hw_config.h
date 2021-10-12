@@ -1430,6 +1430,13 @@
 # define BOARD_POWER_ON                 gpio_set
 # define BOARD_POWER_OFF                gpio_clear
 
+# define BOARD_CAMERA_POWER_PIN_OUT            GPIO0
+# define BOARD_CAMERA_POWER_PORT               GPIOB
+# define BOARD_CAMERA_POWER_CLOCK_REGISTER     RCC_AHB1ENR
+# define BOARD_CAMERA_POWER_CLOCK_BIT          RCC_AHB1ENR_GPIOBEN
+# define BOARD_CAMERA_POWER_ON                 gpio_set
+# define BOARD_CAMERA_POWER_OFF                gpio_clear
+
 # define SERIAL_BREAK_DETECT_DISABLED   1
 # undef USE_VBUS_PULL_DOWN
 
