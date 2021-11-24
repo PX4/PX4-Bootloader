@@ -59,6 +59,12 @@ uart_cinit(void *config)
 	usart_set_parity(usart, USART_PARITY_NONE);
 	usart_set_flow_control(usart, USART_FLOWCONTROL_NONE);
 
+#ifdef USART_CR3_OVRDIS
+	/* Disable overrun. Otherwise, an overrun leads to the situation where
+	 * we can't read from a UART anymore. */
+	USART_CR3(usart) |= USART_CR3_OVRDIS;
+#endif
+
 	/* and enable */
 	usart_enable(usart);
 
