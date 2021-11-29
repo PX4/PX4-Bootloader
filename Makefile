@@ -88,7 +88,8 @@ TARGETS	= \
 	smartap_pro_bl \
 	tapv1_bl \
 	uvify_core_bl \
-	atl_mantis_edu_bl
+	atl_mantis_edu_bl \
+	pixhawk5x_bl
 
 all:	$(TARGETS) sizes
 
@@ -198,6 +199,9 @@ aerofcv1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 atl_mantis_edu_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=ATL_MANTIS_EDU LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
 
+pixhawk5x_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=PIXHAWK5X LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+	
 #
 # Show sizes
 #
