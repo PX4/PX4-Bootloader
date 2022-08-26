@@ -70,6 +70,7 @@ TARGETS	= \
 	kakutef7_bl \
 	mindpxv2_bl \
 	modalai_fc_v1_bl \
+	modalai_voxl2_io_bl \
 	omnibusf4sd_bl \
 	pix32v5_bl \
 	px4aerocore_bl \
@@ -175,6 +176,9 @@ smartap_pro_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 
 modalai_fc_v1_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f7 TARGET_HW=MODALAI_FC_V1 LINKER_FILE=stm32f7.ld TARGET_FILE_NAME=$@
+
+modalai_voxl2_io_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f  Makefile.f1 TARGET_HW=MODALAI_VOXL2_IO LINKER_FILE=stm32f1.ld TARGET_FILE_NAME=$@
 
 uvify_core_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=UVIFY_CORE LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
