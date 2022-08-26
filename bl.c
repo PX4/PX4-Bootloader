@@ -137,7 +137,7 @@
 #define STATE_PROTO_GET_CHIP_DES  0x100   // Have Seen read chip version In ASCII
 #define STATE_PROTO_BOOT          0x200   // Have Seen boot the application
 
-#if defined(TARGET_HW_PX4_PIO_V1)
+#if defined(TARGET_HW_PX4_PIO_V1) || defined(TARGET_HW_MODALAI_VOXL2_IO)
 #define STATE_ALLOWS_ERASE        (STATE_PROTO_GET_SYNC)
 #define STATE_ALLOWS_REBOOT       (STATE_PROTO_GET_SYNC)
 #  define SET_BL_STATE(s)
@@ -230,7 +230,7 @@ inline void cout(uint8_t *buf, unsigned len)
 /* The PX4IO is so low on FLASH that this abstaction is not possible as
  * a called API. Therefore these macros are needed.
  */
-#if defined(TARGET_HW_PX4_PIO_V1)
+#if defined(TARGET_HW_PX4_PIO_V1) || defined(TARGET_HW_MODALAI_VOXL2_IO)
 # include <libopencm3/stm32/flash.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/scb.h>

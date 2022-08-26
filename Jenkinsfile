@@ -26,6 +26,7 @@ pipeline {
                      "kakutef7_bl",
                      "mindpxv2_bl",
                      "modalai_fc_v1_bl",
+                     "modalai_voxl2_io_bl",
                      "omnibusf4sd_bl",
                      "pix32v5_bl",
                      "px4aerocore_bl",
