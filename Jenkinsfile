@@ -45,6 +45,8 @@ pipeline {
                      "smartap_pro_bl",
                      "tapv1_bl",
                      "uvify_core_bl",
+                     "thepeach_k1_bl",
+                     "thepeach_r1_bl",
             ],
             image: docker_images.nuttx,
             archive: true
