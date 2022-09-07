@@ -1490,7 +1490,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
-# define USBDEVICESTRING                "THE PEACH K1 BL .."
+# define USBDEVICESTRING                "PX4 BL THE PEACH K1"
 # define USBPRODUCTID                   0x0001
 # define USBVENDORID                    0x35a7
 # define BOOT_DELAY_ADDRESS             0x000001a0
@@ -1546,7 +1546,7 @@
 # define BOARD_FMUV2
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
-# define USBDEVICESTRING                "THE PEACH R1 BL .."
+# define USBDEVICESTRING                "PX4 BL THE PEACH R1"
 # define USBPRODUCTID                   0x0002
 # define USBVENDORID                    0x35a7
 # define BOOT_DELAY_ADDRESS             0x000001a0
