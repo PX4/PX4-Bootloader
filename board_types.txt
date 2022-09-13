@@ -11,6 +11,7 @@ TARGET_HW_PX4_FMU_V5                   50
 TARGET_HW_PX4_FMU_V5X                  51
 TARGET_HW_PX4_FMU_V6                   52
 TARGET_HW_PX4_FMU_V6X                  53
+TARGET_HW_ARK_FMU_V6X                  57
 TARGET_HW_MINDPX_V2                    88
 TARGET_HW_PX4_FLOW_V1                   6
 TARGET_HW_PX4_DISCOVERY_V1             99
@@ -42,6 +43,7 @@ TARGET_HW_FMURT1062-V1                 31
 TARGET_HW_ARK_CAN_FLOW                 80
 TARGET_HW_ARK_CAN_GPS                  81
 TARGET_HW_ARK_CAN_RTK_GPS              82
+TARGET_HW_ARK_CANNODE                  83
 TARGET_HW_FF_RTK_CAN_GPS               85
 TARGET_HW_PDW_MAS_MAIN-V1              86
 TARGET_HW_ATL_MANTIS_EDU               97
@@ -52,8 +54,9 @@ Reserved "PX4 [BL] FMU v6.x"           52
 Reserved "PX4 [BL] FMU v6X.x"          53
 Reserved "PX4 [BL] FMU v6C.x"          56
 
+Reserved "ARK [BL] FMU v6X.x"          57
+
 Reserved "GUMSTIX [BL] FMU v6"         54
-Reserved "ARK CAN FLOW"                80
 Reserved "NXP ucans32k146"             34
 
 # values from external vendors
