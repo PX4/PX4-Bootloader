@@ -34,6 +34,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "hw_config.h"
 #include "image_toc.h"
@@ -54,38 +55,44 @@ bool find_toc(const image_toc_entry_t **toc_entries, uint8_t *len)
 
 	int i = 0;
 	uint8_t sig_idx;
+	const uint32_t toc_end_magic = TOC_END_MAGIC;
+	uintptr_t toc_end_u32;
 
 	if (toc_start->magic == TOC_START_MAGIC &&
 	    toc_start->version <= TOC_VERSION) {
 
 		/* Count the entries in TOC */
 		while (i < MAX_TOC_ENTRIES &&
-		       (uint32_t)&entry[i] <= APP_LOAD_ADDRESS + FLASH_END_ADDRESS - sizeof(uint32_t) &&
-		       *(uint32_t *)&entry[i] != TOC_END_MAGIC) {
+		       (uintptr_t)&entry[i] <= FLASH_END_ADDRESS - sizeof(uintptr_t) &&
+		       memcmp(&entry[i], &toc_end_magic, sizeof(toc_end_magic))) {
 			i++;
 		}
 
+		toc_end_u32 = (uintptr_t)&entry[i] + sizeof(toc_end_magic);
 
-		/* The number of toc entries found must be within bounds, and the
-		 * application has to lie within the flashable area. Also ensure that
+		/* The number of ToC entries found must be within bounds, and the
+		 * ToC has to lie within the flashable area. Also ensure that
 		 * end > start.
 		 */
+
 		if (i <= MAX_TOC_ENTRIES && i > 0 &&
-		    (uint32_t)entry[0].start == APP_LOAD_ADDRESS &&
-		    (uint32_t)entry[0].end <= (FLASH_END_ADDRESS - sizeof(uint32_t)) &&
-		    (uint32_t)entry[0].end > (uint32_t)entry[0].start) {
+		    toc_start_u32 >= (uintptr_t)entry[0].start &&
+		    toc_end_u32 < (uintptr_t)entry[0].end &&
+		    (uintptr_t)entry[0].start == APP_LOAD_ADDRESS &&
+		    (uintptr_t)entry[0].end <= (FLASH_END_ADDRESS - sizeof(uintptr_t)) &&
+		    (uintptr_t)entry[0].end > (uintptr_t)entry[0].start) {
 			sig_idx = entry[0].signature_idx;
 
-			/* The signature idx for the first app must be within the TOC, and
-			* the signature must be within the flash area, not overlapping the
-			* app. Also ensure that end > start.
-			*/
+			/* The signature idx for the ToC and the signature must be within
+			 * the flash area, not overlapping the ToC.
+			 * Also ensure that end > start.
+			 */
 
 			if (sig_idx > 0 &&
 			    sig_idx < MAX_TOC_ENTRIES &&
-			    (uint32_t)entry[sig_idx].start >= (uint32_t)entry[0].end &&
-			    (uint32_t)entry[sig_idx].end <= FLASH_END_ADDRESS &&
-			    (uint32_t)entry[sig_idx].end > (uint32_t)entry[sig_idx].start) {
+			    (uintptr_t)entry[sig_idx].start >= (uintptr_t)entry[0].end &&
+			    (uintptr_t)entry[sig_idx].end <= FLASH_END_ADDRESS &&
+			    (uintptr_t)entry[sig_idx].end > (uintptr_t)entry[sig_idx].start) {
 				*toc_entries = entry;
 				*len = i;
 				return true;
