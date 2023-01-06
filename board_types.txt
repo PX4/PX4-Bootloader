@@ -163,6 +163,8 @@ AP_HW_SierraF405                     1052
 AP_HW_KakuteH7v2                     1053
 AP_HW_KakuteH7mini                   1054
 
+AP_HW_CUBEORANGEPLUS                 1063
+
 AP_HW_CUBEORANGE_PERIPH              1400
 AP_HW_CUBEBLACK_PERIPH               1401
 AP_HW_PIXRACER_PERIPH                1402
