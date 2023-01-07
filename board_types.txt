@@ -59,6 +59,7 @@ Reserved "PX4 [BL] FMU v6C.x"          56
 Reserved "ARK [BL] FMU v6X.x"          57
 
 Reserved "GUMSTIX [BL] FMU v6"         54
+Reserved "ARK CAN FLOW"                80
 Reserved "NXP ucans32k146"             34
 
 # values from external vendors
@@ -162,10 +163,46 @@ AP_HW_NucleoL476                     1051
 AP_HW_SierraF405                     1052
 AP_HW_KakuteH7v2                     1053
 AP_HW_KakuteH7mini                   1054
-
+AP_HW_SierraF412                     1055
+AP_HW_BEASTH7v2                      1056
+AP_HW_BEASTF7v2                      1057
+AP_HW_KakuteH7Mini                   1058
+AP_HW_JHEMCUGSF405A                  1059
+AP_HW_SPRACINGH7                     1060
+AP_HW_DEVEBOXH7                      1061
+AP_HW_MatekL431                      1062
 AP_HW_CUBEORANGEPLUS                 1063
+AP_HW_CarbonixF405                   1064
+AP_HW_QioTekAdeptF407                1065
+AP_HW_QioTekAdeptF427                1066
+AP_HW_FlyingMoonF407                 1067
+AP_HW_FlyingMoonF427                 1068
+AP_HW_CUBERED                        1069
+AP_HW_CUBERED_IO                     1070
+AP_HW_GreenSight_UltraBlue           1071
+AP_HW_GreenSight_microBlue           1072
+AP_HW_MAMBAH743_V4                   1073
+AP_HW_REAPERF745_V2                  1074
+AP_HW_SKYSTARSH7HD                   1075
+AP_HW_PixSurveyA1                    1076
+AP_HW_AEROFOX_AIRSPEED               1077
+AP_HW_ATOMRCF405                     1078
+AP_HW_CUBEPILOT_CANMOD               1079
+AP_HW_AEROFOX_PMU                    1080
+AP_HW_JHEMCUGF16F405                 1081
+AP_HW_SPEEDYBEEF4V3                  1082
+AP_HW_PixPilot-V6                    1083
+AP_HW_JFB100                         1084
+AP_HW_C_RTK2_HP                      1085
+AP_HW_JUMPER_XIAKE800                1086
+AP_HW_Sierra_F1                      1087
+AP_HW_HolybroCompass                 1088
 
 AP_HW_CUBEORANGE_PERIPH              1400
 AP_HW_CUBEBLACK_PERIPH               1401
 AP_HW_PIXRACER_PERIPH                1402
 AP_HW_SWBOOMBOARD_PERIPH             1403
+
+# OpenDroneID enabled boards. Use 10000 + the base board ID
+AP_HW_CubeOrange_ODID               10140
+AP_HW_Pixhawk6_ODID                 10053
