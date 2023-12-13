@@ -61,7 +61,7 @@ Reserved "ARK [BL] FMU v6X.x"          57
 Reserved "GUMSTIX [BL] FMU v6"         54
 Reserved "ARK CAN FLOW"                80
 Reserved "NXP ucans32k146"             34
-Reserved "NXP FMURT1170-V1"            35
+Reserved "NXP FMURT1170-V1"            35 # AKA PX4 FMU V6XRT
 
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
