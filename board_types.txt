@@ -49,6 +49,7 @@ TARGET_HW_PDW_MAS_MAIN-V1              86
 TARGET_HW_ATL_MANTIS_EDU               97
 TARGET_HW_THE_PEACH_K1                212
 TARGET_HW_THE_PEACH_R1                213
+TARGET_HW_ZEROONE_X6                  101
 
 
 Reserved  PX4 [BL] FMU v5X.x           51
@@ -63,6 +64,8 @@ Reserved "ARK CAN FLOW"                80
 Reserved "NXP ucans32k146"             34
 Reserved "NXP FMURT1170-V1"            35 # AKA PX4 FMU V6XRT
 Reserved "NXP Tropic"                  36
+
+Reserved “ZEROONE_X6"                 101
 
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
@@ -205,6 +208,11 @@ AP_HW_CUBEORANGE_PERIPH              1400
 AP_HW_CUBEBLACK_PERIPH               1401
 AP_HW_PIXRACER_PERIPH                1402
 AP_HW_SWBOOMBOARD_PERIPH             1403
+
+#IDs 5600-5699 reserved for ZeroOne
+AP_HW_ZeroOne_X6                     5600
+AP_HW_ZeroOne_PMU                    5601
+AP_HW_ZeroOne_GNSS                   5602
 
 # OpenDroneID enabled boards. Use 10000 + the base board ID
 AP_HW_CubeOrange_ODID               10140
