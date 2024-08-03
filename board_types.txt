@@ -64,8 +64,6 @@ Reserved "NXP ucans32k146"             34
 Reserved "NXP FMURT1170-V1"            35 # AKA PX4 FMU V6XRT
 Reserved "NXP Tropic"                  36
 
-Reserved “ZEROONE_X6"                 101
-
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
 
