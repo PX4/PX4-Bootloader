@@ -164,7 +164,7 @@ AP_HW_SierraL431                     1050
 AP_HW_NucleoL476                     1051
 AP_HW_SierraF405                     1052
 AP_HW_KakuteH7v2                     1053
-AP_HW_KakuteH7mini                   1054
+AP_HW_KakuteH7mini                   1054 # Deprecated, now 1058.
 AP_HW_SierraF412                     1055
 AP_HW_BEASTH7v2                      1056
 AP_HW_BEASTF7v2                      1057
