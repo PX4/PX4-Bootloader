@@ -1,12 +1,16 @@
 # this file lists all board types for boards that use the bootloader
 # protocol implemented in this bootloader.
+# NOTE: This file is now protected with a CI action that checks for conflicts.
+# you can run the tool locally ./Tools/check_board_types_conflicts.txt
+# MAINTAINERS ONLY: we allow conflicts for very special conditions, in those cases
+# you need to add a comment with "# same" followed by the conflict target so the test passes
 
 TARGET_HW_PX4_FMU_V1                    5
-TARGET_HW_PX4_FMU_V2                    9
+TARGET_HW_PX4_FMU_V2                    9 # same as TARGET_HW_CUBE_F4
 TARGET_HW_PX4_FMU_V3                    9 # same as FMU_V2
 TARGET_HW_PX4_FMU_V4                   11
-TARGET_HW_PX4_FMU_V4_PRO               13
-TARGET_HW_UVIFY_CORE                   20
+TARGET_HW_PX4_FMU_V4_PRO               13 # same as TARGET_HW_PX4_PIO_V3
+TARGET_HW_UVIFY_CORE                   20 # same as AP_HW_F4BY (conflict with AP)
 TARGET_HW_PX4_FMU_V5                   50
 TARGET_HW_PX4_FMU_V5X                  51
 TARGET_HW_PX4_FMU_V6                   52
@@ -20,7 +24,7 @@ TARGET_HW_PX4_FLOW_V1                   6
 TARGET_HW_PX4_DISCOVERY_V1             99
 TARGET_HW_PX4_PIO_V1                   10
 TARGET_HW_PX4_PIO_V2                   10 # same as PIO_V1
-TARGET_HW_PX4_PIO_V3                   13
+TARGET_HW_PX4_PIO_V3                   13 # same as TARGET_HW_PX4_FMU_V4_PRO
 TARGET_HW_PX4_AEROCORE_V1              98
 TARGET_HW_TAP_V1                       64
 TARGET_HW_CRAZYFLIE                    12
@@ -29,8 +33,8 @@ TARGET_HW_OMNIBUSF4SD                  42
 TARGET_HW_AUAV_X2V1                    33
 TARGET_HW_AEROFC_V1                    65
 TARGET_TAP_V2                          66
-TARGET_HW_CUBE_F4                       9
-TARGET_HW_AV_V1                        29
+TARGET_HW_CUBE_F4                       9 # same as TARGET_HW_PX4_FMU_V2
+TARGET_HW_AV_V1                        29 # same as TARGET_HW_AV_X_V1
 TARGET_HW_KAKUTEF7                    123
 TARGET_HW_SMARTAP_AIRLINK              55
 TARGET_HW_SMARTAP_PRO                  32
@@ -40,7 +44,7 @@ TARGET_HW_MODALAI_VOXL2_IO          41777
 TARGET_HW_HOLYBRO_PIX32_V5             78
 TARGET_HW_HOLYBRO_CAN_GPS              79
 TARGET_HW_FMUK66_V3                    28
-TARGET_HW_AV_X_V1                      29
+TARGET_HW_AV_X_V1                      29 # same as TARGET_HW_AV_V1
 TARGET_HW_FMUK66_E                     30
 TARGET_HW_FMURT1062-V1                 31
 TARGET_HW_ARK_CAN_FLOW                 80
@@ -111,8 +115,8 @@ AP_HW_MATEKF765_WING                  143
 AP_HW_JDMINIF405                      144
 AP_HW_KAKUTEF7_MINI                   145
 AP_HW_H757I_EVAL                      146
-AP_HW_F4BY                             20 # value due to previous release by vendor
 AP_HW_KakuteH7-Wing                  1105
+AP_HW_F4BY                             20 # same as TARGET_HW_UVIFY_CORE value conflict due to previous release by vendor
 AP_HW_VRBRAIN_V51                    1151
 AP_HW_VRBRAIN_V52                    1152
 AP_HW_VRBRAIN_V54                    1154
