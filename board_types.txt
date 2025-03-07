@@ -210,6 +210,9 @@ AP_HW_CUBEBLACK_PERIPH               1401
 AP_HW_PIXRACER_PERIPH                1402
 AP_HW_SWBOOMBOARD_PERIPH             1403
 
+# IDs 4500-4509 reserved for Lumenier
+AP_HW_LUMENIER_LUX_F765_NDAA         4500
+
 #IDs 5600-5699 reserved for ZeroOne
 AP_HW_ZeroOne_X6                     5600
 AP_HW_ZeroOne_PMU                    5601
