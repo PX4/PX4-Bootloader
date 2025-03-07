@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+# Ensure we are running Bash 3 or newer
+if ((BASH_VERSINFO[0] < 3)); then
+    echo "Error: This script requires Bash 3 or newer. Current version: $BASH_VERSION"
+    exit 1
+fi
+
+# Enable strict mode for better error handling
+set -euo pipefail
+
+# Get the project root directory (assuming the script is in ./Tools)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FILE_PATH="$PROJECT_ROOT/board_types.txt"
+
+# Check if the file exists
+if [ ! -f "$FILE_PATH" ]; then
+    echo "Error: File 'board_types.txt' not found in project root: $PROJECT_ROOT"
+    exit 1
+fi
+
+# Process the file to detect conflicts using awk, while ignoring "# same" lines
+awk '
+{
+    # If the third column starts with "# same", ignore the line
+    if ($3 == "#") {
+        if ($4 == "same") {
+            next
+        }
+    }
+
+    # Check for conflicts on the second column
+    if ($2 in value_map && value_map[$2] != $1) {
+        print "Conflict detected: Value \"" $2 "\" is associated with both \"" value_map[$2] "\" and \"" $1 "\""
+    }
+
+    # Store the mapping
+    value_map[$2] = $1
+}
+' "$FILE_PATH"
+

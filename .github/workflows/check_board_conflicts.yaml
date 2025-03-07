@@ -1,0 +1,24 @@
+name: Check for Board Assignment Conflicts
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'master'
+    pull_request:
+      branches:
+        - '*'
+
+jobs:
+  check:
+    name: Check for Conflicts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run Test
+        run: |
+          ./Tools/check_board_types_conflicts.txt
+
