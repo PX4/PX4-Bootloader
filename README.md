@@ -1,6 +1,6 @@
 # Bootloader for the Pixhawk board family
 
-[![GitHub Actions Status](https://github.com/PX4/PX4-Bootloader/workflows/Build%20and%20Deploy/badge.svg?branch=master)](https://github.com/PX4/PX4-Bootloader/actions?query=branch%3Amaster)
+[![GitHub Actions Status](https://github.com/PX4/PX4-Bootloader/actions/workflows/main.yaml/badge.svg)](https://github.com/PX4/PX4-Bootloader/actions/workflows/main.yaml)
 
 ## Build instructions
 
@@ -22,8 +22,8 @@ License: LGPL3 for libopencm3, BSD-3-clause for core bootloader (see [LICENSE.md
 
 ## Contact
 
-  * Chat: [Dronecode Slack](http://slack.px4.io)
-  * Forum: [Dronecode Discuss](http://discuss.px4.io)
+  * Chat: [Dronecode Discord](https://discord.gg/dronecode)
+  * Forum: [Dronecode Discuss](https://discuss.px4.io)
 
 ## Bootloader Usage
 
