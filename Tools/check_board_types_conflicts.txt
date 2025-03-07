@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 # Ensure we are running Bash 3 or newer
 if ((BASH_VERSINFO[0] < 3)); then
     echo "Error: This script requires Bash 3 or newer. Current version: $BASH_VERSION"
