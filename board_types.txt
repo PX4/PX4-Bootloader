@@ -14,6 +14,7 @@ TARGET_HW_PX4_FMU_V6X                  53
 TARGET_HW_ARK_FMU_V6X                  57
 TARGET_HW_ARK_PI6X                     58
 TARGET_HW_ARK_FPV                      59
+TARGET_HW_AMOV_ICF6                    60
 TARGET_HW_MINDPX_V2                    88
 TARGET_HW_PX4_FLOW_V1                   6
 TARGET_HW_PX4_DISCOVERY_V1             99
@@ -61,6 +62,8 @@ Reserved "PX4 [BL] FMU v6C.x"          56
 Reserved "ARK [BL] FMU v6X.x"          57
 Reserved "ARK [BL] Pi6X.x"             58
 Reserved "ARK [BL] FPV"                59
+
+Reserved "AMOV [BL] ICF6"              60
 
 Reserved "GUMSTIX [BL] FMU v6"         54
 Reserved "ARK CAN FLOW"                80
@@ -216,6 +219,7 @@ AP_HW_SWBOOMBOARD_PERIPH             1403
 AP_HW_ZeroOne_X6                     5600
 AP_HW_ZeroOne_PMU                    5601
 AP_HW_ZeroOne_GNSS                   5602
+
 
 # OpenDroneID enabled boards. Use 10000 + the base board ID
 AP_HW_CubeOrange_ODID               10140
