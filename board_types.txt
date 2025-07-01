@@ -236,9 +236,6 @@ AP_HW_PixSurveyA-IND                 1107
 AP_HW_SPRACINGH7RF                   1108
 AP_HW_AEROFOX_GNSS_F9P               1109
 AP_HW_JFB110                         1110
-<<<<<<< HEAD
-AP_HW_NarinH7                        1183
-=======
 AP_HW_SDMODELH7V1                    1111
 AP_HW_FlyingMoonH743                 1112
 AP_HW_YJUAV_A6                       1113
