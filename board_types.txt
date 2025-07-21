@@ -176,7 +176,7 @@ AP_HW_ICSI_Kestrel                   1049
 AP_HW_SierraL431                     1050
 AP_HW_NucleoL476                     1051
 AP_HW_SierraF405                     1052
-AP_HW_CarbonixL496                   1053
+AP_HW_HolybroG4_GPS                  1053
 AP_HW_MatekF405_TE                   1054
 AP_HW_SierraF412                     1055
 AP_HW_BEASTH7v2                      1056
@@ -308,6 +308,19 @@ AP_HW_CBU_StampH743_LC               1182
 AP_HW_NarinH7                        1183
 AP_HW_BrahmaF4                       1184
 AP_HW_X-MAV-AP-F405Mini              1185
+AP_HW_3DRControlN1                   1186
+AP_HW_CORVON405V2_1                  1187
+AP_HW_NarinH5                        1188
+AP_HW_CORVON743V1                    1189
+AP_HW_DAKEFPVF405                    1190
+AP_HW_ORBITH743                      1191
+
+AP_HW_DAKEFPVH743                    1193
+AP_HW_DAKEFPVH743PRO                 1194
+AP_HW_SEQUREH743                     1195
+AP_HW_SPEDIXH743                     1196
+AP_HW_SPEDIXF405                     1197
+AP_HW_AEDROXH7                       1198
 
 AP_HW_JFB200                         1200
 
@@ -323,18 +336,12 @@ AP_HW_CBUnmanned-CM405-FC            1301
 AP_HW_KHA_ETH                        1315
 
 AP_HW_FlysparkF4                     1361
->>>>>>> d64df91 (board_types: sync with AP upstream)
 
 AP_HW_CUBEORANGE_PERIPH              1400
 AP_HW_CUBEBLACK_PERIPH               1401
 AP_HW_PIXRACER_PERIPH                1402
 AP_HW_SWBOOMBOARD_PERIPH             1403
 
-<<<<<<< HEAD
-# IDs 4500-4509 reserved for Lumenier
-AP_HW_LUMENIER_LUX_F765_NDAA         4500
-
-=======
 AP_HW_VIMDRONES_FLOW                 1404
 AP_HW_VIMDRONES_MOSAIC_X5            1405
 AP_HW_VIMDRONES_MOSAIC_H             1406
@@ -345,6 +352,9 @@ AP_HW_CUBERED_PERIPH                 1409
 AP_HW_RadiolinkPIX6                  1410
 
 AP_HW_JHEMCU-H743HD                  1411
+AP_HW_JHEMCUF405PRO                  1412
+
+AP_HW_TRITIUM_EAH743                 1415
 
 AP_HW_LongbowF405                    1422
 
@@ -359,6 +369,10 @@ AP_HW_StellarF4V2                    1504
 AP_HW_HGLRCF405V4                    1524
 
 AP_HW_F4BY_F427                      1530
+
+# IDs 1800-1809 reserved for Aerium Systems
+AP_HW_AERIUM_RADIAN_F405             1800
+AP_HW_AERIUM_RADIAN_H743             1801
 
 AP_HW_MFT-SEMA100                    2000
 
@@ -398,6 +412,11 @@ AP_HW_UAV-DEV-Sensorboard-G4         5226
 AP_HW_UAV-DEV-PWM-G4                 5227
 AP_HW_UAV-DEV-AUAV-H7                5228
 AP_HW_UAV-DEV-FC-H7                  5229
+AP_HW_UAV-DEV-FC-UM982-H7            5230
+AP_HW_UAV-DEV-FC-M10S-H7             5231
+AP_HW_UAV-DEV-UM982-H7               5232
+AP_HW_UAV-DEV-PM-G4                  5233
+AP_HW_UAV-DEV-AUAV-G4                5234
 
 # IDs 5240-5249 reserved for TM IT-Systemhaus
 AP_HW_TM-SYS-BeastFC                 5240
@@ -410,6 +429,7 @@ AP_HW_TM-SYS-Airspeed                5244
 AP_HW_TBS_LUCID_H7                   5250
 AP_HW_TBS_LUCID_PRO                  5251
 AP_HW_TBS_L431_PERIPH                5252
+AP_HW_TBS_LUCID_H7_WING              5253
 
 # IDs 5270-5279 reserved for SpeedyBee
 AP_HW_SpeedyBeeF405WINGV2            5270
@@ -437,20 +457,27 @@ AP_HW_Holybro-KakuteF4-Wing          5406
 #IDs 5501-5599 reserved for MATEKSYS
 AP_HW_MATEKH743SE                    5501
 
->>>>>>> d64df91 (board_types: sync with AP upstream)
 #IDs 5600-5699 reserved for ZeroOne
 AP_HW_ZeroOne_X6                     5600
 AP_HW_ZeroOne_PMU                    5601
 AP_HW_ZeroOne_GNSS                   5602
 
-<<<<<<< HEAD
-=======
 #IDs 5700-5710 reserved for DroneBuild  
 AP_HW_DroneBuild_G1                  5700
 AP_HW_DroneBuild_G2                  5701
 
+# IDs 5711-5720 reserved for iomcu-specific "boards"
+AP_HW_IOMCU_F103                     5711
+AP_HW_IOMCU_F103_8MHZ                5712  # some boards are clocked differently
+AP_HW_IOMCU_F100                     5713
+
+
 #IDs 5800-5809 reserved for Droneer
 AP_HW_DroneerF405                    5800
+
+#IDs 5810-5819 reserved for Brother Hobby
+AP_HW_BrotherHobbyH743               5810
+AP_HW_BrotherHobbyF405v3             5811
 
 # IDs 6000-6099 reserved for SpektreWorks
 AP_HW_sw-spar-f407                   6000
@@ -458,14 +485,20 @@ AP_HW_sw-boom-f407                   6001
 AP_HW_sw-nav-f405                    6002
 
 # IDs 6100-6109 reserved for MFE
-AP_HW_MFE_PDB_CAN                            6100
-AP_HW_MFE_POS3_CAN                          6101
-AP_HW_MFE_RTK_CAN                             6102
-AP_HW_MFE_AirSpeed_CAN                     6103
+AP_HW_MFE_PDB_CAN                    6100
+AP_HW_MFE_POS3_CAN                   6101
+AP_HW_MFE_RTK_CAN                    6102
+AP_HW_MFE_AirSpeed_CAN               6103
+AP_HW_PixSurveyA2-IND                6104
+
+# IDs 6110 - 6119 for S-vehicle
+AP_HW_SVehicle-E2                    6110
 
 # IDs 6600-6699 reserved for Eagle Eye Drones
 
 # IDs 6900-6909 reserved for Easy Aerial
+
+# IDs 6960-6969 reserved for ViaDrone
 
 # IDs 7000-7099 reserved for CUAV
 AP_HW_CUAV-7-NANO                    7000
@@ -476,13 +509,20 @@ AP_HW_VUAV-V7pro                     7100
 # IDs 7110-7119 reserved for AEROFOX
 AP_HW_AEROFOX_H7                     7110
 
+# IDs 7120-7129 reserved for Accton Godwit
+AP_HW_Accton_Godwit_GA1        7120
+
 # please fill gaps in the above ranges rather than adding past ID #7199
 
->>>>>>> d64df91 (board_types: sync with AP upstream)
 
 # OpenDroneID enabled boards. Use 10000 + the base board ID
 AP_HW_CubeOrange_ODID               10140
 AP_HW_Pixhawk6_ODID                 10053
+AP_HW_CUAV_NORA_ODID                11009
+AP_HW_CUAV_X7_PRO_ODID              11010
+AP_HW_CUAV-7-NANO_ODID              17000
+
+AP_HW_CUBEORANGEPLUS_ODID           11063
 
 # do not allocate board IDs above 10,000 for non-ODID boards.
 # do not allocate board IDs above 19,999 in this file.
