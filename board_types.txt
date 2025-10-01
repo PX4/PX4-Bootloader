@@ -82,6 +82,8 @@ Reserved "NXP FMURT1170-V1"            35 # AKA PX4 FMU V6XRT
 Reserved "NXP TROPIC Community"        36
 Reserved "NXP MR-TROPIC"               37
 
+Reserved "MNP FMU V6X"                 70
+
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
 
