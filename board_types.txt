@@ -61,6 +61,7 @@ TARGET_HW_ARK_X20_GPS                  89
 TARGET_HW_ARK_F9P_GPS                  90
 TARGET_HW_ARK_MOSAIC_G5                91
 TARGET_HW_ARK_DIST                     92
+TARGET_HW_ARK_MAG                      93
 TARGET_HW_ATL_MANTIS_EDU               97
 TARGET_HW_THE_PEACH_K1                212
 TARGET_HW_THE_PEACH_R1                213
