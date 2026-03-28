@@ -69,6 +69,7 @@ TARGETS	= \
 	fmuk66v3_bl \
 	kakutef7_bl \
 	mindpxv2_bl \
+	saampixv1_1_bl \
 	modalai_fc_v1_bl \
 	modalai_voxl2_io_bl \
 	omnibusf4sd_bl \
@@ -142,7 +143,9 @@ px4fmuv5x_bl:$(MAKEFILE_LIST) $(LIBOPENCM3)
 
 mindpxv2_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=MINDPX_V2 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
-
+saampixv1_1_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
+	${MAKE} ${MKFLAGS} -f Makefile.f4 TARGET_HW=SAAMPIX_V1_1 LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
+	
 px4discovery_bl: $(MAKEFILE_LIST) $(LIBOPENCM3)
 	${MAKE} ${MKFLAGS} -f  Makefile.f4 TARGET_HW=PX4_DISCOVERY_V1  LINKER_FILE=stm32f4.ld TARGET_FILE_NAME=$@
 
