@@ -67,7 +67,7 @@ TARGET_HW_ARK_MAG                      93
 TARGET_HW_ATL_MANTIS_EDU               97
 TARGET_HW_THE_PEACH_K1                212
 TARGET_HW_THE_PEACH_R1                213
-
+TARGET_HW_SAAMPIX_V1_1    	      200
 
 Reserved  PX4 [BL] FMU v5X.x           51
 Reserved "PX4 [BL] FMU v6.x"           52
