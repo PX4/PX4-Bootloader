@@ -5,9 +5,14 @@ on:
     branches:
       - 'main'
       - 'master'
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - '*'
+
+permissions:
+  contents: write
 
 
 jobs:
@@ -27,5 +32,26 @@ jobs:
             echo "$(pwd)/gcc-arm-none-eabi-9-2020-q2-update/bin" >> $GITHUB_PATH
       - name: Build
         run: make
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: px4-bootloader-binaries
+          path: |
+            build/*/*.bin
+            build/*/*.elf
+            build/*/*.hex
+
       - name: Check style
         run: make check_format
+
+      - name: Upload Release Assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+          files: |
+            build/*/*.bin
+            build/*/*.elf
+            build/*/*.hex
