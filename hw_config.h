@@ -441,7 +441,7 @@
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "MindPX BL FMU v2.x"
-# define USBPRODUCTID                   0x008E
+# define USBPRODUCTID                   0x0030
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                     88
@@ -483,7 +483,7 @@
 # define INTERFACE_USB                  1
 # define INTERFACE_USART                1
 # define USBDEVICESTRING                "SaamPix BL FMU v1.1"
-# define USBPRODUCTID                   0x0030
+# define USBPRODUCTID                   0x008E
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
 # define BOARD_TYPE                      TARGET_HW_SAAMPIX_V1_1
