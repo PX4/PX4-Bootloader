@@ -486,7 +486,7 @@
 # define USBPRODUCTID                   0x008E
 # define BOOT_DELAY_ADDRESS             0x000001a0
 
-# define BOARD_TYPE                      TARGET_HW_SAAMPIX_V1_1
+# define BOARD_TYPE                      200
 # define _FLASH_KBYTES                  (*(uint16_t *)0x1fff7a22)
 # define BOARD_FLASH_SECTORS            ((_FLASH_KBYTES == 0x400) ? 11 : 23)
 # define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)
