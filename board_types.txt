@@ -344,6 +344,8 @@ AP_HW_ESP32S3_PERIPH                 1206
 
 AP_HW_CSKY-PMU                       1212
 
+AP_HW_SIYI-UniFC-6-PICO              1215
+
 AP_HW_MUPilot                        1222
 
 # IDs 1231-1240 reserved for YARI Robotics
