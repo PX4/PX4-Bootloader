@@ -1,10 +1,6 @@
 name: Check for Board Assignment Conflicts
 
 on:
-  push:
-    branches:
-      - 'main'
-      - 'master'
   pull_request:
     branches:
       - '*'
@@ -22,9 +18,5 @@ jobs:
 
       - name: Run Test
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-            ./Tools/check_board_types_conflicts.sh "origin/${{ github.base_ref }}"
-          else
-            ./Tools/check_board_types_conflicts.sh
-          fi
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          ./Tools/check_board_types_conflicts.sh "origin/${{ github.base_ref }}"
