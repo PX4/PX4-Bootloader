@@ -1,7 +1,7 @@
 # this file lists all board types for boards that use the bootloader
 # protocol implemented in this bootloader.
 # NOTE: This file is now protected with a CI action that checks for conflicts.
-# you can run the tool locally ./Tools/check_board_types_conflicts.txt
+# you can run the tool locally ./Tools/check_board_types_conflicts.sh
 # MAINTAINERS ONLY: we allow conflicts for very special conditions, in those cases
 # you need to add a comment with "# same" followed by the conflict target so the test passes
 
