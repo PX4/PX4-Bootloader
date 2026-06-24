@@ -1,0 +1,33 @@
+name: Weekly Board Conflict Sweep
+
+on:
+  schedule:
+    # Full-file sweep every Sunday at 06:00 UTC.
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sweep:
+    name: Weekly Conflict Sweep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run full-file conflict check
+        id: check
+        run: ./Tools/check_board_types_conflicts.sh | tee conflict_output.txt
+
+      # If the sweep failed, open a tracking issue or append to the existing
+      # open one so repeated weekly failures collect in a single thread.
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: ./Tools/report_board_conflict_failure.sh

@@ -8,13 +8,6 @@ on:
   pull_request:
     branches:
       - '*'
-  schedule:
-    # Weekly full-file sweep every Sunday at 06:00 UTC.
-    - cron: '0 6 * * 0'
-
-permissions:
-  contents: read
-  issues: write
 
 jobs:
   check:
@@ -28,23 +21,10 @@ jobs:
           fetch-depth: 0
 
       - name: Run Test
-        id: run_test
-        shell: bash
         run: |
-          set -o pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-            ./Tools/check_board_types_conflicts.sh "origin/${{ github.base_ref }}" | tee conflict_output.txt
+            ./Tools/check_board_types_conflicts.sh "origin/${{ github.base_ref }}"
           else
-            ./Tools/check_board_types_conflicts.sh | tee conflict_output.txt
+            ./Tools/check_board_types_conflicts.sh
           fi
-
-      # On the scheduled run, if the check failed, open a tracking issue or
-      # append to the existing open one so repeated weekly failures collect in a
-      # single thread instead of spawning a new issue every Sunday.
-      - name: Report weekly failure
-        if: failure() && github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: ./Tools/report_board_conflict_failure.sh
