@@ -21,6 +21,9 @@ jobs:
 
       - name: Run full-file conflict check
         id: check
+        # shell: bash runs with -o pipefail so the script's exit code is not
+        # masked by `tee` in the pipeline.
+        shell: bash
         run: ./Tools/check_board_types_conflicts.sh | tee conflict_output.txt
 
       # If the sweep failed, open a tracking issue or append to the existing
