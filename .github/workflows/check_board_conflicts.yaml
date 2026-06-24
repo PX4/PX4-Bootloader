@@ -29,7 +29,9 @@ jobs:
 
       - name: Run Test
         id: run_test
+        shell: bash
         run: |
+          set -o pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
             ./Tools/check_board_types_conflicts.sh "origin/${{ github.base_ref }}" | tee conflict_output.txt
@@ -44,31 +46,5 @@ jobs:
         if: failure() && github.event_name == 'schedule'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TITLE: 'Weekly board_types.txt conflict check is failing'
-        run: |
-          DATE="$(date -u +'%Y-%m-%d')"
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          OUTPUT="$(cat conflict_output.txt 2>/dev/null || echo '(no output captured)')"
-
-          BODY_FILE="$(mktemp)"
-          {
-            echo "Weekly run on **${DATE}** detected board ID conflict(s)."
-            echo
-            echo "\`\`\`"
-            echo "${OUTPUT}"
-            echo "\`\`\`"
-            echo
-            echo "Run: ${RUN_URL}"
-          } > "$BODY_FILE"
-
-          # Find an existing OPEN issue with this exact title.
-          EXISTING="$(gh issue list --state open --search "in:title \"${TITLE}\"" \
-            --json number,title --jq ".[] | select(.title == \"${TITLE}\") | .number" | head -n1)"
-
-          if [ -n "$EXISTING" ]; then
-            echo "Appending recurrence to existing issue #${EXISTING}"
-            gh issue comment "$EXISTING" --body-file "$BODY_FILE"
-          else
-            echo "Creating new tracking issue"
-            gh issue create --title "$TITLE" --body-file "$BODY_FILE" --label bug
-          fi
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: ./Tools/report_board_conflict_failure.sh
