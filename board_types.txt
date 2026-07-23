@@ -68,7 +68,6 @@ TARGET_HW_ATL_MANTIS_EDU               97
 TARGET_HW_THE_PEACH_K1                212
 TARGET_HW_THE_PEACH_R1                213
 TARGET_HW_SAAMPIX_V1_1                200
-TARGET_HW_NEWBEEDRONE_PIXNOVA        5900 # same as AP_HW_NewBeeDrone_PixNova
 
 TARGET_HW_TUSTIN_MACH                   1225
 
@@ -538,7 +537,7 @@ AP_HW_BrotherHobbyF405v3             5811
 AP_HW_CyberX-v10                     5830
 
 # IDs 5900-5909 reserved for NewBeeDrone PixNova
-AP_HW_NewBeeDrone_PixNova            5900 # same as TARGET_HW_NEWBEEDRONE_PIXNOVA
+AP_HW_NewBeeDrone_PixNova            5900
 
 # IDs 6000-6099 reserved for SpektreWorks
 AP_HW_sw-spar-f407                   6000
