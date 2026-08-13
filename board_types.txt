@@ -354,6 +354,8 @@ AP_HW_MUPilot                        1222
 # IDs 1231-1240 reserved for YARI Robotics
 AP_HW_YARIV6X                        1234
 
+AP_HW_GPILOT_P1						 1275
+
 AP_HW_CBUnmanned-CM405-FC            1301
 
 AP_HW_KHA_ETH                        1315
