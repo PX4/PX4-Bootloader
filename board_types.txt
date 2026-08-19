@@ -401,6 +401,15 @@ AP_HW_F4BY_F427                      1530
 AP_HW_AERIUM_RADIAN_F405             1800
 AP_HW_AERIUM_RADIAN_H743             1801
 
+# IDs 1930-1949 reserved for Agam Robotics
+AP_HW_AGAM_GNSS-CAN                  1930
+AP_HW_AGAM_GNSSPLUS                  1931
+AP_HW_AGAM_BASE-RTK                  1932
+AP_HW_AGAM_CAN-RTK                   1933
+AP_HW_AGAM_FloRange                  1939
+AP_HW_AGAM_MEGH7                     1940
+AP_HW_AGAM_v6XRT                     1949
+
 # IDs 1950-1979 reserved for HC Robotics
 AP_HW_HCR-504                        1950
 AP_HW_HCR-506                        1951
