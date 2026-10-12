@@ -95,6 +95,8 @@ Reserved "MNP FMU V6X"                 70
 # IDs 110-119 reserved for Syro
 TARGET_HW_SYRO_V6X                     110
 
+TARGET_HW_AIFOUNDRY_ERBIUM            1260
+
 # values from external vendors
 EXT_HW_RADIOLINK_MINI_PIX               3
 
