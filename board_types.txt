@@ -586,6 +586,11 @@ AP_HW_AEROFOX_H7                     7110
 # IDs 7120-7129 reserved for Accton Godwit
 AP_HW_Accton_Godwit_GA1        7120
 
+# IDs 7180-7189 reserved for Raspberry Pi
+AP_HW_RPI_UAVFC                      7180
+AP_HW_RASPBERRYPI_PICO2              7181
+AP_HW_RASPBERRYPI_LAUREL             7182
+
 # please fill gaps in the above ranges rather than adding past ID #7199
 
 
